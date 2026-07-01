@@ -1,5 +1,5 @@
 {
-  "name": "gita-pacer",
+  "name": "mahayagna-parayana-app",
   "version": "0.10.5",
   "main": "main.js",
   "scripts": {
@@ -9,8 +9,8 @@
     "build:win": "electron-builder --win"
   },
   "build": {
-    "appId": "com.gitapacer.app",
-    "productName": "Gita Parayana Pace Helper",
+    "appId": "com.mahayagna.app",
+    "productName": "Mahāyajña Parayana App",
     "icon": "build/icon.png",
     "directories": {
       "output": "dist"
