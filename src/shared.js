@@ -721,6 +721,10 @@ const renderer = (function() {
     if (typeof cfg.uvacaBeats === 'number') paceConfig.uvacaBeats = cfg.uvacaBeats;
   }
 
+  // Sections whose title HEADER slide is a plain title (not chanted content): show the
+  // romanized title as static text in BOTH display modes and move no pointer over it (#4).
+  const STATIC_TITLE_SECTIONS = { gita_mahatmyam: true, gita_saram: true, gita_arati: true };
+
   // Double-buffer: render next page into the hidden buffer, swap on advance
   const buffers = [
     document.getElementById('verse-container-a'),
@@ -758,14 +762,19 @@ const renderer = (function() {
         const hTokens = hAnalyzer.analyzeLine(hAnalyzeText);
         const hLineStart = elements.length;
 
-        if (currentMode !== 'asterisk') {
-          // English mode: one animated span per header line, sweeps left→right
+        // Gita Mahātmyam / Sāram / Ārati title headers: static title, no pointer (#4).
+        const staticTitle = STATIC_TITLE_SECTIONS[dataLayer.getCurrentChapterId()] === true;
+        if (currentMode !== 'asterisk' || staticTitle) {
+          // English mode (or a static title): one span per header line with the text.
+          // A static title also carries dataset.noPointer so the hand never moves over it,
+          // and it shows the romanized text even in asterisk mode.
           const displayText = line.iast || line.text;
           const totalBeats = hTokens.reduce((sum, t) => sum + t.beats, 0);
           const span = document.createElement('span');
           span.className = 'syllable';
           span.dataset.index = elements.length;
           span.dataset.beats = Math.max(1, totalBeats);
+          if (staticTitle) span.dataset.noPointer = '1';
           span.textContent = displayText;
           elements.push(span);
           lineDiv.appendChild(span);
@@ -1207,6 +1216,8 @@ const animator = (function() {
   }
 
   function positionPointer(el, transitionMs) {
+    // Static-title header spans (#4) carry noPointer — never show the hand on them.
+    if (el && el.dataset && el.dataset.noPointer) { hidePointer(); return; }
     const rect = el.getBoundingClientRect();
     if (transitionMs !== undefined) {
       pointer.style.transition = 'left ' + (transitionMs / 1000) + 's linear, top 0.15s ease-out';
@@ -1217,6 +1228,7 @@ const animator = (function() {
   }
 
   function positionPointerInstant(el) {
+    if (el && el.dataset && el.dataset.noPointer) { hidePointer(); return; }
     pointer.style.transition = 'none';
     const rect = el.getBoundingClientRect();
     pointer.style.display = 'block';

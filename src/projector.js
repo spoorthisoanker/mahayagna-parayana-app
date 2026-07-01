@@ -103,7 +103,12 @@
     if (data.index >= 0 && data.index < elems.length) {
       if (data.state === 'active') {
         elems[data.index].classList.add('active');
-        positionPointerAbove(elems[data.index], data.beatMs, data.durationMs);
+        // Static-title header spans (#4) carry noPointer — keep the hand hidden.
+        if (elems[data.index].dataset && elems[data.index].dataset.noPointer) {
+          hidePointer();
+        } else {
+          positionPointerAbove(elems[data.index], data.beatMs, data.durationMs);
+        }
       } else if (data.state === 'done') {
         elems[data.index].classList.remove('active');
         elems[data.index].classList.add('done');
