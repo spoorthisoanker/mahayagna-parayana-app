@@ -378,21 +378,12 @@
         },
         {
           "startTime": "682.789",
-          "endTime": "687.564",
+          "endTime": "698.867",
           "swhtsp": "p",
           "shlNbr": "11",
           "sty": "",
-          "text": "पश्यन्शृण्वन्  स्पृशञ्जिघ्रन्",
-          "iast": "paśyanśṛṇvan  spṛśañjighran"
-        },
-        {
-          "startTime": "694.544",
-          "endTime": "698.867",
-          "swhtsp": "",
-          "shlNbr": "11",
-          "sty": "",
-          "text": "अश्नन्गच्छन्  स्वपन्  श्वसन् ||8||",
-          "iast": "aśnangacchan  svapan  śvasan ||8||"
+          "text": "पश्यन्शृण्वन्  स्पृशञ्जिघ्रन्  अश्नन्गच्छन्  स्वपन्  श्वसन् ||8||",
+          "iast": "paśyanśṛṇvan  spṛśañjighran  aśnangacchan  svapan  śvasan ||8||"
         }
       ],
       "syllables": 45,
@@ -403,21 +394,12 @@
       "entry": [
         {
           "startTime": "746.031",
-          "endTime": "749.819",
+          "endTime": "760.046",
           "swhtsp": "p",
           "shlNbr": "11",
           "sty": "",
-          "text": "प्रलपन्  विसृजन्  गृह्णन्",
-          "iast": "pralapan  visṛjan  gṛhṇan"
-        },
-        {
-          "startTime": "756.689",
-          "endTime": "760.046",
-          "swhtsp": "l",
-          "shlNbr": "11",
-          "sty": "",
-          "text": "उन्मिषन्निमिषन्नपि |",
-          "iast": "unmiṣannimiṣannapi |"
+          "text": "प्रलपन्  विसृजन्  गृह्णन्  उन्मिषन्निमिषन्नपि |",
+          "iast": "pralapan  visṛjan  gṛhṇan  unmiṣannimiṣannapi |"
         },
         {
           "startTime": "765.858",

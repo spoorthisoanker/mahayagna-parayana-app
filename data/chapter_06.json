@@ -394,21 +394,12 @@
       "entry": [
         {
           "startTime": "731.559",
-          "endTime": "736.000",
+          "endTime": "740.454",
           "swhtsp": "p",
           "shlNbr": "00",
           "sty": "",
-          "text": "सुहृन्मित्रार्युदासीन-",
-          "iast": "suhṛnmitrāryudāsīna-"
-        },
-        {
-          "startTime": "736.000",
-          "endTime": "740.454",
-          "swhtsp": "l",
-          "shlNbr": "00",
-          "sty": "",
-          "text": "मध्यस्थद्वेष्यबन्धुषु |",
-          "iast": "madhyasthadvēṣyabandhuṣu |"
+          "text": "सुहृन्मित्रार्युदासीनमध्यस्थद्वेष्यबन्धुषु |",
+          "iast": "suhṛnmitrāryudāsīnamadhyasthadvēṣyabandhuṣu |"
         },
         {
           "startTime": "752.509",
