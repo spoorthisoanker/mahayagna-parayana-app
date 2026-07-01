@@ -136,38 +136,6 @@ hr { border: none; border-top: 1px solid #333; margin: 0; }
 .mode-btn { flex: 1; }
 .mode-btn.selected { background: #c94; color: #000; border-color: #c94; }
 
-/* Update banner */
-#update-banner {
-  display: none;
-  align-items: center;
-  gap: 8px;
-  background: #0e2a0e;
-  border: 1px solid #2ecc40;
-  border-radius: 8px;
-  padding: 8px 12px;
-  font-size: 13px;
-  color: #2ecc40;
-}
-#update-banner a {
-  color: #2ecc40;
-  text-decoration: underline;
-  cursor: pointer;
-  margin-left: auto;
-  background: none;
-  border: none;
-  padding: 0;
-  font-size: 13px;
-}
-#update-banner button {
-  background: none;
-  border: none;
-  color: #2ecc40;
-  padding: 0 4px;
-  font-size: 14px;
-  opacity: 0.6;
-}
-#update-banner button:hover { opacity: 1; background: none; }
-
 /* Settings button */
 .settings-btn { width: 100%; background: #2a2a2a; border-color: #555; color: #ccc; font-size: 15px; padding: 11px; }
 .settings-btn:hover { background: #3a3a3a; }
@@ -257,13 +225,6 @@ hr { border: none; border-top: 1px solid #333; margin: 0; }
 </style>
 </head>
 <body>
-
-<!-- Update banner (hidden until a newer GitHub release is detected) -->
-<div id="update-banner">
-  <span id="update-text">Update available</span>
-  <a id="update-link" href="#">Download ↗</a>
-  <button id="update-dismiss" title="Dismiss">&#10006;</button>
-</div>
 
 <!-- Position -->
 <div class="position-bar">
@@ -439,29 +400,5 @@ hr { border: none; border-top: 1px solid #333; margin: 0; }
 
 <script src="shared.js"></script>
 <script src="operator.js"></script>
-<script>
-(function() {
-  var banner = document.getElementById('update-banner');
-  var text   = document.getElementById('update-text');
-  var link   = document.getElementById('update-link');
-  var dismiss = document.getElementById('update-dismiss');
-  var releaseUrl = '';
-
-  window.electronAPI.on('update-available', function(info) {
-    releaseUrl = info.url;
-    text.textContent = 'v' + info.version + ' available';
-    banner.style.display = 'flex';
-  });
-
-  link.addEventListener('click', function(e) {
-    e.preventDefault();
-    if (releaseUrl) window.electronAPI.send('open-url', releaseUrl);
-  });
-
-  dismiss.addEventListener('click', function() {
-    banner.style.display = 'none';
-  });
-})();
-</script>
 </body>
 </html>

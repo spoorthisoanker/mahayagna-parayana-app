@@ -1,27 +1,9 @@
-const { app, BrowserWindow, ipcMain, screen, dialog, shell } = require('electron');
+const { app, BrowserWindow, ipcMain, screen, dialog } = require('electron');
 const path = require('path');
 
 // Prevent multiple instances — ensures the NSIS installer can always close the running app
 if (!app.requestSingleInstanceLock()) {
   app.quit();
-}
-
-const GITHUB_REPO = 'ccsumvid/gita-presentation';
-
-async function checkForUpdates() {
-  try {
-    const res = await fetch(`https://api.github.com/repos/${GITHUB_REPO}/releases/latest`, {
-      headers: { 'User-Agent': `gita-pacer/${app.getVersion()}` }
-    });
-    if (!res.ok) return;
-    const data = await res.json();
-    const latest = (data.tag_name || '').replace(/^v/, '');
-    if (latest && latest !== app.getVersion() && operatorWindow) {
-      operatorWindow.webContents.send('update-available', { version: latest, url: data.html_url });
-    }
-  } catch (_) {
-    // network unavailable — silently ignore
-  }
 }
 
 let operatorWindow = null;
@@ -175,15 +157,9 @@ ipcMain.on('close-projector', function() {
   }
 });
 
-// Open external URL (used by update banner)
-ipcMain.on('open-url', function(event, url) {
-  shell.openExternal(url);
-});
-
 // App lifecycle
 app.whenReady().then(function() {
   createOperatorWindow();
-  setTimeout(checkForUpdates, 5000);
 });
 
 app.on('window-all-closed', function() {
