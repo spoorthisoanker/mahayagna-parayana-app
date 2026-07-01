@@ -10,7 +10,7 @@
   },
   "build": {
     "appId": "com.mahayagna.app",
-    "productName": "Mahāyajña Parayana App",
+    "productName": "Mahayagna Parayana App",
     "icon": "build/icon.png",
     "directories": {
       "output": "dist"
@@ -43,7 +43,8 @@
       "deleteAppDataOnUninstall": false,
       "createStartMenuShortcut": true,
       "runAfterFinish": false
-    }
+    },
+    "artifactName": "Mahayagna-Parayana-App-${version}-${arch}.${ext}"
   },
   "devDependencies": {
     "electron": "^35.0.0",
