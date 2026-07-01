@@ -636,10 +636,10 @@
   // Effective internal BPM for a section: Settings override, else data defaultBpm.
   // Returns null when neither is known (sections without a defaultBpm → "manual").
   // Internal bpm = display BPM × 4. Defaults per the parayana team's BPM table:
-  // Dhyana 55, Ch1 70, Ch2 80, Ch3–18 85, Datta Stavam 70, Invocation 65, Mahātmyam 80,
+  // Dhyana 60, Ch1 75, Ch2 80, Ch3–18 85, Datta Stavam 70, Invocation 65, Mahātmyam 80,
   // Kshama Prārthana 75. Keep in sync with each section's data defaultBpm.
   var DATA_DEFAULT_BPM = {
-    datta_stavam: 280, invocation_prayers: 260, '0': 220, '1': 280,
+    datta_stavam: 280, invocation_prayers: 260, '0': 240, '1': 300,
     '2': 320, '3': 340, '4': 340, '5': 340, '6': 340, '7': 340, '8': 340,
     '9': 340, '10': 340, '11': 340, '12': 340, '13': 340, '14': 340,
     '15': 340, '16': 340, '17': 340, '18': 340, gita_mahatmyam: 320,
