@@ -1,0 +1,52 @@
+{
+  "name": "gita-pacer",
+  "version": "0.10.5",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "build": "electron-builder --mac --arm64 --x64 --win",
+    "build:mac": "electron-builder --mac --arm64 --x64",
+    "build:win": "electron-builder --win"
+  },
+  "build": {
+    "appId": "com.gitapacer.app",
+    "productName": "Gita Parayana Pace Helper",
+    "icon": "build/icon.png",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "main.js",
+      "src/**/*",
+      "data/**/*",
+      "img/**/*"
+    ],
+    "mac": {
+      "target": [
+        {
+          "target": "dmg",
+          "arch": [
+            "arm64",
+            "x64"
+          ]
+        }
+      ],
+      "category": "public.app-category.education"
+    },
+    "win": {
+      "target": "nsis"
+    },
+    "nsis": {
+      "oneClick": true,
+      "perMachine": false,
+      "allowElevation": true,
+      "deleteAppDataOnUninstall": false,
+      "createStartMenuShortcut": true,
+      "runAfterFinish": false
+    }
+  },
+  "devDependencies": {
+    "electron": "^35.0.0",
+    "electron-builder": "^26.8.1"
+  }
+}
