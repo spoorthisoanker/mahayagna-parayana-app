@@ -11,7 +11,7 @@
   // The standalone web app (index.html) keeps its own hardcoded defaults; this panel
   // only affects the Electron operator window.
   var CHANT_DEFAULTS = {
-    colophonBpmDrop: 20,     // internal bpm drop on colophon / ending pages
+    colophonBpmDrop: 0,      // internal-bpm slow-down for the closing slide + Sarvadharmān; 0 = chapter pace (#5). Settings field is in SPM (×4).
     countdownSeconds: 5,     // pre-play countdown length
     chapterGapSeconds: 3,    // gap between chapters before the countdown
     verseZoom: 100,          // projector verse-text zoom (%) — #34
@@ -222,9 +222,12 @@
     updatePositionBar();
     shlokaSelect.value = currentPage;
 
-    // tempo sheet: slow colophon ("om tatsaditi") / ending pages by 5 SPM (20 internal bpm).
-    // Restore the chapter base tempo when leaving a colophon page.
-    if (page && page.isCloser) {
+    // #5: the closing slide ("om tatsaditi") AND the Sarvadharmān recitation run at the
+    // chapter pace by default (colophonBpmDrop = 0). The operator can dial in a slow-down
+    // (in SPM) via Settings to ease those endings. Restore the chapter base tempo when
+    // leaving such a page.
+    var isSlowPage = page && (page.isCloser || page.shlokaNum === 'sarvadharmān');
+    if (isSlowPage) {
       animator.setBpm(currentChapterBpm - chantSettings.colophonBpmDrop);
       closerSlowApplied = true;
       updateSpmDisplay();
@@ -631,7 +634,7 @@
 
   // Populate all settings inputs from the current chantSettings.
   function refreshSettingsInputs() {
-    fldColophon.value = chantSettings.colophonBpmDrop;
+    fldColophon.value = chantSettings.colophonBpmDrop / 4;  // stored internal bpm → shown in SPM
     fldCountdown.value = chantSettings.countdownSeconds;
     fldChapterGap.value = chantSettings.chapterGapSeconds;
     if (fldVerseZoom) fldVerseZoom.value = chantSettings.verseZoom;
@@ -662,7 +665,7 @@
   }
 
   function saveSettings() {
-    chantSettings.colophonBpmDrop = clampNum(fldColophon.value, 0, 80, CHANT_DEFAULTS.colophonBpmDrop);
+    chantSettings.colophonBpmDrop = Math.round(clampNum(fldColophon.value, 0, 20, 0)) * 4;  // SPM field → internal bpm
     chantSettings.countdownSeconds = Math.round(clampNum(fldCountdown.value, 0, 15, CHANT_DEFAULTS.countdownSeconds));
     chantSettings.chapterGapSeconds = clampNum(fldChapterGap.value, 0, 15, CHANT_DEFAULTS.chapterGapSeconds);
     if (fldVerseZoom) chantSettings.verseZoom = Math.round(clampNum(fldVerseZoom.value, 50, 250, CHANT_DEFAULTS.verseZoom));
