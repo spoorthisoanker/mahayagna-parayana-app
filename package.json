@@ -1,6 +1,6 @@
 {
   "name": "mahayagna-parayana-app",
-  "version": "0.10.6",
+  "version": "0.10.7",
   "main": "main.js",
   "scripts": {
     "start": "electron .",
@@ -37,12 +37,14 @@
       "target": "nsis"
     },
     "nsis": {
-      "oneClick": true,
+      "oneClick": false,
       "perMachine": false,
       "allowElevation": true,
+      "allowToChangeInstallationDirectory": true,
       "deleteAppDataOnUninstall": false,
+      "createDesktopShortcut": true,
       "createStartMenuShortcut": true,
-      "runAfterFinish": false
+      "runAfterFinish": true
     },
     "artifactName": "Mahayagna-Parayana-App-${version}-${arch}.${ext}"
   },
