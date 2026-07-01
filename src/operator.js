@@ -695,9 +695,23 @@
     }
 
     // Re-render the current page so changed line-end pauses take effect immediately
-    // (the renderer encodes pauses into dataset at render time).
+    // (the renderer encodes pauses into dataset at render time) — but do it WITHOUT
+    // resetting the pointer. Settings can be changed mid-session: the animation keeps
+    // its position and resumes if it was playing. This mirrors the display-mode switch,
+    // which preserves state via animator.getState()/restore() instead of the hard
+    // animator.reset() inside showPage(). The projector keeps its current render (pause
+    // tweaks don't change syllable indices, so it stays in sync as the operator drives
+    // the ongoing animation); verse-zoom/theme were already pushed live by
+    // applyChantSettings() above.
     if (dataLayer.getCurrentChapterId() !== null && dataLayer.getPage(currentPage)) {
-      showPage(currentPage);
+      var savedAnimState = animator.getState();
+      renderer.invalidatePrefetch();
+      renderer.renderPage(dataLayer.getPage(currentPage));
+      animator.restore(savedAnimState);
+      var reNextIdx = currentPage + 1;
+      if (reNextIdx < dataLayer.getPageCount()) {
+        renderer.prefetchPage(reNextIdx, dataLayer.getCurrentChapterId());
+      }
     }
 
     closeSettings();
