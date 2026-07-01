@@ -708,13 +708,17 @@ const renderer = (function() {
   // the standalone web app uses these defaults.
   //   headerPauseBeats — pause after each header line (separate from verse lines, #36.1)
   //   anustubhBeats / tristubhBeats — meter-aware verse line-end pause (#20/#21; tristubh 4.5 per #36.2)
+  //   uvacaBeats — line-end pause after a speaker-label line ("... uvāca -"). Default 2
+  //     (one guru, #26); configurable in the operator settings so it can be raised to a
+  //     triṣṭubh-style 4-mātrā break for experimentation.
   // A page line may also carry an explicit `pauseBeats` that overrides the meter default (#36.3).
-  const paceConfig = { headerPauseBeats: 3, anustubhBeats: 3, tristubhBeats: 4.5 };
+  const paceConfig = { headerPauseBeats: 3, anustubhBeats: 3, tristubhBeats: 4.5, uvacaBeats: 2 };
   function setPaceConfig(cfg) {
     if (!cfg) return;
     if (typeof cfg.headerPauseBeats === 'number') paceConfig.headerPauseBeats = cfg.headerPauseBeats;
     if (typeof cfg.anustubhBeats === 'number') paceConfig.anustubhBeats = cfg.anustubhBeats;
     if (typeof cfg.tristubhBeats === 'number') paceConfig.tristubhBeats = cfg.tristubhBeats;
+    if (typeof cfg.uvacaBeats === 'number') paceConfig.uvacaBeats = cfg.uvacaBeats;
   }
 
   // Double-buffer: render next page into the hidden buffer, swap on advance
@@ -869,8 +873,10 @@ const renderer = (function() {
         if (!elements[i].classList.contains('verse-marker')) {
           elements[i].dataset.lineEnd = '1';
           if (isUvaca) {
-            // Uvāca speaker label end: 2 mātrās (one guru).
-            elements[i].dataset.lineEndPauseBeats = '2';
+            // Uvāca speaker-label line end: configurable pause (default 2 mātrās / one
+            // guru, #26). Raise via operator settings (e.g. 4) to give it a triṣṭubh-
+            // style break.
+            elements[i].dataset.lineEndPauseBeats = String(paceConfig.uvacaBeats);
           } else if (typeof line.pauseBeats === 'number') {
             // Explicit per-line override (e.g. Samarpana repeated invocation, #36.3).
             elements[i].dataset.lineEndPauseBeats = String(line.pauseBeats);
