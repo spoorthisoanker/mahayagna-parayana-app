@@ -360,21 +360,12 @@
       "entry": [
         {
           "startTime": "584.333",
-          "endTime": "588.300",
-          "swhtsp": "p",
-          "shlNbr": "00",
-          "sty": "",
-          "text": "आयुःसत्त्वबलारोग्य-",
-          "iast": "āyuḥsattvabalārōgya-"
-        },
-        {
-          "startTime": "588.300",
           "endTime": "592.336",
           "swhtsp": "l",
           "shlNbr": "00",
           "sty": "",
-          "text": "सुखप्रीतिविवर्धनाः |",
-          "iast": "sukhaprītivivardhanāḥ |"
+          "text": "आयुःसत्त्वबलारोग्यसुखप्रीतिविवर्धनाः |",
+          "iast": "āyuḥsattvabalārōgyasukhaprītivivardhanāḥ |"
         },
         {
           "startTime": "602.462",
