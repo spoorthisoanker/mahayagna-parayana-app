@@ -1096,13 +1096,14 @@ const renderer = (function() {
   let currentMode = 'asterisk';
   // Configurable pace (mātrās). Operator settings override via setPaceConfig; the
   // standalone web app uses these defaults. tristubh 4.5 / anuṣṭubh 3 (#20/#21/#36.2).
-  const paceConfig = { headerPauseBeats: 3, anustubhBeats: 3, tristubhBeats: 4.5, uvacaBeats: 2 };
+  const paceConfig = { headerPauseBeats: 3, anustubhBeats: 3, tristubhBeats: 4.5, uvacaBeats: 2, mahatmyamBeats: 2.5 };
   function setPaceConfig(cfg) {
     if (!cfg) return;
     if (typeof cfg.headerPauseBeats === 'number') paceConfig.headerPauseBeats = cfg.headerPauseBeats;
     if (typeof cfg.anustubhBeats === 'number') paceConfig.anustubhBeats = cfg.anustubhBeats;
     if (typeof cfg.tristubhBeats === 'number') paceConfig.tristubhBeats = cfg.tristubhBeats;
     if (typeof cfg.uvacaBeats === 'number') paceConfig.uvacaBeats = cfg.uvacaBeats;
+    if (typeof cfg.mahatmyamBeats === 'number') paceConfig.mahatmyamBeats = cfg.mahatmyamBeats;
   }
   let currentPageData = null;
   let syllableElements = [];
@@ -1216,7 +1217,9 @@ const renderer = (function() {
             // operator settings: triṣṭubh (default 4.5) vs anuṣṭubh (default 3).
             // Dhyana (chapter '0') carries per-shloka meter too, so it uses the
             // same rule (no flat-3 special case).
-            var lineEndBeats = (pageData.meter === 'tristubh' ? paceConfig.tristubhBeats : paceConfig.anustubhBeats);
+            var lineEndBeats = (dataLayer.getCurrentChapterId() === 'gita_mahatmyam')
+              ? paceConfig.mahatmyamBeats
+              : (pageData.meter === 'tristubh' ? paceConfig.tristubhBeats : paceConfig.anustubhBeats);
             elements[i].dataset.lineEndPauseBeats = String(lineEndBeats);
           }
           break;

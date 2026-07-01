@@ -712,13 +712,17 @@ const renderer = (function() {
   //     (one guru, #26); configurable in the operator settings so it can be raised to a
   //     triṣṭubh-style 4-mātrā break for experimentation.
   // A page line may also carry an explicit `pauseBeats` that overrides the meter default (#36.3).
-  const paceConfig = { headerPauseBeats: 3, anustubhBeats: 3, tristubhBeats: 4.5, uvacaBeats: 2 };
+  //   mahatmyamBeats — Gita Mahātmyam verse line-end pause. Its verses are tagged
+  //     triṣṭubh but sung at an anuṣṭubh-ish clip; this dedicated pause (default 2.5,
+  //     #44) overrides the meter default for that section so it stops dragging.
+  const paceConfig = { headerPauseBeats: 3, anustubhBeats: 3, tristubhBeats: 4.5, uvacaBeats: 2, mahatmyamBeats: 2.5 };
   function setPaceConfig(cfg) {
     if (!cfg) return;
     if (typeof cfg.headerPauseBeats === 'number') paceConfig.headerPauseBeats = cfg.headerPauseBeats;
     if (typeof cfg.anustubhBeats === 'number') paceConfig.anustubhBeats = cfg.anustubhBeats;
     if (typeof cfg.tristubhBeats === 'number') paceConfig.tristubhBeats = cfg.tristubhBeats;
     if (typeof cfg.uvacaBeats === 'number') paceConfig.uvacaBeats = cfg.uvacaBeats;
+    if (typeof cfg.mahatmyamBeats === 'number') paceConfig.mahatmyamBeats = cfg.mahatmyamBeats;
   }
 
   // Sections whose title HEADER slide is a plain title (not chanted content): show the
@@ -893,8 +897,14 @@ const renderer = (function() {
             // Meter-aware line-end pause (Issues #20/#21), configurable via the
             // operator settings: triṣṭubh (default 4.5) vs anuṣṭubh (default 3).
             // Dhyana (chapter '0') carries per-shloka meter too, so it uses the
-            // same rule (no flat-3 special case).
-            var lineEndBeats = (pageData.meter === 'tristubh' ? paceConfig.tristubhBeats : paceConfig.anustubhBeats);
+            // same rule (no flat-3 special case). Gita Mahātmyam is mis-tagged triṣṭubh
+            // but chanted faster, so it takes its own pause (default 2.5, #44).
+            var lineEndBeats;
+            if (dataLayer.getCurrentChapterId() === 'gita_mahatmyam') {
+              lineEndBeats = paceConfig.mahatmyamBeats;
+            } else {
+              lineEndBeats = (pageData.meter === 'tristubh' ? paceConfig.tristubhBeats : paceConfig.anustubhBeats);
+            }
             elements[i].dataset.lineEndPauseBeats = String(lineEndBeats);
           }
           break;

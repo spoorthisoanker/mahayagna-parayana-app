@@ -19,6 +19,7 @@
     anustubhBeats: 3,        // anuṣṭubh verse line-end pause (mātrās) — #36.2
     tristubhBeats: 4.5,      // triṣṭubh verse line-end pause (mātrās) — #36.2
     uvacaBeats: 2,           // "... uvāca -" speaker-label line-end pause (mātrās) — #26
+    mahatmyamBeats: 2.5,     // Gita Mahātmyam verse line-end pause (mātrās) — #44
     theme: 'dark',           // projector theme: 'dark' (black bg) or 'light' (white bg) — #37
     sectionBpm: {}           // chapterId -> internal BPM override; empty = use data defaultBpm
   };
@@ -33,6 +34,7 @@
       anustubhBeats: CHANT_DEFAULTS.anustubhBeats,
       tristubhBeats: CHANT_DEFAULTS.tristubhBeats,
       uvacaBeats: CHANT_DEFAULTS.uvacaBeats,
+      mahatmyamBeats: CHANT_DEFAULTS.mahatmyamBeats,
       theme: CHANT_DEFAULTS.theme,
       sectionBpm: {}
     };
@@ -49,6 +51,7 @@
           if (typeof parsed.anustubhBeats === 'number') merged.anustubhBeats = parsed.anustubhBeats;
           if (typeof parsed.tristubhBeats === 'number') merged.tristubhBeats = parsed.tristubhBeats;
           if (typeof parsed.uvacaBeats === 'number') merged.uvacaBeats = parsed.uvacaBeats;
+          if (typeof parsed.mahatmyamBeats === 'number') merged.mahatmyamBeats = parsed.mahatmyamBeats;
           if (parsed.theme === 'dark' || parsed.theme === 'light') merged.theme = parsed.theme;
           if (parsed.sectionBpm && typeof parsed.sectionBpm === 'object') {
             for (var k in parsed.sectionBpm) {
@@ -90,7 +93,8 @@
       headerPauseBeats: chantSettings.headerPauseBeats,
       anustubhBeats: chantSettings.anustubhBeats,
       tristubhBeats: chantSettings.tristubhBeats,
-      uvacaBeats: chantSettings.uvacaBeats
+      uvacaBeats: chantSettings.uvacaBeats,
+      mahatmyamBeats: chantSettings.mahatmyamBeats
     });
     // Projector theme — dark (black bg) / light (white bg) — #37
     sendToProjector('theme', { theme: chantSettings.theme });
@@ -579,6 +583,7 @@
   var fldAnustubh = document.getElementById('set-anustubh-pause');
   var fldTristubh = document.getElementById('set-tristubh-pause');
   var fldUvaca = document.getElementById('set-uvaca-pause');
+  var fldMahatmyam = document.getElementById('set-mahatmyam-pause');
   var fldTheme = document.getElementById('set-theme');
 
   // Build the per-section BPM rows once (label + number input keyed by chapterId).
@@ -642,6 +647,7 @@
     if (fldAnustubh) fldAnustubh.value = chantSettings.anustubhBeats;
     if (fldTristubh) fldTristubh.value = chantSettings.tristubhBeats;
     if (fldUvaca) fldUvaca.value = chantSettings.uvacaBeats;
+    if (fldMahatmyam) fldMahatmyam.value = chantSettings.mahatmyamBeats;
     if (fldTheme) fldTheme.value = chantSettings.theme;
     for (var id in sectionBpmInputs) {
       if (!Object.prototype.hasOwnProperty.call(sectionBpmInputs, id)) continue;
@@ -673,6 +679,7 @@
     if (fldAnustubh) chantSettings.anustubhBeats = clampNum(fldAnustubh.value, 0, 12, CHANT_DEFAULTS.anustubhBeats);
     if (fldTristubh) chantSettings.tristubhBeats = clampNum(fldTristubh.value, 0, 12, CHANT_DEFAULTS.tristubhBeats);
     if (fldUvaca) chantSettings.uvacaBeats = clampNum(fldUvaca.value, 0, 12, CHANT_DEFAULTS.uvacaBeats);
+    if (fldMahatmyam) chantSettings.mahatmyamBeats = clampNum(fldMahatmyam.value, 0, 12, CHANT_DEFAULTS.mahatmyamBeats);
     if (fldTheme) chantSettings.theme = (fldTheme.value === 'light') ? 'light' : 'dark';
 
     // Per-section BPM: a value present → store internal = SPM*4; blank → clear override.
