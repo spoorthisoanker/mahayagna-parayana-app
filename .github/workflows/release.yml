@@ -29,7 +29,7 @@ jobs:
           node-version: '20'
       - run: npm install --no-audit --no-fund
       - name: Build macOS DMGs (arm64 + Intel)
-        run: npm run build:mac
+        run: npm run build:mac -- --publish never   # we attach assets in the release job, not here
         env:
           CSC_IDENTITY_AUTO_DISCOVERY: 'false'   # unsigned/ad-hoc (no Apple cert)
       - uses: actions/upload-artifact@v4
@@ -47,7 +47,7 @@ jobs:
           node-version: '20'
       - run: npm install --no-audit --no-fund
       - name: Build Windows EXE (NSIS)
-        run: npm run build:win
+        run: npm run build:win -- --publish never
       - uses: actions/upload-artifact@v4
         with:
           name: win-exe
