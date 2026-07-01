@@ -11,13 +11,15 @@
   // The standalone web app (index.html) keeps its own hardcoded defaults; this panel
   // only affects the Electron operator window.
   var CHANT_DEFAULTS = {
-    colophonBpmDrop: 20,     // internal bpm drop on colophon / ending pages
+    colophonBpmDrop: 0,      // internal-bpm slow-down for the closing slide + Sarvadharmān; 0 = chapter pace (#5). Settings field is in SPM (×4).
     countdownSeconds: 5,     // pre-play countdown length
     chapterGapSeconds: 3,    // gap between chapters before the countdown
     verseZoom: 100,          // projector verse-text zoom (%) — #34
     headerPauseBeats: 3,     // pause (mātrās) after each header line — #36.1
     anustubhBeats: 3,        // anuṣṭubh verse line-end pause (mātrās) — #36.2
     tristubhBeats: 4.5,      // triṣṭubh verse line-end pause (mātrās) — #36.2
+    uvacaBeats: 2,           // "... uvāca -" speaker-label line-end pause (mātrās) — #26
+    mahatmyamBeats: 2.5,     // Gita Mahātmyam verse line-end pause (mātrās) — #44
     theme: 'dark',           // projector theme: 'dark' (black bg) or 'light' (white bg) — #37
     sectionBpm: {}           // chapterId -> internal BPM override; empty = use data defaultBpm
   };
@@ -31,6 +33,8 @@
       headerPauseBeats: CHANT_DEFAULTS.headerPauseBeats,
       anustubhBeats: CHANT_DEFAULTS.anustubhBeats,
       tristubhBeats: CHANT_DEFAULTS.tristubhBeats,
+      uvacaBeats: CHANT_DEFAULTS.uvacaBeats,
+      mahatmyamBeats: CHANT_DEFAULTS.mahatmyamBeats,
       theme: CHANT_DEFAULTS.theme,
       sectionBpm: {}
     };
@@ -46,6 +50,8 @@
           if (typeof parsed.headerPauseBeats === 'number') merged.headerPauseBeats = parsed.headerPauseBeats;
           if (typeof parsed.anustubhBeats === 'number') merged.anustubhBeats = parsed.anustubhBeats;
           if (typeof parsed.tristubhBeats === 'number') merged.tristubhBeats = parsed.tristubhBeats;
+          if (typeof parsed.uvacaBeats === 'number') merged.uvacaBeats = parsed.uvacaBeats;
+          if (typeof parsed.mahatmyamBeats === 'number') merged.mahatmyamBeats = parsed.mahatmyamBeats;
           if (parsed.theme === 'dark' || parsed.theme === 'light') merged.theme = parsed.theme;
           if (parsed.sectionBpm && typeof parsed.sectionBpm === 'object') {
             for (var k in parsed.sectionBpm) {
@@ -86,7 +92,9 @@
     renderer.setPaceConfig({
       headerPauseBeats: chantSettings.headerPauseBeats,
       anustubhBeats: chantSettings.anustubhBeats,
-      tristubhBeats: chantSettings.tristubhBeats
+      tristubhBeats: chantSettings.tristubhBeats,
+      uvacaBeats: chantSettings.uvacaBeats,
+      mahatmyamBeats: chantSettings.mahatmyamBeats
     });
     // Projector theme — dark (black bg) / light (white bg) — #37
     sendToProjector('theme', { theme: chantSettings.theme });
@@ -218,9 +226,12 @@
     updatePositionBar();
     shlokaSelect.value = currentPage;
 
-    // tempo sheet: slow colophon ("om tatsaditi") / ending pages by 5 SPM (20 internal bpm).
-    // Restore the chapter base tempo when leaving a colophon page.
-    if (page && page.isCloser) {
+    // #5: the closing slide ("om tatsaditi") AND the Sarvadharmān recitation run at the
+    // chapter pace by default (colophonBpmDrop = 0). The operator can dial in a slow-down
+    // (in SPM) via Settings to ease those endings. Restore the chapter base tempo when
+    // leaving such a page.
+    var isSlowPage = page && (page.isCloser || page.shlokaNum === 'sarvadharmān');
+    if (isSlowPage) {
       animator.setBpm(currentChapterBpm - chantSettings.colophonBpmDrop);
       closerSlowApplied = true;
       updateSpmDisplay();
@@ -571,6 +582,8 @@
   var fldHeaderPause = document.getElementById('set-header-pause');
   var fldAnustubh = document.getElementById('set-anustubh-pause');
   var fldTristubh = document.getElementById('set-tristubh-pause');
+  var fldUvaca = document.getElementById('set-uvaca-pause');
+  var fldMahatmyam = document.getElementById('set-mahatmyam-pause');
   var fldTheme = document.getElementById('set-theme');
 
   // Build the per-section BPM rows once (label + number input keyed by chapterId).
@@ -611,11 +624,13 @@
 
   // Effective internal BPM for a section: Settings override, else data defaultBpm.
   // Returns null when neither is known (sections without a defaultBpm → "manual").
+  // Internal bpm = display SPM × 4. Defaults per the parayana team's "App SPM" table (#10):
+  // Dhyana 60, Ch1 75, Ch2 85, Ch3–18 90, Datta Stavam 75, Invocation 70, Mahātmyam 85.
   var DATA_DEFAULT_BPM = {
-    datta_stavam: 360, invocation_prayers: 340, '0': 300, '1': 340,
-    '2': 380, '3': 380, '4': 380, '5': 380, '6': 380, '7': 380, '8': 380,
-    '9': 380, '10': 380, '11': 380, '12': 380, '13': 380, '14': 380,
-    '15': 380, '16': 380, '17': 380, '18': 380, gita_mahatmyam: 380,
+    datta_stavam: 300, invocation_prayers: 280, '0': 240, '1': 300,
+    '2': 340, '3': 360, '4': 360, '5': 360, '6': 360, '7': 360, '8': 360,
+    '9': 360, '10': 360, '11': 360, '12': 360, '13': 360, '14': 360,
+    '15': 360, '16': 360, '17': 360, '18': 360, gita_mahatmyam: 340,
     kshama_prarthana: 320
   };
   function effectiveSectionBpm(id) {
@@ -626,13 +641,15 @@
 
   // Populate all settings inputs from the current chantSettings.
   function refreshSettingsInputs() {
-    fldColophon.value = chantSettings.colophonBpmDrop;
+    fldColophon.value = chantSettings.colophonBpmDrop / 4;  // stored internal bpm → shown in SPM
     fldCountdown.value = chantSettings.countdownSeconds;
     fldChapterGap.value = chantSettings.chapterGapSeconds;
     if (fldVerseZoom) fldVerseZoom.value = chantSettings.verseZoom;
     if (fldHeaderPause) fldHeaderPause.value = chantSettings.headerPauseBeats;
     if (fldAnustubh) fldAnustubh.value = chantSettings.anustubhBeats;
     if (fldTristubh) fldTristubh.value = chantSettings.tristubhBeats;
+    if (fldUvaca) fldUvaca.value = chantSettings.uvacaBeats;
+    if (fldMahatmyam) fldMahatmyam.value = chantSettings.mahatmyamBeats;
     if (fldTheme) fldTheme.value = chantSettings.theme;
     for (var id in sectionBpmInputs) {
       if (!Object.prototype.hasOwnProperty.call(sectionBpmInputs, id)) continue;
@@ -656,13 +673,15 @@
   }
 
   function saveSettings() {
-    chantSettings.colophonBpmDrop = clampNum(fldColophon.value, 0, 80, CHANT_DEFAULTS.colophonBpmDrop);
+    chantSettings.colophonBpmDrop = Math.round(clampNum(fldColophon.value, 0, 20, 0)) * 4;  // SPM field → internal bpm
     chantSettings.countdownSeconds = Math.round(clampNum(fldCountdown.value, 0, 15, CHANT_DEFAULTS.countdownSeconds));
     chantSettings.chapterGapSeconds = clampNum(fldChapterGap.value, 0, 15, CHANT_DEFAULTS.chapterGapSeconds);
     if (fldVerseZoom) chantSettings.verseZoom = Math.round(clampNum(fldVerseZoom.value, 50, 250, CHANT_DEFAULTS.verseZoom));
     if (fldHeaderPause) chantSettings.headerPauseBeats = clampNum(fldHeaderPause.value, 0, 12, CHANT_DEFAULTS.headerPauseBeats);
     if (fldAnustubh) chantSettings.anustubhBeats = clampNum(fldAnustubh.value, 0, 12, CHANT_DEFAULTS.anustubhBeats);
     if (fldTristubh) chantSettings.tristubhBeats = clampNum(fldTristubh.value, 0, 12, CHANT_DEFAULTS.tristubhBeats);
+    if (fldUvaca) chantSettings.uvacaBeats = clampNum(fldUvaca.value, 0, 12, CHANT_DEFAULTS.uvacaBeats);
+    if (fldMahatmyam) chantSettings.mahatmyamBeats = clampNum(fldMahatmyam.value, 0, 12, CHANT_DEFAULTS.mahatmyamBeats);
     if (fldTheme) chantSettings.theme = (fldTheme.value === 'light') ? 'light' : 'dark';
 
     // Per-section BPM: a value present → store internal = SPM*4; blank → clear override.
@@ -695,9 +714,23 @@
     }
 
     // Re-render the current page so changed line-end pauses take effect immediately
-    // (the renderer encodes pauses into dataset at render time).
+    // (the renderer encodes pauses into dataset at render time) — but do it WITHOUT
+    // resetting the pointer. Settings can be changed mid-session: the animation keeps
+    // its position and resumes if it was playing. This mirrors the display-mode switch,
+    // which preserves state via animator.getState()/restore() instead of the hard
+    // animator.reset() inside showPage(). The projector keeps its current render (pause
+    // tweaks don't change syllable indices, so it stays in sync as the operator drives
+    // the ongoing animation); verse-zoom/theme were already pushed live by
+    // applyChantSettings() above.
     if (dataLayer.getCurrentChapterId() !== null && dataLayer.getPage(currentPage)) {
-      showPage(currentPage);
+      var savedAnimState = animator.getState();
+      renderer.invalidatePrefetch();
+      renderer.renderPage(dataLayer.getPage(currentPage));
+      animator.restore(savedAnimState);
+      var reNextIdx = currentPage + 1;
+      if (reNextIdx < dataLayer.getPageCount()) {
+        renderer.prefetchPage(reNextIdx, dataLayer.getCurrentChapterId());
+      }
     }
 
     closeSettings();

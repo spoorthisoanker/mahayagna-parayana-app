@@ -1,6 +1,6 @@
 {
-  "name": "gita-pacer",
-  "version": "0.10.5",
+  "name": "mahayagna-parayana-app",
+  "version": "0.10.6",
   "main": "main.js",
   "scripts": {
     "start": "electron .",
@@ -9,8 +9,8 @@
     "build:win": "electron-builder --win"
   },
   "build": {
-    "appId": "com.gitapacer.app",
-    "productName": "Gita Parayana Pace Helper",
+    "appId": "com.mahayagna.app",
+    "productName": "Mahayagna Parayana App",
     "icon": "build/icon.png",
     "directories": {
       "output": "dist"
@@ -43,7 +43,8 @@
       "deleteAppDataOnUninstall": false,
       "createStartMenuShortcut": true,
       "runAfterFinish": false
-    }
+    },
+    "artifactName": "Mahayagna-Parayana-App-${version}-${arch}.${ext}"
   },
   "devDependencies": {
     "electron": "^35.0.0",

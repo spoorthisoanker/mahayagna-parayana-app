@@ -39,7 +39,7 @@ function createOperatorWindow() {
     x: 0,
     y: 0,
     resizable: true,
-    title: 'Gita Parayana — Operator',
+    title: 'Mahāyajña Parayana App',
     webPreferences: {
       preload: path.join(__dirname, 'src', 'preload.js'),
       nodeIntegration: false,
@@ -110,7 +110,7 @@ async function openProjector() {
   }
 
   var windowOptions = {
-    title: 'Gita Parayana — Projector',
+    title: 'Mahāyajña Parayana App',
     webPreferences: {
       preload: path.join(__dirname, 'src', 'preload.js'),
       nodeIntegration: false,

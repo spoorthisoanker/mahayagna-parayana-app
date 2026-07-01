@@ -9,7 +9,7 @@
 const EMBEDDED_DHYANA = {
   "name": "गीता  ध्यान  श्लोकाः",
   "chapterNum": "00",
-  "defaultBpm": 300,
+  "defaultBpm": 240,
   "shloka": [
     {
       "shlokaNum": "",
@@ -708,14 +708,26 @@ const renderer = (function() {
   // the standalone web app uses these defaults.
   //   headerPauseBeats — pause after each header line (separate from verse lines, #36.1)
   //   anustubhBeats / tristubhBeats — meter-aware verse line-end pause (#20/#21; tristubh 4.5 per #36.2)
+  //   uvacaBeats — line-end pause after a speaker-label line ("... uvāca -"). Default 2
+  //     (one guru, #26); configurable in the operator settings so it can be raised to a
+  //     triṣṭubh-style 4-mātrā break for experimentation.
   // A page line may also carry an explicit `pauseBeats` that overrides the meter default (#36.3).
-  const paceConfig = { headerPauseBeats: 3, anustubhBeats: 3, tristubhBeats: 4.5 };
+  //   mahatmyamBeats — Gita Mahātmyam verse line-end pause. Its verses are tagged
+  //     triṣṭubh but sung at an anuṣṭubh-ish clip; this dedicated pause (default 2.5,
+  //     #44) overrides the meter default for that section so it stops dragging.
+  const paceConfig = { headerPauseBeats: 3, anustubhBeats: 3, tristubhBeats: 4.5, uvacaBeats: 2, mahatmyamBeats: 2.5 };
   function setPaceConfig(cfg) {
     if (!cfg) return;
     if (typeof cfg.headerPauseBeats === 'number') paceConfig.headerPauseBeats = cfg.headerPauseBeats;
     if (typeof cfg.anustubhBeats === 'number') paceConfig.anustubhBeats = cfg.anustubhBeats;
     if (typeof cfg.tristubhBeats === 'number') paceConfig.tristubhBeats = cfg.tristubhBeats;
+    if (typeof cfg.uvacaBeats === 'number') paceConfig.uvacaBeats = cfg.uvacaBeats;
+    if (typeof cfg.mahatmyamBeats === 'number') paceConfig.mahatmyamBeats = cfg.mahatmyamBeats;
   }
+
+  // Sections whose title HEADER slide is a plain title (not chanted content): show the
+  // romanized title as static text in BOTH display modes and move no pointer over it (#4).
+  const STATIC_TITLE_SECTIONS = { gita_mahatmyam: true, gita_saram: true, gita_arati: true };
 
   // Double-buffer: render next page into the hidden buffer, swap on advance
   const buffers = [
@@ -754,14 +766,19 @@ const renderer = (function() {
         const hTokens = hAnalyzer.analyzeLine(hAnalyzeText);
         const hLineStart = elements.length;
 
-        if (currentMode !== 'asterisk') {
-          // English mode: one animated span per header line, sweeps left→right
+        // Gita Mahātmyam / Sāram / Ārati title headers: static title, no pointer (#4).
+        const staticTitle = STATIC_TITLE_SECTIONS[dataLayer.getCurrentChapterId()] === true;
+        if (currentMode !== 'asterisk' || staticTitle) {
+          // English mode (or a static title): one span per header line with the text.
+          // A static title also carries dataset.noPointer so the hand never moves over it,
+          // and it shows the romanized text even in asterisk mode.
           const displayText = line.iast || line.text;
           const totalBeats = hTokens.reduce((sum, t) => sum + t.beats, 0);
           const span = document.createElement('span');
           span.className = 'syllable';
           span.dataset.index = elements.length;
           span.dataset.beats = Math.max(1, totalBeats);
+          if (staticTitle) span.dataset.noPointer = '1';
           span.textContent = displayText;
           elements.push(span);
           lineDiv.appendChild(span);
@@ -869,8 +886,10 @@ const renderer = (function() {
         if (!elements[i].classList.contains('verse-marker')) {
           elements[i].dataset.lineEnd = '1';
           if (isUvaca) {
-            // Uvāca speaker label end: 2 mātrās (one guru).
-            elements[i].dataset.lineEndPauseBeats = '2';
+            // Uvāca speaker-label line end: configurable pause (default 2 mātrās / one
+            // guru, #26). Raise via operator settings (e.g. 4) to give it a triṣṭubh-
+            // style break.
+            elements[i].dataset.lineEndPauseBeats = String(paceConfig.uvacaBeats);
           } else if (typeof line.pauseBeats === 'number') {
             // Explicit per-line override (e.g. Samarpana repeated invocation, #36.3).
             elements[i].dataset.lineEndPauseBeats = String(line.pauseBeats);
@@ -878,8 +897,14 @@ const renderer = (function() {
             // Meter-aware line-end pause (Issues #20/#21), configurable via the
             // operator settings: triṣṭubh (default 4.5) vs anuṣṭubh (default 3).
             // Dhyana (chapter '0') carries per-shloka meter too, so it uses the
-            // same rule (no flat-3 special case).
-            var lineEndBeats = (pageData.meter === 'tristubh' ? paceConfig.tristubhBeats : paceConfig.anustubhBeats);
+            // same rule (no flat-3 special case). Gita Mahātmyam is mis-tagged triṣṭubh
+            // but chanted faster, so it takes its own pause (default 2.5, #44).
+            var lineEndBeats;
+            if (dataLayer.getCurrentChapterId() === 'gita_mahatmyam') {
+              lineEndBeats = paceConfig.mahatmyamBeats;
+            } else {
+              lineEndBeats = (pageData.meter === 'tristubh' ? paceConfig.tristubhBeats : paceConfig.anustubhBeats);
+            }
             elements[i].dataset.lineEndPauseBeats = String(lineEndBeats);
           }
           break;
@@ -1201,6 +1226,8 @@ const animator = (function() {
   }
 
   function positionPointer(el, transitionMs) {
+    // Static-title header spans (#4) carry noPointer — never show the hand on them.
+    if (el && el.dataset && el.dataset.noPointer) { hidePointer(); return; }
     const rect = el.getBoundingClientRect();
     if (transitionMs !== undefined) {
       pointer.style.transition = 'left ' + (transitionMs / 1000) + 's linear, top 0.15s ease-out';
@@ -1211,6 +1238,7 @@ const animator = (function() {
   }
 
   function positionPointerInstant(el) {
+    if (el && el.dataset && el.dataset.noPointer) { hidePointer(); return; }
     pointer.style.transition = 'none';
     const rect = el.getBoundingClientRect();
     pointer.style.display = 'block';

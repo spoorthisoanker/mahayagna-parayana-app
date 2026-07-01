@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Gita Parayana — Operator</title>
+<title>Mahāyajña Parayana App</title>
 <style>
 * { margin: 0; padding: 0; box-sizing: border-box; }
 html, body { width: 100%; height: 100%; overflow-y: auto; }
@@ -370,8 +370,8 @@ hr { border: none; border-top: 1px solid #333; margin: 0; }
     <div class="settings-title">&#9881; Chant Settings</div>
 
     <div class="settings-grid">
-      <label for="set-colophon">Colophon slowdown (BPM drop)</label>
-      <input type="number" id="set-colophon" min="0" max="80" step="1">
+      <label for="set-colophon">Closing/Sarvadharmān slow-down (SPM)</label>
+      <input type="number" id="set-colophon" min="0" max="20" step="1">
 
       <label for="set-countdown">Countdown (seconds)</label>
       <input type="number" id="set-countdown" min="0" max="15" step="1">
@@ -390,6 +390,12 @@ hr { border: none; border-top: 1px solid #333; margin: 0; }
 
       <label for="set-tristubh-pause">Triṣṭubh line pause (mātrās)</label>
       <input type="number" id="set-tristubh-pause" min="0" max="12" step="0.5">
+
+      <label for="set-uvaca-pause">Uvāca line pause (mātrās)</label>
+      <input type="number" id="set-uvaca-pause" min="0" max="12" step="0.5">
+
+      <label for="set-mahatmyam-pause">Gita Mahātmyam line pause (mātrās)</label>
+      <input type="number" id="set-mahatmyam-pause" min="0" max="12" step="0.5">
 
       <label for="set-theme">Projector theme</label>
       <select id="set-theme">

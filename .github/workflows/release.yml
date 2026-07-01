@@ -1,0 +1,82 @@
+name: Build & Release
+
+# Builds the macOS DMGs (Apple Silicon + Intel) on a macOS runner and the
+# Windows .exe on a Windows runner, then attaches all three to a GitHub Release.
+#
+# Trigger it either way:
+#   • push a version tag       -> git tag v0.10.6 && git push --tags
+#   • Actions tab -> "Run workflow" and type the tag (e.g. v0.10.6)
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Release tag to create (e.g. v0.10.6)'
+        required: true
+
+permissions:
+  contents: write   # lets the release step create/update the GitHub Release
+
+jobs:
+  build-mac:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - run: npm install --no-audit --no-fund
+      - name: Build macOS DMGs (arm64 + Intel)
+        run: npm run build:mac -- --publish never   # we attach assets in the release job, not here
+        env:
+          CSC_IDENTITY_AUTO_DISCOVERY: 'false'   # unsigned/ad-hoc (no Apple cert)
+      - uses: actions/upload-artifact@v4
+        with:
+          name: mac-dmg
+          path: dist/*.dmg
+          if-no-files-found: error
+
+  build-win:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - run: npm install --no-audit --no-fund
+      - name: Build Windows EXE (NSIS)
+        run: npm run build:win -- --publish never
+      - uses: actions/upload-artifact@v4
+        with:
+          name: win-exe
+          path: dist/*.exe
+          if-no-files-found: error
+
+  release:
+    needs: [build-mac, build-win]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+          merge-multiple: true
+      - name: List collected assets
+        run: ls -lh artifacts
+      - name: Resolve tag
+        id: tag
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "name=${{ inputs.tag }}" >> "$GITHUB_OUTPUT"
+          else
+            echo "name=${{ github.ref_name }}" >> "$GITHUB_OUTPUT"
+          fi
+      - uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.tag.outputs.name }}
+          name: ${{ steps.tag.outputs.name }}
+          target_commitish: ${{ github.sha }}
+          files: artifacts/*
+          fail_on_unmatched_files: true
+          generate_release_notes: true

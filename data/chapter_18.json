@@ -2,7 +2,7 @@
   "name": "मोक्षसन्न्यासयोगः",
   "iastName": "mōkṣasannyāsayōgaḥ",
   "chapterNum": "18",
-  "defaultBpm": 380,
+  "defaultBpm": 360,
   "shloka": [
     {
       "shlokaNum": "",
@@ -143,15 +143,6 @@
     {
       "shlokaNum": "3",
       "entry": [
-        {
-          "startTime": "175.177",
-          "endTime": "178.976",
-          "swhtsp": "l",
-          "shlNbr": "2",
-          "sty": "",
-          "text": "श्री  भगवानुवाच -",
-          "iast": "śrī  bhagavānuvāca -"
-        },
         {
           "startTime": "222.276",
           "endTime": "227.877",
