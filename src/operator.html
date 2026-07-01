@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Gita Parayana — Operator</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html, body { width: 100%; height: 100%; overflow-y: auto; }
+body {
+  background: #1a1a1a;
+  color: #fff;
+  font-family: 'Noto Sans', Arial, sans-serif;
+  font-size: 15px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+/* Position bar */
+.position-bar {
+  background: #000;
+  border-radius: 8px;
+  padding: 14px;
+  text-align: center;
+}
+.position-bar .chapter-name {
+  color: #FFD700;
+  font-size: 16px;
+  font-weight: bold;
+}
+.position-bar .shloka-info {
+  color: #aaa;
+  font-size: 13px;
+  margin-top: 4px;
+}
+
+/* Section labels */
+.section-label {
+  color: #666;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 4px;
+}
+
+/* Transport */
+.transport {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+}
+
+/* SPM row */
+.spm-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+.spm-value {
+  background: #000;
+  padding: 8px 16px;
+  border-radius: 8px;
+  text-align: center;
+  min-width: 80px;
+}
+.spm-value input[type="number"] {
+  font-size: 22px;
+  width: 70px;
+  text-align: center;
+  background: transparent;
+  border: none;
+  color: #fff;
+  padding: 2px;
+}
+.spm-value input[type="number"]:focus {
+  outline: 1px solid #5b9bd5;
+  border-radius: 4px;
+}
+.spm-value .label { color: #888; font-size: 11px; }
+
+/* Shared control styles */
+button, select, input {
+  background: #333;
+  color: #fff;
+  border: 1px solid #555;
+  font-family: 'Noto Sans', Arial, sans-serif;
+  font-size: 15px;
+  padding: 10px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  outline: none;
+}
+button:hover { background: #444; border-color: #666; }
+button:active { transform: scale(0.95); }
+button:disabled { opacity: 0.35; cursor: not-allowed; transform: none; pointer-events: none; }
+select { width: 100%; font-size: 14px; }
+input[type="number"] { width: 70px; text-align: center; }
+
+/* Play button */
+#btn-play { background: #1a7a2e; border-color: #2ecc40; font-size: 28px; padding: 14px; }
+#btn-play:hover { background: #2ecc40; color: #000; }
+
+/* Pause button */
+#btn-pause { background: #a85a10; border-color: #ff851b; font-size: 28px; padding: 14px; }
+#btn-pause:hover { background: #ff851b; color: #000; }
+
+/* Pace buttons */
+.pace-row { display: flex; gap: 8px; justify-content: center; }
+
+#btn-speedup { background: #005baa; border-color: #0074d9; flex: 1; }
+#btn-speedup:hover { background: #0074d9; }
+#btn-speedup.active { background: #0074d9; border-color: #3da2ff; box-shadow: 0 0 8px rgba(0,116,217,0.6); }
+
+#btn-slowdown { background: #7a0a8e; border-color: #b10dc9; flex: 1; }
+#btn-slowdown:hover { background: #b10dc9; }
+#btn-slowdown.active { background: #b10dc9; border-color: #d44eec; box-shadow: 0 0 8px rgba(177,13,201,0.6); }
+
+#btn-clear-pace { flex: 0 0 auto; }
+
+/* Instruction row */
+.instruction-row { display: flex; gap: 6px; align-items: center; }
+.instruction-row select { flex: 1; }
+#btn-dismiss-instruction { flex: 0 0 auto; }
+
+/* Projector button */
+.projector-btn { width: 100%; background: #1a3a5c; border-color: #2a5a8c; color: #7ab8f5; font-size: 16px; padding: 12px; }
+.projector-btn:hover { background: #2a5a8c; }
+
+/* Divider */
+hr { border: none; border-top: 1px solid #333; margin: 0; }
+
+/* Mode buttons */
+.mode-row { display: flex; gap: 6px; justify-content: center; }
+.mode-btn { flex: 1; }
+.mode-btn.selected { background: #c94; color: #000; border-color: #c94; }
+
+/* Update banner */
+#update-banner {
+  display: none;
+  align-items: center;
+  gap: 8px;
+  background: #0e2a0e;
+  border: 1px solid #2ecc40;
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-size: 13px;
+  color: #2ecc40;
+}
+#update-banner a {
+  color: #2ecc40;
+  text-decoration: underline;
+  cursor: pointer;
+  margin-left: auto;
+  background: none;
+  border: none;
+  padding: 0;
+  font-size: 13px;
+}
+#update-banner button {
+  background: none;
+  border: none;
+  color: #2ecc40;
+  padding: 0 4px;
+  font-size: 14px;
+  opacity: 0.6;
+}
+#update-banner button:hover { opacity: 1; background: none; }
+
+/* Settings button */
+.settings-btn { width: 100%; background: #2a2a2a; border-color: #555; color: #ccc; font-size: 15px; padding: 11px; }
+.settings-btn:hover { background: #3a3a3a; }
+
+/* Settings overlay + panel */
+#settings-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.7);
+  z-index: 1000;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+.settings-panel {
+  background: #000;
+  border: 1px solid #555;
+  border-radius: 10px;
+  padding: 20px;
+  width: 100%;
+  max-width: 480px;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+.settings-title {
+  color: #FFD700;
+  font-size: 18px;
+  font-weight: bold;
+  margin-bottom: 16px;
+}
+.settings-grid {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 10px 12px;
+  align-items: center;
+}
+.settings-grid label { color: #ccc; font-size: 14px; }
+.settings-grid input[type="number"] { width: 90px; }
+.settings-subtitle {
+  color: #FFD700;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin: 18px 0 8px;
+}
+.settings-section-list {
+  max-height: 220px;
+  overflow-y: auto;
+  border: 1px solid #333;
+  border-radius: 8px;
+  padding: 8px;
+}
+.settings-section-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 2px;
+}
+.settings-section-name {
+  flex: 1;
+  color: #ddd;
+  font-size: 13px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.settings-section-row input[type="number"] { width: 80px; flex: 0 0 auto; }
+.settings-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 18px;
+}
+.settings-actions-spacer { flex: 1; }
+.settings-save { background: #1a7a2e; border-color: #2ecc40; }
+.settings-save:hover { background: #2ecc40; color: #000; }
+.settings-reset { background: #5a1010; border-color: #a33; color: #f0a0a0; }
+.settings-reset:hover { background: #a33; color: #fff; }
+</style>
+</head>
+<body>
+
+<!-- Update banner (hidden until a newer GitHub release is detected) -->
+<div id="update-banner">
+  <span id="update-text">Update available</span>
+  <a id="update-link" href="#">Download ↗</a>
+  <button id="update-dismiss" title="Dismiss">&#10006;</button>
+</div>
+
+<!-- Position -->
+<div class="position-bar">
+  <div class="chapter-name" id="chapter-name">—</div>
+  <div class="shloka-info" id="shloka-info">—</div>
+</div>
+
+<!-- Transport -->
+<div class="section-label">Transport</div>
+<div class="transport">
+  <button id="btn-play" title="Play">&#9654;</button>
+  <button id="btn-pause" title="Pause" disabled>&#9646;&#9646;</button>
+  <button id="btn-reset" title="Reset">&#8634;</button>
+  <button id="btn-restart-chapter" title="Restart Chapter">&#8635; Restart</button>
+  <button id="btn-next" title="Next page">&#9654;</button>
+</div>
+
+<!-- SPM -->
+<div class="section-label">Syllables Per Minute</div>
+<div class="spm-row">
+  <button id="bpm-down">&minus;</button>
+  <div class="spm-value">
+    <input type="number" id="spm-input" value="95" min="10" max="150">
+    <div class="label">SPM</div>
+  </div>
+  <button id="bpm-up">+</button>
+</div>
+
+<!-- Pace indicators -->
+<div class="section-label">Pace Signal</div>
+<div class="pace-row">
+  <button id="btn-speedup" title="Speed Up signal">&#9889; Speed Up</button>
+  <button id="btn-slowdown" title="Slow Down signal">&#9995; Slow Down</button>
+  <button id="btn-clear-pace" title="Clear">&#10006;</button>
+</div>
+
+<!-- Display mode -->
+<div class="mode-row">
+  <button class="mode-btn selected" data-mode="asterisk">Asterisks</button>
+  <button class="mode-btn" data-mode="english">English</button>
+</div>
+
+<hr>
+
+<!-- Chapter -->
+<div class="section-label">Chapter</div>
+<select id="chapter-select">
+  <option value="datta_stavam">Datta Stavam</option>
+  <option value="invocation_prayers">Invocation Prayers</option>
+  <option value="0">gītā dhyāna ślōkāḥ</option>
+  <option value="1">Ch 1 – arjunaviṣādayōgaḥ</option>
+  <option value="2">Ch 2 – sāṅkhyayōgaḥ</option>
+  <option value="3">Ch 3 – karmayōgaḥ</option>
+  <option value="4">Ch 4 – jñānayōgaḥ</option>
+  <option value="5">Ch 5 – karmasannyāsayōgaḥ</option>
+  <option value="6">Ch 6 – ātmasaṁyamayōgaḥ</option>
+  <option value="7">Ch 7 – jñānavijñānayōgaḥ</option>
+  <option value="8">Ch 8 – akṣaraparabrahmayōgaḥ</option>
+  <option value="9">Ch 9 – rājavidyārājaguhyayōgaḥ</option>
+  <option value="10">Ch 10 – vibhūtiyōgaḥ</option>
+  <option value="11">Ch 11 – viśvarūpasandarśanayōgaḥ</option>
+  <option value="12">Ch 12 – bhaktiyōgaḥ</option>
+  <option value="13">Ch 13 – kṣētrakṣētrajñavibhāgayōgaḥ</option>
+  <option value="14">Ch 14 – guṇatrayavibhāgayōgaḥ</option>
+  <option value="15">Ch 15 – puruṣōttamaprāptiyōgaḥ</option>
+  <option value="16">Ch 16 – daivāsurasampadvibhāgayōgaḥ</option>
+  <option value="17">Ch 17 – śraddhātrayavibhāgayōgaḥ</option>
+  <option value="18">Ch 18 – mōkṣasannyāsayōgaḥ</option>
+  <option value="gita_mahatmyam">Gita Mahatmyam</option>
+  <option value="kshama_prarthana">Samarpana</option>
+  <option value="gita_saram">Gita Saram</option>
+  <option value="gita_arati">Gita Arati</option>
+  <option value="purnam">Purnam</option>
+</select>
+
+<!-- Shloka -->
+<select id="shloka-select">
+  <option value="0">Shloka 1</option>
+</select>
+
+<!-- Instructions -->
+<div class="section-label">Instructions</div>
+<div class="instruction-row">
+  <select id="instruction-select">
+    <option value="">— Show Instruction —</option>
+    <option value="sitting_placement">Sitting Placement</option>
+    <option value="starting_soon">Parayana Starting Soon</option>
+    <option value="stop">Stop</option>
+    <option value="listen_sync">Listen &amp; Sync with Pace Helpers</option>
+    <option value="folded_hands">Folded Hands</option>
+    <option value="pranam">Pranām</option>
+    <option value="sit_straight">Sit Straight</option>
+    <option value="increase_sruti">Increase Sruti</option>
+    <option value="decrease_sruti">Decrease Sruti</option>
+    <option value="good_job">Good Job</option>
+  </select>
+  <button id="btn-dismiss-instruction" title="Dismiss instruction">&#10006;</button>
+</div>
+
+<hr>
+
+<!-- Projector -->
+<button class="projector-btn" id="btn-projector">&#128250; Open Projector</button>
+
+<!-- Settings -->
+<button class="settings-btn" id="btn-settings" title="Chant timing settings">&#9881; Settings</button>
+
+<!-- Settings panel (hidden until opened) -->
+<div id="settings-overlay">
+  <div class="settings-panel">
+    <div class="settings-title">&#9881; Chant Settings</div>
+
+    <div class="settings-grid">
+      <label for="set-colophon">Colophon slowdown (BPM drop)</label>
+      <input type="number" id="set-colophon" min="0" max="80" step="1">
+
+      <label for="set-countdown">Countdown (seconds)</label>
+      <input type="number" id="set-countdown" min="0" max="15" step="1">
+
+      <label for="set-chapter-gap">Chapter gap (seconds)</label>
+      <input type="number" id="set-chapter-gap" min="0" max="15" step="1">
+
+      <label for="set-verse-zoom">Verse zoom (%)</label>
+      <input type="number" id="set-verse-zoom" min="50" max="250" step="10">
+
+      <label for="set-header-pause">Header pause (mātrās)</label>
+      <input type="number" id="set-header-pause" min="0" max="12" step="0.5">
+
+      <label for="set-anustubh-pause">Anuṣṭubh line pause (mātrās)</label>
+      <input type="number" id="set-anustubh-pause" min="0" max="12" step="0.5">
+
+      <label for="set-tristubh-pause">Triṣṭubh line pause (mātrās)</label>
+      <input type="number" id="set-tristubh-pause" min="0" max="12" step="0.5">
+
+      <label for="set-theme">Projector theme</label>
+      <select id="set-theme">
+        <option value="dark">Dark (black background)</option>
+        <option value="light">Light (white background)</option>
+      </select>
+    </div>
+
+    <div class="settings-subtitle">Per-section tempo (SPM) — blank = manual / no default</div>
+    <div id="settings-section-list" class="settings-section-list"></div>
+
+    <div class="settings-actions">
+      <button id="btn-settings-reset" class="settings-reset">Reset to defaults</button>
+      <span class="settings-actions-spacer"></span>
+      <button id="btn-settings-close">Cancel</button>
+      <button id="btn-settings-save" class="settings-save">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- Hidden display area for operator's own rendering -->
+<div id="display" style="display:none;">
+  <div id="pace-indicator"></div>
+  <div id="countdown-overlay">
+    <div class="countdown-label">Listen to Sruti</div>
+    <div class="countdown-number">5</div>
+  </div>
+  <div id="pointer" style="display:none">&#128071;</div>
+  <div id="verse-container-a"></div>
+  <div id="verse-container-b" style="display:none"></div>
+</div>
+
+<script src="shared.js"></script>
+<script src="operator.js"></script>
+<script>
+(function() {
+  var banner = document.getElementById('update-banner');
+  var text   = document.getElementById('update-text');
+  var link   = document.getElementById('update-link');
+  var dismiss = document.getElementById('update-dismiss');
+  var releaseUrl = '';
+
+  window.electronAPI.on('update-available', function(info) {
+    releaseUrl = info.url;
+    text.textContent = 'v' + info.version + ' available';
+    banner.style.display = 'flex';
+  });
+
+  link.addEventListener('click', function(e) {
+    e.preventDefault();
+    if (releaseUrl) window.electronAPI.send('open-url', releaseUrl);
+  });
+
+  dismiss.addEventListener('click', function() {
+    banner.style.display = 'none';
+  });
+})();
+</script>
+</body>
+</html>

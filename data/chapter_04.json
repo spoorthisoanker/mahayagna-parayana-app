@@ -1,0 +1,1995 @@
+{
+  "name": "ज्ञानयोगः",
+  "iastName": "jñānayōgaḥ",
+  "chapterNum": "04",
+  "defaultBpm": 380,
+  "shloka": [
+    {
+      "shlokaNum": "",
+      "entry": [
+        {
+          "startTime": "1.14939",
+          "endTime": "7.32551",
+          "swhtsp": "l",
+          "shlNbr": "00",
+          "sty": "fh",
+          "text": "ओं  श्री  परमात्मने नमः",
+          "iast": "ōṃ  śrī  paramātmanē namaḥ"
+        },
+        {
+          "startTime": "7.86286",
+          "endTime": "11.5312",
+          "swhtsp": "l",
+          "shlNbr": "00",
+          "sty": "sh",
+          "text": "अथ  चतुर्थोऽध्यायः",
+          "iast": "atha  caturthō'dhyāyaḥ"
+        },
+        {
+          "startTime": "12.3559",
+          "endTime": "14.6137",
+          "swhtsp": "",
+          "shlNbr": "00",
+          "sty": "th",
+          "text": "ज्ञान योगः",
+          "iast": "jñāna yōgaḥ"
+        }
+      ]
+    },
+    {
+      "shlokaNum": "1",
+      "entry": [
+        {
+          "startTime": "31.6082",
+          "endTime": "35.8512",
+          "swhtsp": "l",
+          "shlNbr": "00",
+          "sty": "",
+          "text": "श्री  भगवानुवाच   -",
+          "iast": "śrī  bhagavānuvāca   -"
+        },
+        {
+          "startTime": "36.5714",
+          "endTime": "40.8667",
+          "swhtsp": "p",
+          "shlNbr": "00",
+          "sty": "",
+          "text": "इमं  विवस्वते  योगं",
+          "iast": "imaṃ  vivasvatē  yōgaṃ"
+        },
+        {
+          "startTime": "52.7151",
+          "endTime": "57.0365",
+          "swhtsp": "l",
+          "shlNbr": "00",
+          "sty": "",
+          "text": "प्रोक्तवानहमव्ययम् |",
+          "iast": "prōktavānahamavyayam |"
+        },
+        {
+          "startTime": "63.3469",
+          "endTime": "68.4259",
+          "swhtsp": "p",
+          "shlNbr": "00",
+          "sty": "",
+          "text": "विवस्वान्मनवे  प्राह",
+          "iast": "vivasvānmanavē  prāha"
+        },
+        {
+          "startTime": "75.4416",
+          "endTime": "79.9198",
+          "swhtsp": "",
+          "shlNbr": "00",
+          "sty": "",
+          "text": "मनुरिक्ष्वाकवेऽब्रवीत् ||1||",
+          "iast": "manurikṣvākavē'bravīt ||1||"
+        }
+      ],
+      "syllables": 41,
+      "meter": "anustubh"
+    },
+    {
+      "shlokaNum": "2",
+      "entry": [
+        {
+          "startTime": "134.452",
+          "endTime": "140.184",
+          "swhtsp": "p",
+          "shlNbr": "00",
+          "sty": "",
+          "text": "एवं  परम्पराप्राप्तम्",
+          "iast": "ēvaṃ  paramparāprāptam"
+        },
+        {
+          "startTime": "148.741",
+          "endTime": "152.958",
+          "swhtsp": "l",
+          "shlNbr": "00",
+          "sty": "",
+          "text": "इमं  राजर्षयो  विदुः |",
+          "iast": "imaṃ  rājarṣayō  viduḥ |"
+        },
+        {
+          "startTime": "159.634",
+          "endTime": "164.165",
+          "swhtsp": "p",
+          "shlNbr": "00",
+          "sty": "",
+          "text": "स  कालेनेह  महता",
+          "iast": "sa  kālēnēha  mahatā"
+        },
+        {
+          "startTime": "170.24",
+          "endTime": "174.483",
+          "swhtsp": "",
+          "shlNbr": "00",
+          "sty": "",
+          "text": "योगो  नष्टः  परन्तप ||2||",
+          "iast": "yōgō  naṣṭaḥ  parantapa ||2||"
+        }
+      ],
+      "syllables": 33,
+      "meter": "anustubh"
+    },
+    {
+      "shlokaNum": "3",
+      "entry": [
+        {
+          "startTime": "222.25",
+          "endTime": "227.825",
+          "swhtsp": "p",
+          "shlNbr": "00",
+          "sty": "",
+          "text": "स एवायं  मया  तेऽद्य",
+          "iast": "sa ēvāyaṃ  mayā  tē'dya"
+        },
+        {
+          "startTime": "235.572",
+          "endTime": "240.103",
+          "swhtsp": "l",
+          "shlNbr": "00",
+          "sty": "",
+          "text": "योगः  प्रोक्तः  पुरातनः |",
+          "iast": "yōgaḥ  prōktaḥ  purātanaḥ |"
+        },
+        {
+          "startTime": "247.092",
+          "endTime": "252.014",
+          "swhtsp": "p",
+          "shlNbr": "00",
+          "sty": "",
+          "text": "भक्तोऽसि  मे  सखा  चेति",
+          "iast": "bhaktō'si  mē  sakhā  cēti"
+        },
+        {
+          "startTime": "259.37",
+          "endTime": "263.743",
+          "swhtsp": "",
+          "shlNbr": "00",
+          "sty": "",
+          "text": "रहस्यं  ह्येतदुत्तमम् ||3||",
+          "iast": "rahasyaṃ  hyētaduttamam ||3||"
+        }
+      ],
+      "syllables": 33,
+      "meter": "anustubh"
+    },
+    {
+      "shlokaNum": "4",
+      "entry": [
+        {
+          "startTime": "312.999",
+          "endTime": "315.962",
+          "swhtsp": "l",
+          "shlNbr": "00",
+          "sty": "",
+          "text": "अर्जुन  उवाच   -",
+          "iast": "arjuna  uvāca   -"
+        },
+        {
+          "startTime": "316.5",
+          "endTime": "320.534",
+          "swhtsp": "p",
+          "shlNbr": "00",
+          "sty": "",
+          "text": "अपरं  भवतो  जन्म",
+          "iast": "aparaṃ  bhavatō  janma"
+        },
+        {
+          "startTime": "330.292",
+          "endTime": "334.143",
+          "swhtsp": "l",
+          "shlNbr": "00",
+          "sty": "",
+          "text": "परं  जन्म  विवस्वतः |",
+          "iast": "paraṃ  janma  vivasvataḥ |"
+        },
+        {
+          "startTime": "340.245",
+          "endTime": "345.089",
+          "swhtsp": "p",
+          "shlNbr": "00",
+          "sty": "",
+          "text": "कथमेतद्विजानीयां",
+          "iast": "kathamētadvijānīyāṃ"
+        },
+        {
+          "startTime": "351.425",
+          "endTime": "355.747",
+          "swhtsp": "",
+          "shlNbr": "00",
+          "sty": "",
+          "text": "त्वमादौ  प्रोक्तवानिति ||4||",
+          "iast": "tvamādau  prōktavāniti ||4||"
+        }
+      ],
+      "syllables": 38,
+      "meter": "anustubh"
+    },
+    {
+      "shlokaNum": "5",
+      "entry": [
+        {
+          "startTime": "407.719",
+          "endTime": "411.884",
+          "swhtsp": "l",
+          "shlNbr": "00",
+          "sty": "",
+          "text": "श्री  भगवानुवाच   -",
+          "iast": "śrī  bhagavānuvāca   -"
+        },
+        {
+          "startTime": "412.395",
+          "endTime": "416.952",
+          "swhtsp": "p",
+          "shlNbr": "00",
+          "sty": "",
+          "text": "बहूनि  मे  व्यतीतानि",
+          "iast": "bahūni  mē  vyatītāni"
+        },
+        {
+          "startTime": "428.513",
+          "endTime": "432.155",
+          "swhtsp": "l",
+          "shlNbr": "00",
+          "sty": "",
+          "text": "जन्मानि  तव  चार्जुन |",
+          "iast": "janmāni  tava  cārjuna |"
+        },
+        {
+          "startTime": "437.995",
+          "endTime": "442.547",
+          "swhtsp": "p",
+          "shlNbr": "00",
+          "sty": "",
+          "text": "तान्यहं  वेद  सर्वाणि",
+          "iast": "tānyahaṃ  vēda  sarvāṇi"
+        },
+        {
+          "startTime": "449.045",
+          "endTime": "453.001",
+          "swhtsp": "",
+          "shlNbr": "00",
+          "sty": "",
+          "text": "न  त्वं  वेत्थ  परन्तप ||5||",
+          "iast": "na  tvaṃ  vēttha  parantapa ||5||"
+        }
+      ],
+      "syllables": 39,
+      "meter": "anustubh"
+    },
+    {
+      "shlokaNum": "6",
+      "entry": [
+        {
+          "startTime": "506.802",
+          "endTime": "511.437",
+          "swhtsp": "p",
+          "shlNbr": "00",
+          "sty": "",
+          "text": "अजोऽपि  सन्नव्ययात्मा",
+          "iast": "ajō'pi  sannavyayātmā"
+        },
+        {
+          "startTime": "518.034",
+          "endTime": "522.983",
+          "swhtsp": "l",
+          "shlNbr": "00",
+          "sty": "",
+          "text": "भूतानामीश्वरोऽपि  सन् |",
+          "iast": "bhūtānāmīśvarō'pi  san |"
+        },
+        {
+          "startTime": "529.241",
+          "endTime": "533.719",
+          "swhtsp": "p",
+          "shlNbr": "00",
+          "sty": "",
+          "text": "प्रकृतिं  स्वामधिष्ठाय",
+          "iast": "prakṛtiṃ  svāmadhiṣṭhāya"
+        },
+        {
+          "startTime": "539.977",
+          "endTime": "545.134",
+          "swhtsp": "",
+          "shlNbr": "00",
+          "sty": "",
+          "text": "सम्भवाम्यात्ममायया ||6||",
+          "iast": "sambhavāmyātmamāyayā ||6||"
+        }
+      ],
+      "syllables": 33,
+      "meter": "anustubh"
+    },
+    {
+      "shlokaNum": "7",
+      "entry": [
+        {
+          "startTime": "596.48",
+          "endTime": "600.958",
+          "swhtsp": "p",
+          "shlNbr": "00",
+          "sty": "",
+          "text": "यदा  यदा  हि धर्मस्य",
+          "iast": "yadā  yadā  hi dharmasya"
+        },
+        {
+          "startTime": "607.06",
+          "endTime": "610.754",
+          "swhtsp": "l",
+          "shlNbr": "00",
+          "sty": "",
+          "text": "ग्लानिर्भवति  भारत |",
+          "iast": "glānirbhavati  bhārata |"
+        },
+        {
+          "startTime": "616.202",
+          "endTime": "620.733",
+          "swhtsp": "p",
+          "shlNbr": "00",
+          "sty": "",
+          "text": "अभ्युत्थानमधर्मस्य",
+          "iast": "abhyutthānamadharmasya"
+        },
+        {
+          "startTime": "627.096",
+          "endTime": "631.887",
+          "swhtsp": "",
+          "shlNbr": "00",
+          "sty": "",
+          "text": "तदाऽऽत्मानं  सृजाम्यहम् ||7||",
+          "iast": "tadā''tmānaṃ  sṛjāmyaham ||7||"
+        }
+      ],
+      "syllables": 33,
+      "meter": "anustubh"
+    },
+    {
+      "shlokaNum": "8",
+      "entry": [
+        {
+          "startTime": "678.687",
+          "endTime": "684.054",
+          "swhtsp": "p",
+          "shlNbr": "00",
+          "sty": "",
+          "text": "परित्राणाय  साधूनां",
+          "iast": "paritrāṇāya  sādhūnāṃ"
+        },
+        {
+          "startTime": "691.513",
+          "endTime": "696.096",
+          "swhtsp": "l",
+          "shlNbr": "00",
+          "sty": "",
+          "text": "विनाशाय  च   दुष्कृताम् |",
+          "iast": "vināśāya  ca   duṣkṛtām |"
+        },
+        {
+          "startTime": "702.25",
+          "endTime": "707.642",
+          "swhtsp": "p",
+          "shlNbr": "00",
+          "sty": "",
+          "text": "धर्मसंस्थापनार्थाय",
+          "iast": "dharmasaṃsthāpanārthāya"
+        },
+        {
+          "startTime": "716.069",
+          "endTime": "720.834",
+          "swhtsp": "",
+          "shlNbr": "00",
+          "sty": "",
+          "text": "सम्भवामि  युगे  युगे ||8||",
+          "iast": "sambhavāmi  yugē  yugē ||8||"
+        }
+      ],
+      "syllables": 33,
+      "meter": "anustubh"
+    },
+    {
+      "shlokaNum": "9",
+      "entry": [
+        {
+          "startTime": "771.579",
+          "endTime": "776.24",
+          "swhtsp": "p",
+          "shlNbr": "00",
+          "sty": "",
+          "text": "जन्म  कर्म च  मे  दिव्यम्",
+          "iast": "janma  karma ca  mē  divyam"
+        },
+        {
+          "startTime": "783.647",
+          "endTime": "788.465",
+          "swhtsp": "l",
+          "shlNbr": "00",
+          "sty": "",
+          "text": "एवं  यो  वेत्ति  तत्त्वतः |",
+          "iast": "ēvaṃ  yō  vētti  tattvataḥ |"
+        },
+        {
+          "startTime": "795.298",
+          "endTime": "800.011",
+          "swhtsp": "p",
+          "shlNbr": "00",
+          "sty": "",
+          "text": "त्यक्त्वा  देहं  पुनर्जन्म",
+          "iast": "tyaktvā  dēhaṃ  punarjanma"
+        },
+        {
+          "startTime": "806.792",
+          "endTime": "810.721",
+          "swhtsp": "",
+          "shlNbr": "00",
+          "sty": "",
+          "text": "नैति  मामेति  सोऽर्जुन ||9||",
+          "iast": "naiti  māmēti  sō'rjuna ||9||"
+        }
+      ],
+      "syllables": 33,
+      "meter": "anustubh"
+    },
+    {
+      "shlokaNum": "10",
+      "entry": [
+        {
+          "startTime": "858.697",
+          "endTime": "864.011",
+          "swhtsp": "p",
+          "shlNbr": "00",
+          "sty": "",
+          "text": "वीतरागभयक्रोधाः",
+          "iast": "vītarāgabhayakrōdhāḥ"
+        },
+        {
+          "startTime": "871.053",
+          "endTime": "875.714",
+          "swhtsp": "l",
+          "shlNbr": "00",
+          "sty": "",
+          "text": "मन्मया  मामुपाश्रिताः |",
+          "iast": "manmayā  māmupāśritāḥ |"
+        },
+        {
+          "startTime": "882.103",
+          "endTime": "886.607",
+          "swhtsp": "p",
+          "shlNbr": "00",
+          "sty": "",
+          "text": "बहवो  ज्ञानतपसा",
+          "iast": "bahavō  jñānatapasā"
+        },
+        {
+          "startTime": "892.918",
+          "endTime": "897.709",
+          "swhtsp": "",
+          "shlNbr": "00",
+          "sty": "",
+          "text": "पूता  मद्भावमागताः ||10||",
+          "iast": "pūtā  madbhāvamāgatāḥ ||10||"
+        }
+      ],
+      "syllables": 32,
+      "meter": "anustubh"
+    },
+    {
+      "shlokaNum": "11",
+      "entry": [
+        {
+          "startTime": "947.017",
+          "endTime": "952.357",
+          "swhtsp": "p",
+          "shlNbr": "00",
+          "sty": "",
+          "text": "ये  यथा  मां  प्रपद्यन्ते",
+          "iast": "yē  yathā  māṃ  prapadyantē"
+        },
+        {
+          "startTime": "959.843",
+          "endTime": "964.139",
+          "swhtsp": "l",
+          "shlNbr": "00",
+          "sty": "",
+          "text": "तांस्तथैव  भजाम्यहम् |",
+          "iast": "tāṃstathaiva  bhajāmyaham |"
+        },
+        {
+          "startTime": "970.24",
+          "endTime": "974.901",
+          "swhtsp": "p",
+          "shlNbr": "00",
+          "sty": "",
+          "text": "मम  वर्त्मानुवर्तन्ते",
+          "iast": "mama  vartmānuvartantē"
+        },
+        {
+          "startTime": "980.82",
+          "endTime": "985.272",
+          "swhtsp": "",
+          "shlNbr": "00",
+          "sty": "",
+          "text": "मनुष्याः  पार्थ  सर्वशः ||11||",
+          "iast": "manuṣyāḥ  pārtha  sarvaśaḥ ||11||"
+        }
+      ],
+      "syllables": 33,
+      "meter": "anustubh"
+    },
+    {
+      "shlokaNum": "12",
+      "entry": [
+        {
+          "startTime": "1033.93",
+          "endTime": "1039.42",
+          "swhtsp": "p",
+          "shlNbr": "00",
+          "sty": "",
+          "text": "काङ्क्षन्तः  कर्मणां  सिद्धिं",
+          "iast": "kāṅkṣantaḥ  karmaṇāṃ  siddhiṃ"
+        },
+        {
+          "startTime": "1047.07",
+          "endTime": "1051.02",
+          "swhtsp": "l",
+          "shlNbr": "00",
+          "sty": "",
+          "text": "यजन्त  इह  देवताः |",
+          "iast": "yajanta  iha  dēvatāḥ |"
+        },
+        {
+          "startTime": "1056.71",
+          "endTime": "1061.6",
+          "swhtsp": "p",
+          "shlNbr": "00",
+          "sty": "",
+          "text": "क्षिप्रं  हि  मानुषे  लोके",
+          "iast": "kṣipraṃ  hi  mānuṣē  lōkē"
+        },
+        {
+          "startTime": "1068.96",
+          "endTime": "1072.99",
+          "swhtsp": "",
+          "shlNbr": "00",
+          "sty": "",
+          "text": "सिद्धिर्भवति  कर्मजा ||12||",
+          "iast": "siddhirbhavati  karmajā ||12||"
+        }
+      ],
+      "syllables": 32,
+      "meter": "anustubh"
+    },
+    {
+      "shlokaNum": "13",
+      "entry": [
+        {
+          "startTime": "1120.03",
+          "endTime": "1125.05",
+          "swhtsp": "p",
+          "shlNbr": "00",
+          "sty": "",
+          "text": "चातुर्वर्ण्यं  मया  सृष्टं",
+          "iast": "cāturvarṇyaṃ  mayā  sṛṣṭaṃ"
+        },
+        {
+          "startTime": "1132.96",
+          "endTime": "1136.31",
+          "swhtsp": "l",
+          "shlNbr": "00",
+          "sty": "",
+          "text": "गुणकर्मविभागशः |",
+          "iast": "guṇakarmavibhāgaśaḥ |"
+        },
+        {
+          "startTime": "1141.34",
+          "endTime": "1145.61",
+          "swhtsp": "p",
+          "shlNbr": "00",
+          "sty": "",
+          "text": "तस्य  कर्तारमपि  मां",
+          "iast": "tasya  kartāramapi  māṃ"
+        },
+        {
+          "startTime": "1151.27",
+          "endTime": "1155.49",
+          "swhtsp": "",
+          "shlNbr": "00",
+          "sty": "",
+          "text": "विद्ध्यकर्तारमव्ययम् ||13||",
+          "iast": "viddhyakartāramavyayam ||13||"
+        }
+      ],
+      "syllables": 33,
+      "meter": "anustubh"
+    },
+    {
+      "shlokaNum": "14",
+      "entry": [
+        {
+          "startTime": "1199.54",
+          "endTime": "1204.4",
+          "swhtsp": "p",
+          "shlNbr": "00",
+          "sty": "",
+          "text": "न मां  कर्माणि  लिम्पन्ति",
+          "iast": "na māṃ  karmāṇi  limpanti"
+        },
+        {
+          "startTime": "1211.17",
+          "endTime": "1215.15",
+          "swhtsp": "l",
+          "shlNbr": "00",
+          "sty": "",
+          "text": "न  मे  कर्मफले  स्पृहा |",
+          "iast": "na  mē  karmaphalē  spṛhā |"
+        },
+        {
+          "startTime": "1221.2",
+          "endTime": "1225.44",
+          "swhtsp": "p",
+          "shlNbr": "00",
+          "sty": "",
+          "text": "इति  मां  योऽभिजानाति",
+          "iast": "iti  māṃ  yō'bhijānāti"
+        },
+        {
+          "startTime": "1231.88",
+          "endTime": "1235.55",
+          "swhtsp": "",
+          "shlNbr": "00",
+          "sty": "",
+          "text": "कर्मभिर्न  स  बध्यते ||14||",
+          "iast": "karmabhirna  sa  badhyatē ||14||"
+        }
+      ],
+      "syllables": 32,
+      "meter": "anustubh"
+    },
+    {
+      "shlokaNum": "15",
+      "entry": [
+        {
+          "startTime": "1280.68",
+          "endTime": "1285.6",
+          "swhtsp": "p",
+          "shlNbr": "00",
+          "sty": "",
+          "text": "एवं  ज्ञात्वा  कृतं  कर्म",
+          "iast": "ēvaṃ  jñātvā  kṛtaṃ  karma"
+        },
+        {
+          "startTime": "1293.11",
+          "endTime": "1296.86",
+          "swhtsp": "l",
+          "shlNbr": "00",
+          "sty": "",
+          "text": "पूर्वैरपि  मुमुक्षुभिः |",
+          "iast": "pūrvairapi  mumukṣubhiḥ |"
+        },
+        {
+          "startTime": "1302.88",
+          "endTime": "1307.31",
+          "swhtsp": "p",
+          "shlNbr": "00",
+          "sty": "",
+          "text": "कुरु  कर्मैव  तस्मात्त्वं",
+          "iast": "kuru  karmaiva  tasmāttvaṃ"
+        },
+        {
+          "startTime": "1313.96",
+          "endTime": "1318.28",
+          "swhtsp": "",
+          "shlNbr": "00",
+          "sty": "",
+          "text": "पूर्वैः  पूर्वतरं  कृतम् ||15||",
+          "iast": "pūrvaiḥ  pūrvataraṃ  kṛtam ||15||"
+        }
+      ],
+      "syllables": 33,
+      "meter": "anustubh"
+    },
+    {
+      "shlokaNum": "16",
+      "entry": [
+        {
+          "startTime": "1366.26",
+          "endTime": "1370.13",
+          "swhtsp": "p",
+          "shlNbr": "00",
+          "sty": "",
+          "text": "किं  कर्म  किमकर्मेति",
+          "iast": "kiṃ  karma  kimakarmēti"
+        },
+        {
+          "startTime": "1375.95",
+          "endTime": "1380.19",
+          "swhtsp": "l",
+          "shlNbr": "00",
+          "sty": "",
+          "text": "कवयोऽप्यत्र   मोहिताः |",
+          "iast": "kavayō'pyatra   mōhitāḥ |"
+        },
+        {
+          "startTime": "1386.48",
+          "endTime": "1391.34",
+          "swhtsp": "p",
+          "shlNbr": "00",
+          "sty": "",
+          "text": "तत्ते  कर्म  प्रवक्ष्यामि",
+          "iast": "tattē  karma  pravakṣyāmi"
+        },
+        {
+          "startTime": "1398.26",
+          "endTime": "1403.75",
+          "swhtsp": "",
+          "shlNbr": "00",
+          "sty": "",
+          "text": "यज्ज्ञात्वा मोक्ष्यसेऽशुभात् ||16||",
+          "iast": "yajjñātvā mōkṣyasē'śubhāt ||16||"
+        }
+      ],
+      "syllables": 33,
+      "meter": "anustubh"
+    },
+    {
+      "shlokaNum": "17",
+      "entry": [
+        {
+          "startTime": "1451.91",
+          "endTime": "1456.57",
+          "swhtsp": "p",
+          "shlNbr": "00",
+          "sty": "",
+          "text": "कर्मणो  ह्यपि  बोद्धव्यं",
+          "iast": "karmaṇō  hyapi  bōddhavyaṃ"
+        },
+        {
+          "startTime": "1463.51",
+          "endTime": "1467.39",
+          "swhtsp": "l",
+          "shlNbr": "00",
+          "sty": "",
+          "text": "बोद्धव्यं  च  विकर्मणः |",
+          "iast": "bōddhavyaṃ  ca  vikarmaṇaḥ |"
+        },
+        {
+          "startTime": "1473.57",
+          "endTime": "1477.65",
+          "swhtsp": "p",
+          "shlNbr": "00",
+          "sty": "",
+          "text": "अकर्मणश्च  बोद्धव्यं",
+          "iast": "akarmaṇaśca  bōddhavyaṃ"
+        },
+        {
+          "startTime": "1483.94",
+          "endTime": "1487.53",
+          "swhtsp": "",
+          "shlNbr": "00",
+          "sty": "",
+          "text": "गहना  कर्मणो  गतिः ||17||",
+          "iast": "gahanā  karmaṇō  gatiḥ ||17||"
+        }
+      ],
+      "syllables": 32,
+      "meter": "anustubh"
+    },
+    {
+      "shlokaNum": "18",
+      "entry": [
+        {
+          "startTime": "1531.43",
+          "endTime": "1535.9",
+          "swhtsp": "p",
+          "shlNbr": "00",
+          "sty": "",
+          "text": "कर्मण्यकर्म  यः  पश्येत्",
+          "iast": "karmaṇyakarma  yaḥ  paśyēt"
+        },
+        {
+          "startTime": "1543.05",
+          "endTime": "1546.38",
+          "swhtsp": "l",
+          "shlNbr": "00",
+          "sty": "",
+          "text": "अकर्मणि  च  कर्म  यः |",
+          "iast": "akarmaṇi  ca  karma  yaḥ |"
+        },
+        {
+          "startTime": "1551.7",
+          "endTime": "1555.92",
+          "swhtsp": "p",
+          "shlNbr": "00",
+          "sty": "",
+          "text": "स  बुद्धिमान्मनुष्येषु",
+          "iast": "sa  buddhimānmanuṣyēṣu"
+        },
+        {
+          "startTime": "1562.93",
+          "endTime": "1566.78",
+          "swhtsp": "",
+          "shlNbr": "00",
+          "sty": "",
+          "text": "स युक्तः कृत्स्नकर्मकृत् ||18||",
+          "iast": "sa yuktaḥ kṛtsnakarmakṛt ||18||"
+        }
+      ],
+      "syllables": 34,
+      "meter": "anustubh"
+    },
+    {
+      "shlokaNum": "19",
+      "entry": [
+        {
+          "startTime": "1608.99",
+          "endTime": "1614.3",
+          "swhtsp": "p",
+          "shlNbr": "00",
+          "sty": "",
+          "text": "यस्य  सर्वे  समारम्भाः",
+          "iast": "yasya  sarvē  samārambhāḥ"
+        },
+        {
+          "startTime": "1622.05",
+          "endTime": "1626.47",
+          "swhtsp": "l",
+          "shlNbr": "00",
+          "sty": "",
+          "text": "कामसङ्कल्पवर्जिताः |",
+          "iast": "kāmasaṅkalpavarjitāḥ |"
+        },
+        {
+          "startTime": "1632.73",
+          "endTime": "1637.73",
+          "swhtsp": "p",
+          "shlNbr": "00",
+          "sty": "",
+          "text": "ज्ञानाग्निदग्धकर्माणं",
+          "iast": "jñānāgnidagdhakarmāṇaṃ"
+        },
+        {
+          "startTime": "1644.9",
+          "endTime": "1649.25",
+          "swhtsp": "",
+          "shlNbr": "00",
+          "sty": "",
+          "text": "तमाहुः  पण्डितं  बुधाः ||19||",
+          "iast": "tamāhuḥ  paṇḍitaṃ  budhāḥ ||19||"
+        }
+      ],
+      "syllables": 32,
+      "meter": "anustubh"
+    },
+    {
+      "shlokaNum": "20",
+      "entry": [
+        {
+          "startTime": "1699.29",
+          "endTime": "1704.16",
+          "swhtsp": "p",
+          "shlNbr": "00",
+          "sty": "",
+          "text": "त्यक्त्वा  कर्मफलासङ्गं",
+          "iast": "tyaktvā  karmaphalāsaṅgaṃ"
+        },
+        {
+          "startTime": "1711.52",
+          "endTime": "1715.66",
+          "swhtsp": "l",
+          "shlNbr": "00",
+          "sty": "",
+          "text": "नित्यतृप्तो  निराश्रयः |",
+          "iast": "nityatṛptō  nirāśrayaḥ |"
+        },
+        {
+          "startTime": "1721.6",
+          "endTime": "1726.08",
+          "swhtsp": "p",
+          "shlNbr": "00",
+          "sty": "",
+          "text": "कर्मण्यभिप्रवृत्तोऽपि",
+          "iast": "karmaṇyabhipravṛttō'pi"
+        },
+        {
+          "startTime": "1731.97",
+          "endTime": "1736.06",
+          "swhtsp": "",
+          "shlNbr": "00",
+          "sty": "",
+          "text": "नैव  किञ्चित्करोति  सः ||20||",
+          "iast": "naiva  kiñcitkarōti  saḥ ||20||"
+        }
+      ],
+      "syllables": 32,
+      "meter": "anustubh"
+    },
+    {
+      "shlokaNum": "21",
+      "entry": [
+        {
+          "startTime": "1783.14",
+          "endTime": "1788.28",
+          "swhtsp": "p",
+          "shlNbr": "00",
+          "sty": "",
+          "text": "निराशीर्यतचित्तात्मा",
+          "iast": "nirāśīryatacittātmā"
+        },
+        {
+          "startTime": "1796.08",
+          "endTime": "1799.85",
+          "swhtsp": "l",
+          "shlNbr": "00",
+          "sty": "",
+          "text": "त्यक्तसर्व  परिग्रहः |",
+          "iast": "tyaktasarva  parigrahaḥ |"
+        },
+        {
+          "startTime": "1805.77",
+          "endTime": "1810.71",
+          "swhtsp": "p",
+          "shlNbr": "00",
+          "sty": "",
+          "text": "शारीरं  केवलं  कर्म",
+          "iast": "śārīraṃ  kēvalaṃ  karma"
+        },
+        {
+          "startTime": "1818.02",
+          "endTime": "1822.84",
+          "swhtsp": "",
+          "shlNbr": "00",
+          "sty": "",
+          "text": "कुर्वन्नाप्नोति  किल्बिषम् ||21||",
+          "iast": "kurvannāpnōti  kilbiṣam ||21||"
+        }
+      ],
+      "syllables": 33,
+      "meter": "anustubh"
+    },
+    {
+      "shlokaNum": "22",
+      "entry": [
+        {
+          "startTime": "1871.33",
+          "endTime": "1876.57",
+          "swhtsp": "p",
+          "shlNbr": "00",
+          "sty": "",
+          "text": "यदृच्छालाभसन्तुष्टः",
+          "iast": "yadṛcchālābhasantuṣṭaḥ"
+        },
+        {
+          "startTime": "1883.85",
+          "endTime": "1888.53",
+          "swhtsp": "l",
+          "shlNbr": "00",
+          "sty": "",
+          "text": "द्वन्द्वातीतो  विमत्सरः |",
+          "iast": "dvandvātītō  vimatsaraḥ |"
+        },
+        {
+          "startTime": "1894.97",
+          "endTime": "1899.68",
+          "swhtsp": "p",
+          "shlNbr": "00",
+          "sty": "",
+          "text": "समः  सिद्धावसिद्धौ  च",
+          "iast": "samaḥ  siddhāvasiddhau  ca"
+        },
+        {
+          "startTime": "1905.89",
+          "endTime": "1909.85",
+          "swhtsp": "",
+          "shlNbr": "00",
+          "sty": "",
+          "text": "कृत्वापि  न  निबध्यते ||22||",
+          "iast": "kṛtvāpi  na  nibadhyatē ||22||"
+        }
+      ],
+      "syllables": 32,
+      "meter": "anustubh"
+    },
+    {
+      "shlokaNum": "23",
+      "entry": [
+        {
+          "startTime": "1954.46",
+          "endTime": "1958.46",
+          "swhtsp": "p",
+          "shlNbr": "00",
+          "sty": "",
+          "text": "गतसङ्गस्य  मुक्तस्य",
+          "iast": "gatasaṅgasya  muktasya"
+        },
+        {
+          "startTime": "1964.23",
+          "endTime": "1968.36",
+          "swhtsp": "l",
+          "shlNbr": "00",
+          "sty": "",
+          "text": "ज्ञानावस्थितचेतसः |",
+          "iast": "jñānāvasthitacētasaḥ |"
+        },
+        {
+          "startTime": "1974.1",
+          "endTime": "1978.45",
+          "swhtsp": "p",
+          "shlNbr": "00",
+          "sty": "",
+          "text": "यज्ञायाचरतः  कर्म",
+          "iast": "yajñāyācarataḥ  karma"
+        },
+        {
+          "startTime": "1984.31",
+          "endTime": "1988.16",
+          "swhtsp": "",
+          "shlNbr": "00",
+          "sty": "",
+          "text": "समग्रं  प्रविलीयते ||23||",
+          "iast": "samagraṃ  pravilīyatē ||23||"
+        }
+      ],
+      "syllables": 32,
+      "meter": "anustubh"
+    },
+    {
+      "shlokaNum": "24",
+      "entry": [
+        {
+          "startTime": "2030.6",
+          "endTime": "2035.47",
+          "swhtsp": "p",
+          "shlNbr": "00",
+          "sty": "",
+          "text": "ब्रह्मार्पणं  ब्रह्म  हविः",
+          "iast": "brahmārpaṇaṃ  brahma  haviḥ"
+        },
+        {
+          "startTime": "2042.44",
+          "endTime": "2047.36",
+          "swhtsp": "l",
+          "shlNbr": "00",
+          "sty": "",
+          "text": "ब्रह्माग्नौ  ब्रह्मणा  हुतम् |",
+          "iast": "brahmāgnau  brahmaṇā  hutam |"
+        },
+        {
+          "startTime": "2054.16",
+          "endTime": "2058.98",
+          "swhtsp": "p",
+          "shlNbr": "00",
+          "sty": "",
+          "text": "ब्रह्मैव  तेन  गन्तव्यं",
+          "iast": "brahmaiva  tēna  gantavyaṃ"
+        },
+        {
+          "startTime": "2065.27",
+          "endTime": "2069.46",
+          "swhtsp": "",
+          "shlNbr": "00",
+          "sty": "",
+          "text": "ब्रह्मकर्मसमाधिना ||24||",
+          "iast": "brahmakarmasamādhinā ||24||"
+        }
+      ],
+      "syllables": 33,
+      "meter": "anustubh"
+    },
+    {
+      "shlokaNum": "25",
+      "entry": [
+        {
+          "startTime": "2118.4",
+          "endTime": "2123.45",
+          "swhtsp": "p",
+          "shlNbr": "00",
+          "sty": "",
+          "text": "दैवमेवापरे  यज्ञं",
+          "iast": "daivamēvāparē  yajñaṃ"
+        },
+        {
+          "startTime": "2130.89",
+          "endTime": "2135.26",
+          "swhtsp": "l",
+          "shlNbr": "00",
+          "sty": "",
+          "text": "योगिनः  पर्युपासते |",
+          "iast": "yōginaḥ  paryupāsatē |"
+        },
+        {
+          "startTime": "2140.89",
+          "endTime": "2146.21",
+          "swhtsp": "p",
+          "shlNbr": "00",
+          "sty": "",
+          "text": "ब्रह्माग्नावपरे यज्ञं",
+          "iast": "brahmāgnāvaparē yajñaṃ"
+        },
+        {
+          "startTime": "2153.53",
+          "endTime": "2157.49",
+          "swhtsp": "",
+          "shlNbr": "00",
+          "sty": "",
+          "text": "यज्ञेनैवोपजुह्वति ||25||",
+          "iast": "yajñēnaivōpajuhvati ||25||"
+        }
+      ],
+      "syllables": 32,
+      "meter": "anustubh"
+    },
+    {
+      "shlokaNum": "26",
+      "entry": [
+        {
+          "startTime": "2201.73",
+          "endTime": "2207.75",
+          "swhtsp": "p",
+          "shlNbr": "00",
+          "sty": "",
+          "text": "श्रोत्रादीनीन्द्रियाण्यन्ये",
+          "iast": "śrōtrādīnīndriyāṇyanyē"
+        },
+        {
+          "startTime": "2215.73",
+          "endTime": "2219.43",
+          "swhtsp": "l",
+          "shlNbr": "00",
+          "sty": "",
+          "text": "संयमाग्निषु  जुह्वति |",
+          "iast": "saṃyamāgniṣu  juhvati |"
+        },
+        {
+          "startTime": "2225.11",
+          "endTime": "2230.48",
+          "swhtsp": "p",
+          "shlNbr": "00",
+          "sty": "",
+          "text": "शब्दादीन्विषयानन्ये",
+          "iast": "śabdādīnviṣayānanyē"
+        },
+        {
+          "startTime": "2237.65",
+          "endTime": "2241.19",
+          "swhtsp": "",
+          "shlNbr": "00",
+          "sty": "",
+          "text": "इन्द्रियाग्निषु  जुह्वति ||26||",
+          "iast": "indriyāgniṣu  juhvati ||26||"
+        }
+      ],
+      "syllables": 32,
+      "meter": "anustubh"
+    },
+    {
+      "shlokaNum": "27",
+      "entry": [
+        {
+          "startTime": "2285.66",
+          "endTime": "2290.43",
+          "swhtsp": "p",
+          "shlNbr": "00",
+          "sty": "",
+          "text": "सर्वाणीन्द्रियकर्माणि",
+          "iast": "sarvāṇīndriyakarmāṇi"
+        },
+        {
+          "startTime": "2296.92",
+          "endTime": "2301.24",
+          "swhtsp": "l",
+          "shlNbr": "00",
+          "sty": "",
+          "text": "प्राणकर्माणि  चापरे |",
+          "iast": "prāṇakarmāṇi  cāparē |"
+        },
+        {
+          "startTime": "2306.72",
+          "endTime": "2311.43",
+          "swhtsp": "p",
+          "shlNbr": "00",
+          "sty": "",
+          "text": "आत्मसंयमयोगाग्नौ",
+          "iast": "ātmasaṃyamayōgāgnau"
+        },
+        {
+          "startTime": "2317.79",
+          "endTime": "2321.93",
+          "swhtsp": "",
+          "shlNbr": "00",
+          "sty": "",
+          "text": "जुह्वति  ज्ञानदीपिते ||27||",
+          "iast": "juhvati  jñānadīpitē ||27||"
+        }
+      ],
+      "syllables": 32,
+      "meter": "anustubh"
+    },
+    {
+      "shlokaNum": "28",
+      "entry": [
+        {
+          "startTime": "2367.82",
+          "endTime": "2373.94",
+          "swhtsp": "p",
+          "shlNbr": "00",
+          "sty": "",
+          "text": "द्रव्ययज्ञास्तपोयज्ञाः",
+          "iast": "dravyayajñāstapōyajñāḥ"
+        },
+        {
+          "startTime": "2381.79",
+          "endTime": "2386.3",
+          "swhtsp": "l",
+          "shlNbr": "00",
+          "sty": "",
+          "text": "योगयज्ञास्तथाऽपरे |",
+          "iast": "yōgayajñāstathā'parē |"
+        },
+        {
+          "startTime": "2392.71",
+          "endTime": "2398.39",
+          "swhtsp": "p",
+          "shlNbr": "00",
+          "sty": "",
+          "text": "स्वाध्यायज्ञानयज्ञाश्च",
+          "iast": "svādhyāyajñānayajñāśca"
+        },
+        {
+          "startTime": "2406.95",
+          "endTime": "2410.85",
+          "swhtsp": "",
+          "shlNbr": "00",
+          "sty": "",
+          "text": "यतयः  संशितव्रताः ||28||",
+          "iast": "yatayaḥ  saṃśitavratāḥ ||28||"
+        }
+      ],
+      "syllables": 32,
+      "meter": "anustubh"
+    },
+    {
+      "shlokaNum": "29",
+      "entry": [
+        {
+          "startTime": "2459.14",
+          "endTime": "2463.38",
+          "swhtsp": "p",
+          "shlNbr": "00",
+          "sty": "",
+          "text": "अपाने  जुह्वति  प्राणं",
+          "iast": "apānē  juhvati  prāṇaṃ"
+        },
+        {
+          "startTime": "2469.02",
+          "endTime": "2473.47",
+          "swhtsp": "l",
+          "shlNbr": "00",
+          "sty": "",
+          "text": "प्राणेऽपानं  तथापरे |",
+          "iast": "prāṇē'pānaṃ  tathāparē |"
+        },
+        {
+          "startTime": "2479.33",
+          "endTime": "2484.33",
+          "swhtsp": "p",
+          "shlNbr": "00",
+          "sty": "",
+          "text": "प्राणापानगती  रुद्ध्वा",
+          "iast": "prāṇāpānagatī  ruddhvā"
+        },
+        {
+          "startTime": "2490.88",
+          "endTime": "2495.7",
+          "swhtsp": "",
+          "shlNbr": "00",
+          "sty": "",
+          "text": "प्राणायामपरायणाः ||29||",
+          "iast": "prāṇāyāmaparāyaṇāḥ ||29||"
+        }
+      ],
+      "syllables": 32,
+      "meter": "anustubh"
+    },
+    {
+      "shlokaNum": "30",
+      "entry": [
+        {
+          "startTime": "2540.96",
+          "endTime": "2545.57",
+          "swhtsp": "p",
+          "shlNbr": "00",
+          "sty": "",
+          "text": "अपरे  नियताहाराः",
+          "iast": "aparē  niyatāhārāḥ"
+        },
+        {
+          "startTime": "2551.88",
+          "endTime": "2556.28",
+          "swhtsp": "l",
+          "shlNbr": "00",
+          "sty": "",
+          "text": "प्राणान्प्राणेषु   जुह्वति |",
+          "iast": "prāṇānprāṇēṣu   juhvati |"
+        },
+        {
+          "startTime": "2562.51",
+          "endTime": "2567.48",
+          "swhtsp": "p",
+          "shlNbr": "00",
+          "sty": "",
+          "text": "सर्वेऽप्येते  यज्ञविदः",
+          "iast": "sarvē'pyētē  yajñavidaḥ"
+        },
+        {
+          "startTime": "2574",
+          "endTime": "2577.83",
+          "swhtsp": "",
+          "shlNbr": "00",
+          "sty": "",
+          "text": "यज्ञक्षपितकल्मषाः ||30||",
+          "iast": "yajñakṣapitakalmaṣāḥ ||30||"
+        }
+      ],
+      "syllables": 32,
+      "meter": "anustubh"
+    },
+    {
+      "shlokaNum": "31",
+      "entry": [
+        {
+          "startTime": "2622.12",
+          "endTime": "2626.52",
+          "swhtsp": "p",
+          "shlNbr": "00",
+          "sty": "",
+          "text": "यज्ञशिष्टामृतभुजः",
+          "iast": "yajñaśiṣṭāmṛtabhujaḥ"
+        },
+        {
+          "startTime": "2632.8",
+          "endTime": "2636.78",
+          "swhtsp": "l",
+          "shlNbr": "00",
+          "sty": "",
+          "text": "यान्ति  ब्रह्म  सनातनम् |",
+          "iast": "yānti  brahma  sanātanam |"
+        },
+        {
+          "startTime": "2642.47",
+          "endTime": "2647.16",
+          "swhtsp": "p",
+          "shlNbr": "00",
+          "sty": "",
+          "text": "नायं  लोकोऽस्त्ययज्ञस्य",
+          "iast": "nāyaṃ  lōkō'styayajñasya"
+        },
+        {
+          "startTime": "2654.17",
+          "endTime": "2657.58",
+          "swhtsp": "",
+          "shlNbr": "00",
+          "sty": "",
+          "text": "कुतोऽन्यः  कुरुसत्तम ||31||",
+          "iast": "kutō'nyaḥ  kurusattama ||31||"
+        }
+      ],
+      "syllables": 33,
+      "meter": "anustubh"
+    },
+    {
+      "shlokaNum": "32",
+      "entry": [
+        {
+          "startTime": "2699.6",
+          "endTime": "2704.39",
+          "swhtsp": "p",
+          "shlNbr": "00",
+          "sty": "",
+          "text": "एवं  बहुविधा  यज्ञाः",
+          "iast": "ēvaṃ  bahuvidhā  yajñāḥ"
+        },
+        {
+          "startTime": "2710.91",
+          "endTime": "2714.92",
+          "swhtsp": "l",
+          "shlNbr": "00",
+          "sty": "",
+          "text": "वितता  ब्रह्मणो  मुखे |",
+          "iast": "vitatā  brahmaṇō  mukhē |"
+        },
+        {
+          "startTime": "2720.94",
+          "endTime": "2725.99",
+          "swhtsp": "p",
+          "shlNbr": "00",
+          "sty": "",
+          "text": "कर्मजान्विद्धि  तान्सर्वान्",
+          "iast": "karmajānviddhi  tānsarvān"
+        },
+        {
+          "startTime": "2733.09",
+          "endTime": "2737.83",
+          "swhtsp": "",
+          "shlNbr": "00",
+          "sty": "",
+          "text": "एवं  ज्ञात्वा  विमोक्ष्यसे ||32||",
+          "iast": "ēvaṃ  jñātvā  vimōkṣyasē ||32||"
+        }
+      ],
+      "syllables": 33,
+      "meter": "anustubh"
+    },
+    {
+      "shlokaNum": "33",
+      "entry": [
+        {
+          "startTime": "2783.22",
+          "endTime": "2788.95",
+          "swhtsp": "p",
+          "shlNbr": "00",
+          "sty": "",
+          "text": "श्रेयान्द्रव्यमयाद्यज्ञात्",
+          "iast": "śrēyāndravyamayādyajñāt"
+        },
+        {
+          "startTime": "2796.72",
+          "endTime": "2800.02",
+          "swhtsp": "l",
+          "shlNbr": "00",
+          "sty": "",
+          "text": "ज्ञानयज्ञः    परन्तप |",
+          "iast": "jñānayajñaḥ    parantapa |"
+        },
+        {
+          "startTime": "2805.13",
+          "endTime": "2809.74",
+          "swhtsp": "p",
+          "shlNbr": "00",
+          "sty": "",
+          "text": "सर्वं  कर्माखिलं  पार्थ",
+          "iast": "sarvaṃ  karmākhilaṃ  pārtha"
+        },
+        {
+          "startTime": "2816.18",
+          "endTime": "2820.27",
+          "swhtsp": "",
+          "shlNbr": "00",
+          "sty": "",
+          "text": "ज्ञाने  परिसमाप्यते ||33||",
+          "iast": "jñānē  parisamāpyatē ||33||"
+        }
+      ],
+      "syllables": 33,
+      "meter": "anustubh"
+    },
+    {
+      "shlokaNum": "34",
+      "entry": [
+        {
+          "startTime": "2865.66",
+          "endTime": "2869.95",
+          "swhtsp": "p",
+          "shlNbr": "00",
+          "sty": "",
+          "text": "तद्विद्धि  प्रणिपातेन",
+          "iast": "tadviddhi  praṇipātēna"
+        },
+        {
+          "startTime": "2875.38",
+          "endTime": "2879.44",
+          "swhtsp": "l",
+          "shlNbr": "00",
+          "sty": "",
+          "text": "परिप्रश्नेन  सेवया |",
+          "iast": "paripraśnēna  sēvayā |"
+        },
+        {
+          "startTime": "2885.07",
+          "endTime": "2890.04",
+          "swhtsp": "p",
+          "shlNbr": "00",
+          "sty": "",
+          "text": "उपदेक्ष्यन्ति  ते  ज्ञानं",
+          "iast": "upadēkṣyanti  tē  jñānaṃ"
+        },
+        {
+          "startTime": "2896.67",
+          "endTime": "2900.39",
+          "swhtsp": "",
+          "shlNbr": "00",
+          "sty": "",
+          "text": "ज्ञानिनस्तत्त्वदर्शिनः ||34||",
+          "iast": "jñāninastattvadarśinaḥ ||34||"
+        }
+      ],
+      "syllables": 32,
+      "meter": "anustubh"
+    },
+    {
+      "shlokaNum": "35",
+      "entry": [
+        {
+          "startTime": "2942.72",
+          "endTime": "2947.59",
+          "swhtsp": "p",
+          "shlNbr": "00",
+          "sty": "",
+          "text": "यज्ज्ञात्वा  न  पुनर्मोहम्",
+          "iast": "yajjñātvā  na  punarmōham"
+        },
+        {
+          "startTime": "2954.34",
+          "endTime": "2958.14",
+          "swhtsp": "l",
+          "shlNbr": "00",
+          "sty": "",
+          "text": "एवं  यास्यसि  पाण्डव |",
+          "iast": "ēvaṃ  yāsyasi  pāṇḍava |"
+        },
+        {
+          "startTime": "2963.75",
+          "endTime": "2968.46",
+          "swhtsp": "p",
+          "shlNbr": "00",
+          "sty": "",
+          "text": "येन  भूतान्यशेषेण",
+          "iast": "yēna  bhūtānyaśēṣēṇa"
+        },
+        {
+          "startTime": "2974.62",
+          "endTime": "2978.86",
+          "swhtsp": "",
+          "shlNbr": "00",
+          "sty": "",
+          "text": "द्रक्ष्यस्यात्मन्यथो मयि ||35||",
+          "iast": "drakṣyasyātmanyathō mayi ||35||"
+        }
+      ],
+      "syllables": 33,
+      "meter": "anustubh"
+    },
+    {
+      "shlokaNum": "36",
+      "entry": [
+        {
+          "startTime": "3025.84",
+          "endTime": "3030.08",
+          "swhtsp": "p",
+          "shlNbr": "00",
+          "sty": "",
+          "text": "अपि  चेदसि  पापेभ्यः",
+          "iast": "api  cēdasi  pāpēbhyaḥ"
+        },
+        {
+          "startTime": "3036.32",
+          "endTime": "3040.77",
+          "swhtsp": "l",
+          "shlNbr": "00",
+          "sty": "",
+          "text": "सर्वेभ्यः  पापकृत्तमः |",
+          "iast": "sarvēbhyaḥ  pāpakṛttamaḥ |"
+        },
+        {
+          "startTime": "3047.24",
+          "endTime": "3051.61",
+          "swhtsp": "p",
+          "shlNbr": "00",
+          "sty": "",
+          "text": "सर्वं  ज्ञानप्लवेनैव",
+          "iast": "sarvaṃ  jñānaplavēnaiva"
+        },
+        {
+          "startTime": "3058.16",
+          "endTime": "3061.43",
+          "swhtsp": "",
+          "shlNbr": "00",
+          "sty": "",
+          "text": "वृजिनं  सन्तरिष्यसि ||36||",
+          "iast": "vṛjinaṃ  santariṣyasi ||36||"
+        }
+      ],
+      "syllables": 32,
+      "meter": "anustubh"
+    },
+    {
+      "shlokaNum": "37",
+      "entry": [
+        {
+          "startTime": "3102.48",
+          "endTime": "3107.43",
+          "swhtsp": "p",
+          "shlNbr": "00",
+          "sty": "",
+          "text": "यथैधांसि  समिद्धोऽग्निः",
+          "iast": "yathaidhāṃsi  samiddhō'gniḥ"
+        },
+        {
+          "startTime": "3114.89",
+          "endTime": "3118.82",
+          "swhtsp": "l",
+          "shlNbr": "00",
+          "sty": "",
+          "text": "भस्मसात्कुरुतेऽर्जुन |",
+          "iast": "bhasmasātkurutē'rjuna |"
+        },
+        {
+          "startTime": "3124.9",
+          "endTime": "3129.58",
+          "swhtsp": "p",
+          "shlNbr": "00",
+          "sty": "",
+          "text": "ज्ञानाग्निः  सर्वकर्माणि",
+          "iast": "jñānāgniḥ  sarvakarmāṇi"
+        },
+        {
+          "startTime": "3136.29",
+          "endTime": "3140.16",
+          "swhtsp": "",
+          "shlNbr": "00",
+          "sty": "",
+          "text": "भस्मसात्कुरुते  तथा ||37||",
+          "iast": "bhasmasātkurutē  tathā ||37||"
+        }
+      ],
+      "syllables": 32,
+      "meter": "anustubh"
+    },
+    {
+      "shlokaNum": "38",
+      "entry": [
+        {
+          "startTime": "3185.84",
+          "endTime": "3189.59",
+          "swhtsp": "p",
+          "shlNbr": "00",
+          "sty": "",
+          "text": "न  हि  ज्ञानेन  सदृशं",
+          "iast": "na  hi  jñānēna  sadṛśaṃ"
+        },
+        {
+          "startTime": "3194.96",
+          "endTime": "3198.23",
+          "swhtsp": "l",
+          "shlNbr": "00",
+          "sty": "",
+          "text": "पवित्रमिह  विद्यते |",
+          "iast": "pavitramiha  vidyatē |"
+        },
+        {
+          "startTime": "3203.13",
+          "endTime": "3207.72",
+          "swhtsp": "p",
+          "shlNbr": "00",
+          "sty": "",
+          "text": "तत्स्वयं  योगसंसिद्धः",
+          "iast": "tatsvayaṃ  yōgasaṃsiddhaḥ"
+        },
+        {
+          "startTime": "3214",
+          "endTime": "3217.8",
+          "swhtsp": "",
+          "shlNbr": "00",
+          "sty": "",
+          "text": "कालेनात्मनि  विन्दति ||38||",
+          "iast": "kālēnātmani  vindati ||38||"
+        }
+      ],
+      "syllables": 32,
+      "meter": "anustubh"
+    },
+    {
+      "shlokaNum": "39",
+      "entry": [
+        {
+          "startTime": "3258.15",
+          "endTime": "3263.59",
+          "swhtsp": "p",
+          "shlNbr": "00",
+          "sty": "",
+          "text": "श्रद्धावान् लभते ज्ञानं",
+          "iast": "śraddhāvān labhatē jñānaṃ"
+        },
+        {
+          "startTime": "3272.12",
+          "endTime": "3276.13",
+          "swhtsp": "l",
+          "shlNbr": "00",
+          "sty": "",
+          "text": "तत्परः   संयतेन्द्रियः |",
+          "iast": "tatparaḥ   saṃyatēndriyaḥ |"
+        },
+        {
+          "startTime": "3282.08",
+          "endTime": "3287.43",
+          "swhtsp": "p",
+          "shlNbr": "00",
+          "sty": "",
+          "text": "ज्ञानं  लब्ध्वा  परां  शान्तिम्",
+          "iast": "jñānaṃ  labdhvā  parāṃ  śāntim"
+        },
+        {
+          "startTime": "3294.8",
+          "endTime": "3298.23",
+          "swhtsp": "",
+          "shlNbr": "00",
+          "sty": "",
+          "text": "अचिरेणाधिगच्छति ||39||",
+          "iast": "acirēṇādhigacchati ||39||"
+        }
+      ],
+      "syllables": 34,
+      "meter": "anustubh"
+    },
+    {
+      "shlokaNum": "40",
+      "entry": [
+        {
+          "startTime": "3343.54",
+          "endTime": "3347.99",
+          "swhtsp": "p",
+          "shlNbr": "00",
+          "sty": "",
+          "text": "अज्ञश्चाश्रद्दधानश्च",
+          "iast": "ajñaścāśraddadhānaśca"
+        },
+        {
+          "startTime": "3354.91",
+          "endTime": "3358.57",
+          "swhtsp": "l",
+          "shlNbr": "00",
+          "sty": "",
+          "text": "संशयात्मा  विनश्यति |",
+          "iast": "saṃśayātmā  vinaśyati |"
+        },
+        {
+          "startTime": "3364.34",
+          "endTime": "3368.84",
+          "swhtsp": "p",
+          "shlNbr": "00",
+          "sty": "",
+          "text": "नायं  लोकोऽस्ति  न  परः",
+          "iast": "nāyaṃ  lōkō'sti  na  paraḥ"
+        },
+        {
+          "startTime": "3375.33",
+          "endTime": "3379.19",
+          "swhtsp": "",
+          "shlNbr": "00",
+          "sty": "",
+          "text": "न  सुखं  संशयात्मनः ||40||",
+          "iast": "na  sukhaṃ  saṃśayātmanaḥ ||40||"
+        }
+      ],
+      "syllables": 32,
+      "meter": "anustubh"
+    },
+    {
+      "shlokaNum": "41",
+      "entry": [
+        {
+          "startTime": "3422.93",
+          "endTime": "3426.96",
+          "swhtsp": "p",
+          "shlNbr": "00",
+          "sty": "",
+          "text": "योगसन्न्यस्तकर्माणं",
+          "iast": "yōgasannyastakarmāṇaṃ"
+        },
+        {
+          "startTime": "3433.33",
+          "endTime": "3437.23",
+          "swhtsp": "l",
+          "shlNbr": "00",
+          "sty": "",
+          "text": "ज्ञानसञ्छिन्नसंशयम् |",
+          "iast": "jñānasañchinnasaṃśayam |"
+        },
+        {
+          "startTime": "3442.86",
+          "endTime": "3446.87",
+          "swhtsp": "p",
+          "shlNbr": "00",
+          "sty": "",
+          "text": "आत्मवन्तं  न  कर्माणि",
+          "iast": "ātmavantaṃ  na  karmāṇi"
+        },
+        {
+          "startTime": "3452.87",
+          "endTime": "3456.14",
+          "swhtsp": "",
+          "shlNbr": "00",
+          "sty": "",
+          "text": "निबध्नन्ति  धनञ्जय ||41||",
+          "iast": "nibadhnanti  dhanañjaya ||41||"
+        }
+      ],
+      "syllables": 33,
+      "meter": "anustubh"
+    },
+    {
+      "shlokaNum": "42",
+      "entry": [
+        {
+          "startTime": "3497.17",
+          "endTime": "3501.78",
+          "swhtsp": "p",
+          "shlNbr": "00",
+          "sty": "",
+          "text": "तस्मादज्ञानसम्भूतं",
+          "iast": "tasmādajñānasambhūtaṃ"
+        },
+        {
+          "startTime": "3508.19",
+          "endTime": "3512.62",
+          "swhtsp": "l",
+          "shlNbr": "00",
+          "sty": "",
+          "text": "हृत्स्थं  ज्ञानासिनात्मनः |",
+          "iast": "hṛtsthaṃ  jñānāsinātmanaḥ |"
+        },
+        {
+          "startTime": "3518.82",
+          "endTime": "3523.35",
+          "swhtsp": "p",
+          "shlNbr": "00",
+          "sty": "",
+          "text": "छित्त्वैनं  संशयं  योगम्",
+          "iast": "chittvainaṃ  saṃśayaṃ  yōgam"
+        },
+        {
+          "startTime": "3529.87",
+          "endTime": "3534.22",
+          "swhtsp": "",
+          "shlNbr": "00",
+          "sty": "",
+          "text": "आतिष्ठोत्तिष्ठ   भारत ||42||",
+          "iast": "ātiṣṭhōttiṣṭha   bhārata ||42||"
+        }
+      ],
+      "syllables": 33,
+      "meter": "anustubh"
+    },
+    {
+      "shlokaNum": "",
+      "entry": [
+        {
+          "startTime": "3582.2",
+          "endTime": "3584.95",
+          "swhtsp": "l",
+          "shlNbr": "00",
+          "sty": "",
+          "text": "|| ओं  तत्सदिति",
+          "iast": "|| ōṃ  tatsaditi"
+        },
+        {
+          "startTime": "3589.2",
+          "endTime": "3593.23",
+          "swhtsp": "l",
+          "shlNbr": "00",
+          "sty": "",
+          "text": "श्रीमद्भगवद्गीतासु",
+          "iast": "śrīmadbhagavadgītāsu"
+        },
+        {
+          "startTime": "3598.71",
+          "endTime": "3600.66",
+          "swhtsp": "l",
+          "shlNbr": "00",
+          "sty": "",
+          "text": "उपनिषत्सु",
+          "iast": "upaniṣatsu"
+        },
+        {
+          "startTime": "3603.33",
+          "endTime": "3606.42",
+          "swhtsp": "l",
+          "shlNbr": "00",
+          "sty": "",
+          "text": "ब्रह्मविद्यायां",
+          "iast": "brahmavidyāyāṃ"
+        },
+        {
+          "startTime": "3610.46",
+          "endTime": "3612.93",
+          "swhtsp": "l",
+          "shlNbr": "00",
+          "sty": "",
+          "text": "योगशास्त्रे",
+          "iast": "yōgaśāstrē"
+        },
+        {
+          "startTime": "3617.18",
+          "endTime": "3621.63",
+          "swhtsp": "l",
+          "shlNbr": "00",
+          "sty": "",
+          "text": "श्रीकृष्णार्जुनसंवादे",
+          "iast": "śrīkṛṣṇārjunasaṃvādē"
+        },
+        {
+          "startTime": "3627.65",
+          "endTime": "3630.87",
+          "swhtsp": "l",
+          "shlNbr": "00",
+          "sty": "",
+          "text": "ज्ञानयोगो  नाम",
+          "iast": "jñānayōgō  nāma"
+        },
+        {
+          "startTime": "3635.64",
+          "endTime": "3639.33",
+          "swhtsp": "l",
+          "shlNbr": "00",
+          "sty": "",
+          "text": "चतुर्थोऽध्यायः ||",
+          "iast": "caturthō'dhyāyaḥ ||"
+        }
+      ],
+      "syllables": 46,
+      "meter": "anustubh"
+    },
+    {
+      "shlokaNum": "sarvadharmān",
+      "entry": [
+        {
+          "startTime": "0",
+          "endTime": "0",
+          "swhtsp": "p",
+          "shlNbr": "00",
+          "sty": "",
+          "text": "सर्वधर्मान्परित्यज्य",
+          "iast": "sarvadharmānparityajya"
+        },
+        {
+          "startTime": "0",
+          "endTime": "0",
+          "swhtsp": "l",
+          "shlNbr": "00",
+          "sty": "",
+          "text": "मामेकं  शरणं  व्रज |",
+          "iast": "māmēkaṃ  śaraṇaṃ  vraja |"
+        },
+        {
+          "startTime": "0",
+          "endTime": "0",
+          "swhtsp": "p",
+          "shlNbr": "00",
+          "sty": "",
+          "text": "अहं  त्वा  सर्वपापेभ्यः",
+          "iast": "ahaṃ  tvā  sarvapāpēbhyaḥ"
+        },
+        {
+          "startTime": "0",
+          "endTime": "0",
+          "swhtsp": "",
+          "shlNbr": "00",
+          "sty": "",
+          "text": "मोक्षयिष्यामि मा शुचः ||",
+          "iast": "mōkṣayiṣyāmi mā śucaḥ ||"
+        }
+      ],
+      "syllables": 32,
+      "meter": "anustubh"
+    }
+  ]
+}

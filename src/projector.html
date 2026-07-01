@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gita Pacer — Projector</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Devanagari:wght@400;700&family=Noto+Sans:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    /* Theme palette (#37). Default dark; light overrides below. */
+    :root {
+      --bg: #000;
+      --fg: #fff;
+      --active: #FFD700;
+      --done: #888;
+      --marker: #666;
+    }
+    :root[data-theme="light"] {
+      --bg: #fff;
+      --fg: #1a1a1a;
+      --active: #b8860b;
+      --done: #999;
+      --marker: #aaa;
+    }
+    html, body { width: 100%; height: 100%; overflow: hidden; }
+    body {
+      background: var(--bg);
+      color: var(--fg);
+      font-family: 'Noto Sans Devanagari', 'Noto Sans', Arial, sans-serif;
+      display: flex;
+      flex-direction: column;
+      cursor: none;
+    }
+    #display {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      position: relative;
+      padding: 15vh 4vw 3vh;
+      overflow: hidden;
+    }
+    #pace-indicator {
+      position: absolute;
+      top: 2vh;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 12vw;
+      opacity: 1;
+      display: none;
+      pointer-events: none;
+      z-index: 1;
+    }
+    #countdown-overlay {
+      position: absolute;
+      inset: 0;
+      background: var(--bg);
+      display: none;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      z-index: 100;
+    }
+    #countdown-overlay .countdown-label {
+      font-size: 3vw;
+      color: var(--active);
+      margin-bottom: 40px;
+    }
+    #countdown-overlay .countdown-number {
+      font-size: 12vw;
+      color: var(--fg);
+      font-weight: bold;
+    }
+    #countdown-overlay .countdown-sruti {
+      position: absolute;
+      bottom: 10vh;
+      font-size: 3vw;
+      color: var(--active);
+      letter-spacing: 0.1em;
+    }
+    #verse-container-a, #verse-container-b {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      min-width: 55vw;
+      zoom: var(--verse-zoom, 1); /* #34 operator-controlled verse zoom */
+    }
+    .verse-line {
+      font-size: clamp(14px, 2.2vw, 48px);
+      letter-spacing: 0.15em;
+      margin: 0.6em 0;
+      position: relative;
+      white-space: normal;
+      word-break: break-word;
+      line-height: 1.5;
+      max-width: 95vw;
+      text-align: left;
+    }
+    /* Continuation (second half of a pāda) — indented per the Dhyana script */
+    .verse-line.cont { padding-left: 2.5em; }
+    /* Colophon (closer) pages render center-aligned */
+    #verse-container-a.centered, #verse-container-b.centered { align-items: center; }
+    #verse-container-a.centered .verse-line, #verse-container-b.centered .verse-line { text-align: center; }
+    .syllable {
+      display: inline-block;
+      position: relative;
+      transition: color 0.1s;
+    }
+    .syllable.active {
+      color: var(--active);
+    }
+    .syllable.done {
+      color: var(--done);
+    }
+    .verse-marker {
+      display: inline-block;
+      margin-left: 0.3em;
+      color: var(--marker);
+    }
+    #pointer {
+      position: absolute;
+      font-size: 36px;
+      z-index: 10;
+      pointer-events: none;
+      display: none;
+      /* transition set dynamically by projector.js based on beat duration */
+    }
+    #instruction-overlay {
+      position: fixed;
+      top: 3vh;
+      right: 3vw;
+      width: 28vw;
+      max-width: 420px;
+      background: rgba(0, 0, 0, 0.88);
+      border: 2px solid #c94;
+      border-radius: 12px;
+      padding: 16px 20px;
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+      z-index: 200;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.7);
+    }
+    #instruction-overlay .instruction-content {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+    }
+    #instruction-overlay .instruction-image {
+      max-height: 22vh;
+      max-width: 100%;
+      object-fit: contain;
+    }
+    #instruction-overlay .instruction-text {
+      color: #FFD700;
+      font-size: clamp(13px, 1.8vw, 26px);
+      text-align: center;
+      max-width: 100%;
+      line-height: 1.3;
+      white-space: pre-line;
+    }
+    #instruction-overlay .instruction-dismiss {
+      color: #888;
+      font-size: clamp(10px, 1.2vw, 16px);
+      margin-top: 4px;
+    }
+    @media (max-width: 900px) {
+      .verse-line { font-size: clamp(12px, 3vw, 36px); margin: 0.5em 0; letter-spacing: 0.1em; }
+      #display { padding: 2vh 3vw; }
+    }
+    @media (max-width: 600px) {
+      .verse-line { font-size: clamp(11px, 4vw, 28px); margin: 0.6em 0; letter-spacing: 0.05em; }
+    }
+    @media (min-width: 1600px) {
+      .verse-line { font-size: clamp(20px, 2.2vw, 56px); margin: 0.6em 0; }
+    }
+  </style>
+</head>
+<body>
+  <div id="instruction-overlay">
+    <div class="instruction-content"></div>
+  </div>
+
+  <div id="display">
+    <div id="pace-indicator"></div>
+    <div id="countdown-overlay">
+      <div class="countdown-label">Start in</div>
+      <div class="countdown-number"></div>
+      <div class="countdown-sruti">Listen to Śruti</div>
+    </div>
+    <div id="pointer" style="display:none">&#128071;</div>
+    <div id="verse-container-a"></div>
+    <div id="verse-container-b"></div>
+  </div>
+
+  <script src="shared.js"></script>
+  <script src="projector.js"></script>
+</body>
+</html>
