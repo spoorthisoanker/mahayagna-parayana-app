@@ -1670,9 +1670,16 @@ const ui = (function() {
     syncShlokaDropdown();
 
     // tempo sheet: slow colophon ("om tatsaditi") / ending pages by 5 SPM (20 internal bpm).
-    // Restore the chapter base tempo when leaving a colophon page.
+    // #12: the two Samarpana ("kshama_prarthana") "sloka 4" slides also run 5 SPM slower,
+    // automatically. Restore the chapter base tempo when leaving any such page.
+    var pageBpmDrop = 0;
     if (page && page.isCloser) {
-      animator.setBpm(currentChapterBpm - COLOPHON_BPM_DROP);
+      pageBpmDrop = COLOPHON_BPM_DROP;
+    } else if (page && chId === 'kshama_prarthana' && page.shlokaNum === '4') {
+      pageBpmDrop = 20; // 5 SPM
+    }
+    if (pageBpmDrop > 0) {
+      animator.setBpm(currentChapterBpm - pageBpmDrop);
       closerSlowApplied = true;
     } else if (closerSlowApplied) {
       animator.setBpm(currentChapterBpm);
