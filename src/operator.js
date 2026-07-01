@@ -104,6 +104,7 @@
   // updated on manual SPM change. Colophon pages run at currentChapterBpm - colophonBpmDrop.
   var currentChapterBpm = 380;
   var closerSlowApplied = false;
+  var currentPageBpmDrop = 0;   // internal-bpm drop currently applied to this page (colophon #5 or Samarpana sloka-4 #12)
   var chapterSelect = document.getElementById('chapter-select');
   var shlokaSelect = document.getElementById('shloka-select');
 
@@ -201,6 +202,7 @@
       // Capture the base tempo the chapter runs at (used to offset colophon pages).
       currentChapterBpm = animator.getState().bpm;
       closerSlowApplied = false;
+      currentPageBpmDrop = 0;
       populateShlokaDropdown();
       currentPage = 0;
       showPage(0, blankProjector);
@@ -226,18 +228,27 @@
     updatePositionBar();
     shlokaSelect.value = currentPage;
 
-    // #5: the closing slide ("om tatsaditi") AND the Sarvadharmān recitation run at the
-    // chapter pace by default (colophonBpmDrop = 0). The operator can dial in a slow-down
-    // (in SPM) via Settings to ease those endings. Restore the chapter base tempo when
-    // leaving such a page.
-    var isSlowPage = page && (page.isCloser || page.shlokaNum === 'sarvadharmān');
-    if (isSlowPage) {
-      animator.setBpm(currentChapterBpm - chantSettings.colophonBpmDrop);
+    // Automatic per-page tempo drops (internal bpm; 5 SPM = 20 internal bpm):
+    //   #5:  the closing slide ("om tatsaditi") AND the Sarvadharmān recitation run at the
+    //        chapter pace by default (colophonBpmDrop = 0); the operator can dial in a
+    //        slow-down (in SPM) via Settings to ease those endings.
+    //   #12: the two Samarpana "sloka 4" slides always run 5 SPM slower, automatically.
+    // Restore the chapter base tempo when leaving any such page.
+    var pageBpmDrop = 0;
+    if (page && (page.isCloser || page.shlokaNum === 'sarvadharmān')) {
+      pageBpmDrop = chantSettings.colophonBpmDrop;
+    } else if (page && chId === 'kshama_prarthana' && page.shlokaNum === '4') {
+      pageBpmDrop = 20; // 5 SPM
+    }
+    if (pageBpmDrop > 0) {
+      animator.setBpm(currentChapterBpm - pageBpmDrop);
       closerSlowApplied = true;
+      currentPageBpmDrop = pageBpmDrop;
       updateSpmDisplay();
     } else if (closerSlowApplied) {
       animator.setBpm(currentChapterBpm);
       closerSlowApplied = false;
+      currentPageBpmDrop = 0;
       updateSpmDisplay();
     }
 
@@ -331,12 +342,12 @@
   }
 
   // Record an operator's manual tempo change as the new chapter base tempo so the
-  // colophon offset stays relative to the operator's chosen SPM. If a colophon slow
-  // is currently applied, the running bpm is already dropped, so add it back to
-  // recover the intended base tempo.
+  // per-page offset stays relative to the operator's chosen SPM. If a page slow-down
+  // is currently applied (colophon #5 or Samarpana sloka-4 #12), the running bpm is
+  // already dropped by currentPageBpmDrop, so add it back to recover the base tempo.
   function noteManualTempoChange() {
     var runningBpm = animator.getState().bpm;
-    currentChapterBpm = closerSlowApplied ? runningBpm + chantSettings.colophonBpmDrop : runningBpm;
+    currentChapterBpm = runningBpm + currentPageBpmDrop;
   }
 
   spmInput.addEventListener('change', function() {
@@ -709,6 +720,7 @@
         animator.setBpm(override);
         currentChapterBpm = animator.getState().bpm;
         closerSlowApplied = false;
+        currentPageBpmDrop = 0;
         updateSpmDisplay();
       }
     }
