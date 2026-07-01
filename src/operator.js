@@ -624,11 +624,13 @@
 
   // Effective internal BPM for a section: Settings override, else data defaultBpm.
   // Returns null when neither is known (sections without a defaultBpm → "manual").
+  // Internal bpm = display SPM × 4. Defaults per the parayana team's "App SPM" table (#10):
+  // Dhyana 60, Ch1 75, Ch2 85, Ch3–18 90, Datta Stavam 75, Invocation 70, Mahātmyam 85.
   var DATA_DEFAULT_BPM = {
-    datta_stavam: 360, invocation_prayers: 340, '0': 300, '1': 340,
-    '2': 380, '3': 380, '4': 380, '5': 380, '6': 380, '7': 380, '8': 380,
-    '9': 380, '10': 380, '11': 380, '12': 380, '13': 380, '14': 380,
-    '15': 380, '16': 380, '17': 380, '18': 380, gita_mahatmyam: 380,
+    datta_stavam: 300, invocation_prayers: 280, '0': 240, '1': 300,
+    '2': 340, '3': 360, '4': 360, '5': 360, '6': 360, '7': 360, '8': 360,
+    '9': 360, '10': 360, '11': 360, '12': 360, '13': 360, '14': 360,
+    '15': 360, '16': 360, '17': 360, '18': 360, gita_mahatmyam: 340,
     kshama_prarthana: 320
   };
   function effectiveSectionBpm(id) {
