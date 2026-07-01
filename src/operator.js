@@ -11,7 +11,7 @@
   // The standalone web app (index.html) keeps its own hardcoded defaults; this panel
   // only affects the Electron operator window.
   var CHANT_DEFAULTS = {
-    colophonBpmDrop: 0,      // internal-bpm slow-down for the closing slide + Sarvadharmān; 0 = chapter pace (#5). Settings field is in SPM (×4).
+    colophonBpmDrop: 0,      // internal-bpm slow-down for the closing slide + Sarvadharmān; 0 = chapter pace (#5). Settings field is in BPM (×4).
     countdownSeconds: 5,     // pre-play countdown length
     chapterGapSeconds: 3,    // gap between chapters before the countdown
     verseZoom: 100,          // projector verse-text zoom (%) — #34
@@ -101,7 +101,7 @@
   }
 
   // The tempo the chapter should run at: set on chapter load (defaultBpm or current),
-  // updated on manual SPM change. Colophon pages run at currentChapterBpm - colophonBpmDrop.
+  // updated on manual BPM change. Colophon pages run at currentChapterBpm - colophonBpmDrop.
   var currentChapterBpm = 380;
   var closerSlowApplied = false;
   var currentPageBpmDrop = 0;   // internal-bpm drop currently applied to this page (colophon #5 or Samarpana sloka-4 #12)
@@ -228,17 +228,17 @@
     updatePositionBar();
     shlokaSelect.value = currentPage;
 
-    // Automatic per-page tempo drops (internal bpm; 5 SPM = 20 internal bpm):
+    // Automatic per-page tempo drops (internal bpm; 5 BPM = 20 internal bpm):
     //   #5:  the closing slide ("om tatsaditi") AND the Sarvadharmān recitation run at the
     //        chapter pace by default (colophonBpmDrop = 0); the operator can dial in a
-    //        slow-down (in SPM) via Settings to ease those endings.
-    //   #12: the two Samarpana "sloka 4" slides always run 5 SPM slower, automatically.
+    //        slow-down (in BPM) via Settings to ease those endings.
+    //   #12: the two Samarpana "sloka 4" slides always run 5 BPM slower, automatically.
     // Restore the chapter base tempo when leaving any such page.
     var pageBpmDrop = 0;
     if (page && (page.isCloser || page.shlokaNum === 'sarvadharmān')) {
       pageBpmDrop = chantSettings.colophonBpmDrop;
     } else if (page && chId === 'kshama_prarthana' && page.shlokaNum === '4') {
-      pageBpmDrop = 20; // 5 SPM
+      pageBpmDrop = 20; // 5 BPM
     }
     if (pageBpmDrop > 0) {
       animator.setBpm(currentChapterBpm - pageBpmDrop);
@@ -334,7 +334,7 @@
     }
   }
 
-  // --- SPM display ---
+  // --- BPM display ---
   var spmInput = document.getElementById('spm-input');
 
   function updateSpmDisplay() {
@@ -342,7 +342,7 @@
   }
 
   // Record an operator's manual tempo change as the new chapter base tempo so the
-  // per-page offset stays relative to the operator's chosen SPM. If a page slow-down
+  // per-page offset stays relative to the operator's chosen BPM. If a page slow-down
   // is currently applied (colophon #5 or Samarpana sloka-4 #12), the running bpm is
   // already dropped by currentPageBpmDrop, so add it back to recover the base tempo.
   function noteManualTempoChange() {
@@ -454,7 +454,7 @@
     }
   });
 
-  // SPM controls
+  // BPM controls
   document.getElementById('bpm-up').addEventListener('click', function() {
     animator.setBpm(animator.getState().bpm + 20);
     noteManualTempoChange();
@@ -598,8 +598,8 @@
   var fldTheme = document.getElementById('set-theme');
 
   // Build the per-section BPM rows once (label + number input keyed by chapterId).
-  // Displayed value is SPM = internal bpm / 4 (matches the rest of the UI); we store
-  // internal = SPM * 4. Section labels reuse the chapter dropdown's option text.
+  // Displayed value is BPM = internal bpm / 4 (matches the rest of the UI); we store
+  // internal = BPM * 4. Section labels reuse the chapter dropdown's option text.
   var sectionBpmInputs = {}; // chapterId -> input element
   function buildSectionBpmRows() {
     while (settingsSectionList.firstChild) settingsSectionList.removeChild(settingsSectionList.firstChild);
@@ -635,14 +635,15 @@
 
   // Effective internal BPM for a section: Settings override, else data defaultBpm.
   // Returns null when neither is known (sections without a defaultBpm → "manual").
-  // Internal bpm = display SPM × 4. Defaults per the parayana team's "App SPM" table (#10):
-  // Dhyana 60, Ch1 75, Ch2 85, Ch3–18 90, Datta Stavam 75, Invocation 70, Mahātmyam 85.
+  // Internal bpm = display BPM × 4. Defaults per the parayana team's BPM table:
+  // Dhyana 55, Ch1 70, Ch2 80, Ch3–18 85, Datta Stavam 70, Invocation 65, Mahātmyam 80,
+  // Kshama Prārthana 75. Keep in sync with each section's data defaultBpm.
   var DATA_DEFAULT_BPM = {
-    datta_stavam: 300, invocation_prayers: 280, '0': 240, '1': 300,
-    '2': 340, '3': 360, '4': 360, '5': 360, '6': 360, '7': 360, '8': 360,
-    '9': 360, '10': 360, '11': 360, '12': 360, '13': 360, '14': 360,
-    '15': 360, '16': 360, '17': 360, '18': 360, gita_mahatmyam: 340,
-    kshama_prarthana: 320
+    datta_stavam: 280, invocation_prayers: 260, '0': 220, '1': 280,
+    '2': 320, '3': 340, '4': 340, '5': 340, '6': 340, '7': 340, '8': 340,
+    '9': 340, '10': 340, '11': 340, '12': 340, '13': 340, '14': 340,
+    '15': 340, '16': 340, '17': 340, '18': 340, gita_mahatmyam: 320,
+    kshama_prarthana: 300
   };
   function effectiveSectionBpm(id) {
     if (typeof chantSettings.sectionBpm[id] === 'number') return chantSettings.sectionBpm[id];
@@ -652,7 +653,7 @@
 
   // Populate all settings inputs from the current chantSettings.
   function refreshSettingsInputs() {
-    fldColophon.value = chantSettings.colophonBpmDrop / 4;  // stored internal bpm → shown in SPM
+    fldColophon.value = chantSettings.colophonBpmDrop / 4;  // stored internal bpm → shown in BPM
     fldCountdown.value = chantSettings.countdownSeconds;
     fldChapterGap.value = chantSettings.chapterGapSeconds;
     if (fldVerseZoom) fldVerseZoom.value = chantSettings.verseZoom;
@@ -684,7 +685,7 @@
   }
 
   function saveSettings() {
-    chantSettings.colophonBpmDrop = Math.round(clampNum(fldColophon.value, 0, 20, 0)) * 4;  // SPM field → internal bpm
+    chantSettings.colophonBpmDrop = Math.round(clampNum(fldColophon.value, 0, 20, 0)) * 4;  // BPM field → internal bpm
     chantSettings.countdownSeconds = Math.round(clampNum(fldCountdown.value, 0, 15, CHANT_DEFAULTS.countdownSeconds));
     chantSettings.chapterGapSeconds = clampNum(fldChapterGap.value, 0, 15, CHANT_DEFAULTS.chapterGapSeconds);
     if (fldVerseZoom) chantSettings.verseZoom = Math.round(clampNum(fldVerseZoom.value, 50, 250, CHANT_DEFAULTS.verseZoom));
@@ -695,7 +696,7 @@
     if (fldMahatmyam) chantSettings.mahatmyamBeats = clampNum(fldMahatmyam.value, 0, 12, CHANT_DEFAULTS.mahatmyamBeats);
     if (fldTheme) chantSettings.theme = (fldTheme.value === 'light') ? 'light' : 'dark';
 
-    // Per-section BPM: a value present → store internal = SPM*4; blank → clear override.
+    // Per-section BPM: a value present → store internal = BPM*4; blank → clear override.
     chantSettings.sectionBpm = {};
     for (var id in sectionBpmInputs) {
       if (!Object.prototype.hasOwnProperty.call(sectionBpmInputs, id)) continue;
@@ -712,7 +713,7 @@
     // If an EXPLICIT per-section override exists for the current chapter, re-apply it
     // immediately. With no override, leave the running tempo untouched — never pull
     // from DATA_DEFAULT_BPM here (that map is for panel pre-fill hints only), so a
-    // live SPM nudge survives saving an unrelated setting.
+    // live BPM nudge survives saving an unrelated setting.
     var curId = dataLayer.getCurrentChapterId();
     if (curId !== null) {
       var override = chantSettings.sectionBpm[String(curId)];

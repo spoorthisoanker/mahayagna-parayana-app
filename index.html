@@ -402,7 +402,7 @@ body {
 const EMBEDDED_DHYANA = {
   "name": "गीता  ध्यान  श्लोकाः",
   "chapterNum": "00",
-  "defaultBpm": 240,
+  "defaultBpm": 220,
   "shloka": [
     {
       "shlokaNum": "",
@@ -1586,15 +1586,15 @@ const ui = (function() {
   let currentPage = 0;
   const chapterSelect = document.getElementById('chapter-select');
   const shlokaSelect = document.getElementById('shloka-select');
-  // tempo sheet: colophon ("om tatsaditi") / ending pages run 5 SPM slower (= 20 internal bpm).
+  // tempo sheet: colophon ("om tatsaditi") / ending pages run 5 BPM slower (= 20 internal bpm).
   var COLOPHON_BPM_DROP = 20;
   // The tempo the chapter should run at: set on chapter load (defaultBpm or current),
-  // updated on manual SPM change. Colophon pages run at currentChapterBpm - COLOPHON_BPM_DROP.
+  // updated on manual BPM change. Colophon pages run at currentChapterBpm - COLOPHON_BPM_DROP.
   var currentChapterBpm = 380;
   var closerSlowApplied = false;
 
   // Record an operator's manual tempo change as the new chapter base tempo so the
-  // colophon offset stays relative to the chosen SPM. If a colophon slow is currently
+  // colophon offset stays relative to the chosen BPM. If a colophon slow is currently
   // applied, the running bpm is already dropped, so add it back to recover the base.
   function noteManualTempoChange() {
     var runningBpm = animator.getState().bpm;
@@ -1669,14 +1669,14 @@ const ui = (function() {
     updatePageInfo();
     syncShlokaDropdown();
 
-    // tempo sheet: slow colophon ("om tatsaditi") / ending pages by 5 SPM (20 internal bpm).
-    // #12: the two Samarpana ("kshama_prarthana") "sloka 4" slides also run 5 SPM slower,
+    // tempo sheet: slow colophon ("om tatsaditi") / ending pages by 5 BPM (20 internal bpm).
+    // #12: the two Samarpana ("kshama_prarthana") "sloka 4" slides also run 5 BPM slower,
     // automatically. Restore the chapter base tempo when leaving any such page.
     var pageBpmDrop = 0;
     if (page && page.isCloser) {
       pageBpmDrop = COLOPHON_BPM_DROP;
     } else if (page && chId === 'kshama_prarthana' && page.shlokaNum === '4') {
-      pageBpmDrop = 20; // 5 SPM
+      pageBpmDrop = 20; // 5 BPM
     }
     if (pageBpmDrop > 0) {
       animator.setBpm(currentChapterBpm - pageBpmDrop);

@@ -9,7 +9,7 @@
 const EMBEDDED_DHYANA = {
   "name": "गीता  ध्यान  श्लोकाः",
   "chapterNum": "00",
-  "defaultBpm": 240,
+  "defaultBpm": 220,
   "shloka": [
     {
       "shlokaNum": "",

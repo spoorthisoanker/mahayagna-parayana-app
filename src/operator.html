@@ -51,7 +51,7 @@ body {
   gap: 8px;
 }
 
-/* SPM row */
+/* BPM row */
 .spm-row {
   display: flex;
   align-items: center;
@@ -214,6 +214,13 @@ hr { border: none; border-top: 1px solid #333; margin: 0; }
   letter-spacing: 1px;
   margin: 18px 0 8px;
 }
+.settings-note {
+  grid-column: 1 / -1;
+  color: #888;
+  font-size: 12px;
+  font-style: italic;
+  margin: -2px 0 2px;
+}
 .settings-section-list {
   max-height: 220px;
   overflow-y: auto;
@@ -274,13 +281,13 @@ hr { border: none; border-top: 1px solid #333; margin: 0; }
   <button id="btn-next" title="Next page">&#9654;</button>
 </div>
 
-<!-- SPM -->
+<!-- BPM -->
 <div class="section-label">Syllables Per Minute</div>
 <div class="spm-row">
   <button id="bpm-down">&minus;</button>
   <div class="spm-value">
-    <input type="number" id="spm-input" value="95" min="10" max="150">
-    <div class="label">SPM</div>
+    <input type="number" id="spm-input" value="90" min="10" max="150">
+    <div class="label">BPM</div>
   </div>
   <button id="bpm-up">+</button>
 </div>
@@ -370,7 +377,7 @@ hr { border: none; border-top: 1px solid #333; margin: 0; }
     <div class="settings-title">&#9881; Chant Settings</div>
 
     <div class="settings-grid">
-      <label for="set-colophon">Closing/Sarvadharmān slow-down (SPM)</label>
+      <label for="set-colophon">Closing/Sarvadharmān slow-down (BPM)</label>
       <input type="number" id="set-colophon" min="0" max="20" step="1">
 
       <label for="set-countdown">Countdown (seconds)</label>
@@ -397,6 +404,8 @@ hr { border: none; border-top: 1px solid #333; margin: 0; }
       <label for="set-mahatmyam-pause">Gita Mahātmyam line pause (mātrās)</label>
       <input type="number" id="set-mahatmyam-pause" min="0" max="12" step="0.5">
 
+      <div class="settings-note">Pauses are in mātrās — 4 mātrās = 1 beat (BPM). They scale automatically with the tempo.</div>
+
       <label for="set-theme">Projector theme</label>
       <select id="set-theme">
         <option value="dark">Dark (black background)</option>
@@ -404,7 +413,7 @@ hr { border: none; border-top: 1px solid #333; margin: 0; }
       </select>
     </div>
 
-    <div class="settings-subtitle">Per-section tempo (SPM) — blank = manual / no default</div>
+    <div class="settings-subtitle">Per-section tempo (BPM) — blank = manual / no default</div>
     <div id="settings-section-list" class="settings-section-list"></div>
 
     <div class="settings-actions">
