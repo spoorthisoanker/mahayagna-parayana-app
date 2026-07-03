@@ -228,19 +228,24 @@
     updatePositionBar();
     shlokaSelect.value = currentPage;
 
-    // Automatic per-page tempo drops (internal bpm; 5 BPM = 20 internal bpm):
+    // Automatic per-page tempo offsets (internal bpm; 5 BPM = 20 internal bpm):
     //   #5:  the closing slide ("om tatsaditi") AND the Sarvadharmān recitation run at the
     //        chapter pace by default (colophonBpmDrop = 0); the operator can dial in a
     //        slow-down (in BPM) via Settings to ease those endings.
     //   #12: the two Samarpana "sloka 4" slides always run 5 BPM slower, automatically.
+    //   Dhyana sloka 8 (śāntākāraṃ) runs at a fixed 70 BPM (internal 280) — expressed as
+    //   an offset from the section base so the drop-restore bookkeeping stays uniform
+    //   (the offset is NEGATIVE when the base is slower, e.g. Dhyana's default 60).
     // Restore the chapter base tempo when leaving any such page.
     var pageBpmDrop = 0;
     if (page && (page.isCloser || page.shlokaNum === 'sarvadharmān')) {
       pageBpmDrop = chantSettings.colophonBpmDrop;
     } else if (page && chId === 'kshama_prarthana' && page.shlokaNum === '4') {
       pageBpmDrop = 20; // 5 BPM
+    } else if (page && chId === '0' && page.shlokaNum === '8') {
+      pageBpmDrop = currentChapterBpm - 280; // fixed 70 BPM
     }
-    if (pageBpmDrop > 0) {
+    if (pageBpmDrop !== 0) {
       animator.setBpm(currentChapterBpm - pageBpmDrop);
       closerSlowApplied = true;
       currentPageBpmDrop = pageBpmDrop;

@@ -774,7 +774,9 @@ const renderer = (function() {
         const hLineStart = elements.length;
 
         // Gita Mahātmyam / Sāram / Ārati title headers: static title, no pointer (#4).
-        const staticTitle = STATIC_TITLE_SECTIONS[dataLayer.getCurrentChapterId()] === true;
+        // The CLOSING header ('uh', e.g. Mahātmyam's "|| iti śrī varāhapurāṇē ... ||")
+        // is chanted, so it stays a normal animated header (asterisks + pointer).
+        const staticTitle = STATIC_TITLE_SECTIONS[dataLayer.getCurrentChapterId()] === true && line.sty !== 'uh';
         if (currentMode !== 'asterisk' || staticTitle) {
           // English mode (or a static title): one span per header line with the text.
           // A static title also carries dataset.noPointer so the hand never moves over it,

@@ -1602,13 +1602,15 @@ const ui = (function() {
   // updated on manual BPM change. Colophon pages run at currentChapterBpm - COLOPHON_BPM_DROP.
   var currentChapterBpm = 380;
   var closerSlowApplied = false;
+  var currentPageBpmDrop = 0;   // internal-bpm offset currently applied to this page (colophon, Samarpana sloka-4, Dhyana sloka-8)
 
   // Record an operator's manual tempo change as the new chapter base tempo so the
-  // colophon offset stays relative to the chosen BPM. If a colophon slow is currently
-  // applied, the running bpm is already dropped, so add it back to recover the base.
+  // per-page offset stays relative to the chosen BPM. If a page offset is currently
+  // applied, the running bpm is already shifted by currentPageBpmDrop, so add it
+  // back to recover the base.
   function noteManualTempoChange() {
     var runningBpm = animator.getState().bpm;
-    currentChapterBpm = closerSlowApplied ? runningBpm + COLOPHON_BPM_DROP : runningBpm;
+    currentChapterBpm = runningBpm + currentPageBpmDrop;
   }
 
   function populateShlokaDropdown() {
@@ -1650,6 +1652,7 @@ const ui = (function() {
       // Capture the base tempo the chapter runs at (used to offset colophon pages).
       currentChapterBpm = animator.getState().bpm;
       closerSlowApplied = false;
+      currentPageBpmDrop = 0;
       populateShlokaDropdown();
       currentPage = 0;
       showPage(0);
@@ -1681,19 +1684,24 @@ const ui = (function() {
 
     // tempo sheet: slow colophon ("om tatsaditi") / ending pages by 5 BPM (20 internal bpm).
     // #12: the two Samarpana ("kshama_prarthana") "sloka 4" slides also run 5 BPM slower,
-    // automatically. Restore the chapter base tempo when leaving any such page.
+    // automatically. Dhyana sloka 8 (śāntākāraṃ) runs at a fixed 70 BPM (internal 280) —
+    // a NEGATIVE offset when the base is slower. Restore the base when leaving such pages.
     var pageBpmDrop = 0;
     if (page && page.isCloser) {
       pageBpmDrop = COLOPHON_BPM_DROP;
     } else if (page && chId === 'kshama_prarthana' && page.shlokaNum === '4') {
       pageBpmDrop = 20; // 5 BPM
+    } else if (page && chId === '0' && page.shlokaNum === '8') {
+      pageBpmDrop = currentChapterBpm - 280; // fixed 70 BPM
     }
-    if (pageBpmDrop > 0) {
+    if (pageBpmDrop !== 0) {
       animator.setBpm(currentChapterBpm - pageBpmDrop);
       closerSlowApplied = true;
+      currentPageBpmDrop = pageBpmDrop;
     } else if (closerSlowApplied) {
       animator.setBpm(currentChapterBpm);
       closerSlowApplied = false;
+      currentPageBpmDrop = 0;
     }
     var bpmInputDisp = document.getElementById('bpm-input');
     if (bpmInputDisp) bpmInputDisp.value = Math.round(animator.getState().bpm / 4);
