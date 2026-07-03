@@ -1239,6 +1239,17 @@ const renderer = (function() {
       target.appendChild(lineDiv);
     }
 
+    // Stamp a mode-independent line number on every element (#8): element indices
+    // differ between display modes (asterisk = per syllable, english = per line), so
+    // the pointer is mapped across a mode switch by (line, fraction-within-line).
+    var lineDivs = [];
+    for (let i = 0; i < elements.length; i++) {
+      var lp = elements[i].parentElement;
+      var ln = lineDivs.indexOf(lp);
+      if (ln === -1) { lineDivs.push(lp); ln = lineDivs.length - 1; }
+      elements[i].dataset.lineNum = String(ln);
+    }
+
     return elements;
   }
 
@@ -1360,6 +1371,33 @@ const renderer = (function() {
     return syllableElements;
   }
 
+  // Cross-mode pointer mapping (#8): map index -> (line, frac) in the current render,
+  // and back to the closest index after a re-render in the other display mode.
+  function getLinePosition(index) {
+    if (index < 0 || index >= syllableElements.length) return null;
+    var ln = parseInt(syllableElements[index].dataset.lineNum, 10) || 0;
+    var first = -1, count = 0;
+    for (var i = 0; i < syllableElements.length; i++) {
+      if ((parseInt(syllableElements[i].dataset.lineNum, 10) || 0) === ln) {
+        if (first === -1) first = i;
+        count++;
+      }
+    }
+    return { line: ln, frac: count > 1 ? (index - first) / (count - 1) : 0 };
+  }
+  function indexForLinePosition(pos) {
+    if (!pos || !syllableElements.length) return -1;
+    var first = -1, count = 0;
+    for (var i = 0; i < syllableElements.length; i++) {
+      if ((parseInt(syllableElements[i].dataset.lineNum, 10) || 0) === pos.line) {
+        if (first === -1) first = i;
+        count++;
+      }
+    }
+    if (first === -1) return syllableElements.length - 1; // line missing — clamp to end
+    return first + Math.round(pos.frac * (count - 1));
+  }
+
   return {
     renderPage: renderPage,
     prefetchPage: prefetchPage,
@@ -1368,6 +1406,8 @@ const renderer = (function() {
     setMode: setMode,
     setPaceConfig: setPaceConfig,
     getSyllableElements: getSyllableElements,
+    getLinePosition: getLinePosition,
+    indexForLinePosition: indexForLinePosition,
     getMode: function() { return currentMode; }
   };
 })();
@@ -1936,8 +1976,12 @@ const ui = (function() {
     var modeBtns = document.querySelectorAll('.mode-btn');
     modeBtns.forEach(function(btn) {
       btn.addEventListener('click', function() {
+        // #8: carry the pointer across the mode switch by (line, fraction-within-line)
+        // — element indices differ between display modes, so a raw index would jump.
         var state = animator.getState();
+        var linePos = renderer.getLinePosition(state.currentIndex);
         renderer.setMode(btn.dataset.mode);
+        if (state.currentIndex >= 0) state.currentIndex = renderer.indexForLinePosition(linePos);
         animator.restore(state);
       });
     });

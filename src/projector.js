@@ -102,6 +102,13 @@
     var elems = renderer.getSyllableElements();
     if (data.index >= 0 && data.index < elems.length) {
       if (data.state === 'active') {
+        // Backfill 'done' on everything before the active syllable — after a
+        // display-mode re-render (#8) only the active index is re-announced, and
+        // the invariant "everything before the active syllable is done" always holds.
+        for (var b = 0; b < data.index; b++) {
+          elems[b].classList.remove('active');
+          elems[b].classList.add('done');
+        }
         elems[data.index].classList.add('active');
         // Static-title header spans (#4) carry noPointer — keep the hand hidden.
         if (elems[data.index].dataset && elems[data.index].dataset.noPointer) {

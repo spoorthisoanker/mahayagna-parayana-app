@@ -484,8 +484,14 @@
       document.querySelectorAll('.mode-btn').forEach(function(b) { b.classList.remove('selected'); });
       btn.classList.add('selected');
       currentDisplayMode = btn.dataset.mode;
+      // #8: element indices differ between display modes (asterisk = per syllable,
+      // english = per line), so carry the pointer across the re-render by
+      // (line, fraction-within-line) instead of raw index — the session keeps its
+      // exact position and play state.
       var state = animator.getState();
+      var linePos = renderer.getLinePosition(state.currentIndex);
       renderer.setMode(currentDisplayMode);
+      if (state.currentIndex >= 0) state.currentIndex = renderer.indexForLinePosition(linePos);
       animator.restore(state);
       sendToProjector('display-mode', { mode: currentDisplayMode });
       // Re-announce the active syllable so the projector pointer snaps to the right position

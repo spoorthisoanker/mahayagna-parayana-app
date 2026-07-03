@@ -926,6 +926,19 @@ const renderer = (function() {
       target.appendChild(lineDiv);
     }
 
+    // Stamp a mode-independent line number on every element (#8): element indices
+    // differ between display modes (asterisk = one span per syllable, english = one
+    // span per line), so the pointer position is mapped across a mode switch by
+    // (line, fraction-within-line) instead of by raw index. Elements of a line are
+    // contiguous, so group by parent lineDiv.
+    var lineDivs = [];
+    for (let i = 0; i < elements.length; i++) {
+      var lp = elements[i].parentElement;
+      var ln = lineDivs.indexOf(lp);
+      if (ln === -1) { lineDivs.push(lp); ln = lineDivs.length - 1; }
+      elements[i].dataset.lineNum = String(ln);
+    }
+
     return elements;
   }
 
@@ -1047,6 +1060,34 @@ const renderer = (function() {
     return syllableElements;
   }
 
+  // Cross-mode pointer mapping (#8). getLinePosition(index) → { line, frac } in the
+  // CURRENT render; indexForLinePosition(pos) → the closest element index for that
+  // position after a re-render (possibly in the other display mode).
+  function getLinePosition(index) {
+    if (index < 0 || index >= syllableElements.length) return null;
+    var ln = parseInt(syllableElements[index].dataset.lineNum, 10) || 0;
+    var first = -1, count = 0;
+    for (var i = 0; i < syllableElements.length; i++) {
+      if ((parseInt(syllableElements[i].dataset.lineNum, 10) || 0) === ln) {
+        if (first === -1) first = i;
+        count++;
+      }
+    }
+    return { line: ln, frac: count > 1 ? (index - first) / (count - 1) : 0 };
+  }
+  function indexForLinePosition(pos) {
+    if (!pos || !syllableElements.length) return -1;
+    var first = -1, count = 0;
+    for (var i = 0; i < syllableElements.length; i++) {
+      if ((parseInt(syllableElements[i].dataset.lineNum, 10) || 0) === pos.line) {
+        if (first === -1) first = i;
+        count++;
+      }
+    }
+    if (first === -1) return syllableElements.length - 1; // line missing — clamp to end
+    return first + Math.round(pos.frac * (count - 1));
+  }
+
   return {
     renderPage: renderPage,
     prefetchPage: prefetchPage,
@@ -1055,6 +1096,8 @@ const renderer = (function() {
     setMode: setMode,
     setPaceConfig: setPaceConfig,
     getSyllableElements: getSyllableElements,
+    getLinePosition: getLinePosition,
+    indexForLinePosition: indexForLinePosition,
     getMode: function() { return currentMode; }
   };
 })();
