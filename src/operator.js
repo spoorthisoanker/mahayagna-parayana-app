@@ -12,6 +12,7 @@
   // only affects the Electron operator window.
   var CHANT_DEFAULTS = {
     colophonBpmDrop: 0,      // internal-bpm slow-down for the closing slide + Sarvadharmān; 0 = chapter pace (#5). Settings field is in BPM (×4).
+    headerBpmDrop: 20,       // internal-bpm slow-down for chapter-opening header slides (default 5 BPM). Settings field is in BPM (×4), 5-BPM steps.
     countdownSeconds: 5,     // pre-play countdown length
     chapterGapSeconds: 3,    // gap between chapters before the countdown
     verseZoom: 100,          // projector verse-text zoom (%) — #34
@@ -27,6 +28,7 @@
   function loadChantSettings() {
     var merged = {
       colophonBpmDrop: CHANT_DEFAULTS.colophonBpmDrop,
+      headerBpmDrop: CHANT_DEFAULTS.headerBpmDrop,
       countdownSeconds: CHANT_DEFAULTS.countdownSeconds,
       chapterGapSeconds: CHANT_DEFAULTS.chapterGapSeconds,
       verseZoom: CHANT_DEFAULTS.verseZoom,
@@ -44,6 +46,7 @@
         var parsed = JSON.parse(raw);
         if (parsed && typeof parsed === 'object') {
           if (typeof parsed.colophonBpmDrop === 'number') merged.colophonBpmDrop = parsed.colophonBpmDrop;
+          if (typeof parsed.headerBpmDrop === 'number') merged.headerBpmDrop = parsed.headerBpmDrop;
           if (typeof parsed.countdownSeconds === 'number') merged.countdownSeconds = parsed.countdownSeconds;
           if (typeof parsed.chapterGapSeconds === 'number') merged.chapterGapSeconds = parsed.chapterGapSeconds;
           if (typeof parsed.verseZoom === 'number') merged.verseZoom = parsed.verseZoom;
@@ -244,6 +247,10 @@
       pageBpmDrop = 20; // 5 BPM
     } else if (page && chId === '0' && page.shlokaNum === '8') {
       pageBpmDrop = currentChapterBpm - 280; // fixed 70 BPM
+    } else if (page && page.isHeader && !(page.lines && page.lines[0] && page.lines[0].sty === 'uh')) {
+      // Chapter-opening header slides (fh/sh/th) chant headerBpmDrop slower (5-BPM
+      // steps via Settings). Closing 'uh' headers keep the chapter pace.
+      pageBpmDrop = chantSettings.headerBpmDrop;
     }
     if (pageBpmDrop !== 0) {
       animator.setBpm(currentChapterBpm - pageBpmDrop);
@@ -592,6 +599,7 @@
   var settingsOverlay = document.getElementById('settings-overlay');
   var settingsSectionList = document.getElementById('settings-section-list');
   var fldColophon = document.getElementById('set-colophon');
+  var fldHeaderSlow = document.getElementById('set-header-slow');
   var fldCountdown = document.getElementById('set-countdown');
   var fldChapterGap = document.getElementById('set-chapter-gap');
   var fldVerseZoom = document.getElementById('set-verse-zoom');
@@ -660,6 +668,7 @@
   // Populate all settings inputs from the current chantSettings.
   function refreshSettingsInputs() {
     fldColophon.value = chantSettings.colophonBpmDrop / 4;  // stored internal bpm → shown in BPM
+    if (fldHeaderSlow) fldHeaderSlow.value = chantSettings.headerBpmDrop / 4;  // stored internal bpm → shown in BPM
     fldCountdown.value = chantSettings.countdownSeconds;
     fldChapterGap.value = chantSettings.chapterGapSeconds;
     if (fldVerseZoom) fldVerseZoom.value = chantSettings.verseZoom;
@@ -692,6 +701,7 @@
 
   function saveSettings() {
     chantSettings.colophonBpmDrop = Math.round(clampNum(fldColophon.value, 0, 20, 0)) * 4;  // BPM field → internal bpm
+    if (fldHeaderSlow) chantSettings.headerBpmDrop = Math.round(clampNum(fldHeaderSlow.value, 0, 20, CHANT_DEFAULTS.headerBpmDrop / 4) / 5) * 5 * 4;  // BPM field (5-BPM steps) → internal bpm
     chantSettings.countdownSeconds = Math.round(clampNum(fldCountdown.value, 0, 15, CHANT_DEFAULTS.countdownSeconds));
     chantSettings.chapterGapSeconds = clampNum(fldChapterGap.value, 0, 15, CHANT_DEFAULTS.chapterGapSeconds);
     if (fldVerseZoom) chantSettings.verseZoom = Math.round(clampNum(fldVerseZoom.value, 50, 250, CHANT_DEFAULTS.verseZoom));

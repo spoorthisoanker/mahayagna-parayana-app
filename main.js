@@ -135,7 +135,8 @@ async function openProjector() {
 var projectorChannels = [
   'render-page', 'syllable-update', 'animation-reset',
   'countdown', 'display-mode', 'spm-change',
-  'show-instruction', 'dismiss-instruction'
+  'show-instruction', 'dismiss-instruction',
+  'verse-zoom', 'theme'
 ];
 
 projectorChannels.forEach(function(channel) {

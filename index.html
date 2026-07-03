@@ -1598,6 +1598,8 @@ const ui = (function() {
   const shlokaSelect = document.getElementById('shloka-select');
   // tempo sheet: colophon ("om tatsaditi") / ending pages run 5 BPM slower (= 20 internal bpm).
   var COLOPHON_BPM_DROP = 20;
+  // Chapter-opening header slides chant 5 BPM slower (closing 'uh' headers keep chapter pace).
+  var HEADER_BPM_DROP = 20;
   // The tempo the chapter should run at: set on chapter load (defaultBpm or current),
   // updated on manual BPM change. Colophon pages run at currentChapterBpm - COLOPHON_BPM_DROP.
   var currentChapterBpm = 380;
@@ -1693,6 +1695,8 @@ const ui = (function() {
       pageBpmDrop = 20; // 5 BPM
     } else if (page && chId === '0' && page.shlokaNum === '8') {
       pageBpmDrop = currentChapterBpm - 280; // fixed 70 BPM
+    } else if (page && page.isHeader && !(page.lines && page.lines[0] && page.lines[0].sty === 'uh')) {
+      pageBpmDrop = HEADER_BPM_DROP; // chapter-opening headers chant slower
     }
     if (pageBpmDrop !== 0) {
       animator.setBpm(currentChapterBpm - pageBpmDrop);
