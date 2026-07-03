@@ -715,7 +715,14 @@ const renderer = (function() {
   //   mahatmyamBeats — Gita Mahātmyam verse line-end pause. Its verses are tagged
   //     triṣṭubh but sung at an anuṣṭubh-ish clip; this dedicated pause (default 2.5,
   //     #44) overrides the meter default for that section so it stops dragging.
-  const paceConfig = { headerPauseBeats: 3, anustubhBeats: 3, tristubhBeats: 4.5, uvacaBeats: 2, mahatmyamBeats: 2.5 };
+  const paceConfig = { headerPauseBeats: 3, anustubhBeats: 2, tristubhBeats: 3, uvacaBeats: 2, mahatmyamBeats: 3 };
+  // Per-section line-pause overrides (parayana team's section table): Dhyana ('0') and
+  // Invocation Prayers use gentler pauses (anuṣṭubh 1.5 / triṣṭubh 2.5). Every other
+  // section uses the global paceConfig defaults (anuṣṭubh 2 / triṣṭubh 3, header 3).
+  const SECTION_PAUSE_OVERRIDES = {
+    '0':                { anustubhBeats: 1.5, tristubhBeats: 2.5 },
+    invocation_prayers: { anustubhBeats: 1.5, tristubhBeats: 2.5 }
+  };
   function setPaceConfig(cfg) {
     if (!cfg) return;
     if (typeof cfg.headerPauseBeats === 'number') paceConfig.headerPauseBeats = cfg.headerPauseBeats;
@@ -894,16 +901,19 @@ const renderer = (function() {
             // Explicit per-line override (e.g. Samarpana repeated invocation, #36.3).
             elements[i].dataset.lineEndPauseBeats = String(line.pauseBeats);
           } else {
-            // Meter-aware line-end pause (Issues #20/#21), configurable via the
-            // operator settings: triṣṭubh (default 4.5) vs anuṣṭubh (default 3).
-            // Dhyana (chapter '0') carries per-shloka meter too, so it uses the
-            // same rule (no flat-3 special case). Gita Mahātmyam is mis-tagged triṣṭubh
-            // but chanted faster, so it takes its own pause (default 2.5, #44).
+            // Meter-aware line-end pause (Issues #20/#21): triṣṭubh (default 3) vs
+            // anuṣṭubh (default 2). Dhyana ('0') and Invocation Prayers use gentler
+            // per-section overrides (1.5 / 2.5). Gita Mahātmyam is all triṣṭubh and
+            // takes its own single pause (default 3).
             var lineEndBeats;
-            if (dataLayer.getCurrentChapterId() === 'gita_mahatmyam') {
+            var section = dataLayer.getCurrentChapterId();
+            if (section === 'gita_mahatmyam') {
               lineEndBeats = paceConfig.mahatmyamBeats;
             } else {
-              lineEndBeats = (pageData.meter === 'tristubh' ? paceConfig.tristubhBeats : paceConfig.anustubhBeats);
+              var ov = SECTION_PAUSE_OVERRIDES[section];
+              var aB = ov ? ov.anustubhBeats : paceConfig.anustubhBeats;
+              var tB = ov ? ov.tristubhBeats : paceConfig.tristubhBeats;
+              lineEndBeats = (pageData.meter === 'tristubh' ? tB : aB);
             }
             elements[i].dataset.lineEndPauseBeats = String(lineEndBeats);
           }

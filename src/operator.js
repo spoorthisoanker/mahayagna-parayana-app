@@ -16,10 +16,10 @@
     chapterGapSeconds: 3,    // gap between chapters before the countdown
     verseZoom: 100,          // projector verse-text zoom (%) — #34
     headerPauseBeats: 3,     // pause (mātrās) after each header line — #36.1
-    anustubhBeats: 3,        // anuṣṭubh verse line-end pause (mātrās) — #36.2
-    tristubhBeats: 4.5,      // triṣṭubh verse line-end pause (mātrās) — #36.2
+    anustubhBeats: 2,        // anuṣṭubh verse line-end pause (mātrās) — section table
+    tristubhBeats: 3,        // triṣṭubh verse line-end pause (mātrās) — section table
     uvacaBeats: 2,           // "... uvāca -" speaker-label line-end pause (mātrās) — #26
-    mahatmyamBeats: 2.5,     // Gita Mahātmyam verse line-end pause (mātrās) — #44
+    mahatmyamBeats: 3,       // Gita Mahātmyam verse line-end pause (mātrās) — section table
     theme: 'dark',           // projector theme: 'dark' (black bg) or 'light' (white bg) — #37
     sectionBpm: {}           // chapterId -> internal BPM override; empty = use data defaultBpm
   };
@@ -635,14 +635,15 @@
 
   // Effective internal BPM for a section: Settings override, else data defaultBpm.
   // Returns null when neither is known (sections without a defaultBpm → "manual").
-  // Internal bpm = display BPM × 4. Defaults per the parayana team's BPM table:
-  // Dhyana 60, Ch1 75, Ch2 80, Ch3–18 85, Datta Stavam 70, Invocation 65, Mahātmyam 80,
-  // Kshama Prārthana 75. Keep in sync with each section's data defaultBpm.
+  // Internal bpm = display BPM × 4. Defaults per the parayana team's BPM/pause table:
+  // Dhyana 60, Ch1 75, Ch2 80, Ch3–15 85, Ch16 80, Ch17–18 75, Datta Stavam 75,
+  // Invocation 65, Mahātmyam 75, Kshama Prārthana 75. Keep in sync with each section's
+  // data defaultBpm.
   var DATA_DEFAULT_BPM = {
-    datta_stavam: 280, invocation_prayers: 260, '0': 240, '1': 300,
+    datta_stavam: 300, invocation_prayers: 260, '0': 240, '1': 300,
     '2': 320, '3': 340, '4': 340, '5': 340, '6': 340, '7': 340, '8': 340,
     '9': 340, '10': 340, '11': 340, '12': 340, '13': 340, '14': 340,
-    '15': 340, '16': 340, '17': 340, '18': 340, gita_mahatmyam: 320,
+    '15': 340, '16': 320, '17': 300, '18': 300, gita_mahatmyam: 300,
     kshama_prarthana: 300
   };
   function effectiveSectionBpm(id) {

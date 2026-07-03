@@ -1096,7 +1096,13 @@ const renderer = (function() {
   let currentMode = 'asterisk';
   // Configurable pace (mātrās). Operator settings override via setPaceConfig; the
   // standalone web app uses these defaults. tristubh 4.5 / anuṣṭubh 3 (#20/#21/#36.2).
-  const paceConfig = { headerPauseBeats: 3, anustubhBeats: 3, tristubhBeats: 4.5, uvacaBeats: 2, mahatmyamBeats: 2.5 };
+  const paceConfig = { headerPauseBeats: 3, anustubhBeats: 2, tristubhBeats: 3, uvacaBeats: 2, mahatmyamBeats: 3 };
+  // Per-section line-pause overrides (section table): Dhyana ('0') and Invocation Prayers
+  // use gentler pauses (anuṣṭubh 1.5 / triṣṭubh 2.5); everything else uses paceConfig.
+  const SECTION_PAUSE_OVERRIDES = {
+    '0':                { anustubhBeats: 1.5, tristubhBeats: 2.5 },
+    invocation_prayers: { anustubhBeats: 1.5, tristubhBeats: 2.5 }
+  };
   function setPaceConfig(cfg) {
     if (!cfg) return;
     if (typeof cfg.headerPauseBeats === 'number') paceConfig.headerPauseBeats = cfg.headerPauseBeats;
@@ -1217,9 +1223,13 @@ const renderer = (function() {
             // operator settings: triṣṭubh (default 4.5) vs anuṣṭubh (default 3).
             // Dhyana (chapter '0') carries per-shloka meter too, so it uses the
             // same rule (no flat-3 special case).
-            var lineEndBeats = (dataLayer.getCurrentChapterId() === 'gita_mahatmyam')
+            var section = dataLayer.getCurrentChapterId();
+            var ov = SECTION_PAUSE_OVERRIDES[section];
+            var lineEndBeats = (section === 'gita_mahatmyam')
               ? paceConfig.mahatmyamBeats
-              : (pageData.meter === 'tristubh' ? paceConfig.tristubhBeats : paceConfig.anustubhBeats);
+              : (pageData.meter === 'tristubh'
+                  ? (ov ? ov.tristubhBeats : paceConfig.tristubhBeats)
+                  : (ov ? ov.anustubhBeats : paceConfig.anustubhBeats));
             elements[i].dataset.lineEndPauseBeats = String(lineEndBeats);
           }
           break;
