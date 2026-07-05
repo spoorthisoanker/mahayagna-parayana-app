@@ -165,8 +165,23 @@
   });
 
   // verse-zoom: operator-controlled verse text zoom (#34)
+  var lastZoomScale = 1;
   window.electronAPI.on('verse-zoom', function(data) {
-    document.documentElement.style.setProperty('--verse-zoom', String(data.scale || 1));
+    var scale = data.scale || 1;
+    document.documentElement.style.setProperty('--verse-zoom', String(scale));
+    if (scale === lastZoomScale) return;
+    lastZoomScale = scale;
+    // Zoom shifts element geometry: re-anchor the hand over the active syllable,
+    // otherwise (especially while paused) it floats at the pre-zoom pixel position
+    // until the next syllable-update.
+    var active = document.querySelector('.syllable.active');
+    if (active && pointer.style.display !== 'none') {
+      if (active.dataset && active.dataset.noPointer) { hidePointer(); return; }
+      var rect = active.getBoundingClientRect(); // measured after the zoom applies
+      pointer.style.transition = 'none';
+      pointer.style.left = (rect.left + rect.width / 2 - 18) + 'px';
+      pointer.style.top = (rect.top - 40) + 'px';
+    }
   });
 
   // theme: operator-controlled dark/light projector theme (#37)

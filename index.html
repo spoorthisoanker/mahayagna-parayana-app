@@ -1974,15 +1974,25 @@ const ui = (function() {
     });
 
     var modeBtns = document.querySelectorAll('.mode-btn');
+    // Cross-toggle fine-position memory (#8): english lines are single elements, so a
+    // toggle into english loses the within-line fraction. Remember it so toggling back
+    // (with the pointer unmoved) returns to the exact syllable, not the pāda start.
+    var lastTogglePos = null, lastToggleIndex = -1;
     modeBtns.forEach(function(btn) {
       btn.addEventListener('click', function() {
         // #8: carry the pointer across the mode switch by (line, fraction-within-line)
         // — element indices differ between display modes, so a raw index would jump.
         var state = animator.getState();
         var linePos = renderer.getLinePosition(state.currentIndex);
+        if (lastTogglePos && linePos && state.currentIndex === lastToggleIndex &&
+            lastTogglePos.line === linePos.line && linePos.frac === 0) {
+          linePos = lastTogglePos;
+        }
         renderer.setMode(btn.dataset.mode);
         if (state.currentIndex >= 0) state.currentIndex = renderer.indexForLinePosition(linePos);
         animator.restore(state);
+        lastTogglePos = linePos;
+        lastToggleIndex = state.currentIndex;
       });
     });
 
