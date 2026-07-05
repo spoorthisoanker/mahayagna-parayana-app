@@ -479,35 +479,24 @@
   });
 
   // Display mode
-  // Cross-toggle fine-position memory (#8): english lines are single elements, so a
-  // toggle into english loses the within-line fraction. Remember it so toggling back
-  // (with the pointer unmoved) returns to the exact syllable, not the pāda start.
-  var lastTogglePos = null;   // { line, frac } captured at the previous toggle
-  var lastToggleIndex = -1;   // the element index restored to at that toggle
   document.querySelectorAll('.mode-btn').forEach(function(btn) {
     btn.addEventListener('click', function() {
       document.querySelectorAll('.mode-btn').forEach(function(b) { b.classList.remove('selected'); });
       btn.classList.add('selected');
       currentDisplayMode = btn.dataset.mode;
       // #8: element indices differ between display modes (asterisk = per syllable,
-      // english = per line), so carry the pointer across the re-render by
-      // (line, fraction-within-line) instead of raw index — the session keeps its
-      // exact position and play state.
+      // english = per line), so carry the pointer across the re-render as a fraction
+      // of its line — index + sub-element progress in, index + residual progress out.
+      // Round trips are exact and playback continues from the same point.
       var state = animator.getState();
-      var linePos = renderer.getLinePosition(state.currentIndex);
-      // If the pointer hasn't moved since the previous toggle, reuse that toggle's
-      // finer in-line fraction: english lines are single elements (frac 0), so
-      // without this, repeated Ast→Eng→Ast flips while paused would drift the
-      // pointer back to the pāda start instead of staying pinned.
-      if (lastTogglePos && linePos && state.currentIndex === lastToggleIndex &&
-          lastTogglePos.line === linePos.line && linePos.frac === 0) {
-        linePos = lastTogglePos;
-      }
+      var linePos = renderer.getLinePosition(state.currentIndex, state.progress);
       renderer.setMode(currentDisplayMode);
-      if (state.currentIndex >= 0) state.currentIndex = renderer.indexForLinePosition(linePos);
+      if (state.currentIndex >= 0 && linePos) {
+        var mapped = renderer.mapLinePosition(linePos);
+        state.currentIndex = mapped.index;
+        state.progress = mapped.progress;
+      }
       animator.restore(state);
-      lastTogglePos = linePos;
-      lastToggleIndex = state.currentIndex;
       sendToProjector('display-mode', { mode: currentDisplayMode });
       // Re-announce the active syllable so the projector pointer snaps to the right position
       var restoredState = animator.getState();
