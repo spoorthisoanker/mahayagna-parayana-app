@@ -1366,6 +1366,22 @@ const animator = (function() {
     // still knows the within-line position while paused.
     frozenProgress = (state.progress > 0 && state.progress < 1) ? state.progress : 0;
 
+    // Visual: place the hand at the carried fractional position WITHIN the element —
+    // an english line spans a whole pāda, so leaving the hand at its left edge/center
+    // reads as a reset to the pāda start (#8).
+    var carriedP = frozenProgress;
+    if (currentIndex >= 0 && carriedP > 0) {
+      var curEl = elems[currentIndex];
+      if (curEl && !(curEl.dataset && curEl.dataset.noPointer)) {
+        var cRect = curEl.getBoundingClientRect();
+        pointer.style.transition = 'none';
+        pointer.style.display = 'block';
+        pointer.style.left = (cRect.left + carriedP * cRect.width - 18) + 'px';
+        pointer.style.top = (cRect.top - 40) + 'px';
+        pointer.offsetWidth;
+      }
+    }
+
     // Resume playing if it was playing
     if (state.isPlaying && currentIndex >= 0) {
       isPlaying = true;
@@ -1382,6 +1398,27 @@ const animator = (function() {
       elementDurationMs = beats * getBeatMs();
       frozenProgress = 0;
       timeoutId = setTimeout(advance, Math.max(50, totalMs * (1 - resumeFrom)));
+      // Recreate the forward sweep/glide for the REMAINDER of the element, from the
+      // carried position (advance() only creates it at element activation).
+      var runEl = elems[currentIndex];
+      if (runEl && !(runEl.dataset && runEl.dataset.noPointer)) {
+        var speakMs = Math.max(50, beats * getBeatMs() * (1 - resumeFrom));
+        var rRect = runEl.getBoundingClientRect();
+        var resumeIdx = currentIndex;
+        requestAnimationFrame(function() {
+          if (renderer.getMode() === 'english') {
+            pointer.style.transition = 'left ' + (speakMs / 1000) + 's linear';
+            pointer.style.left = (rRect.right - 18) + 'px';
+          } else {
+            var nIdx = resumeIdx + 1;
+            while (nIdx < elems.length && elems[nIdx].classList.contains('verse-marker')) nIdx++;
+            if (nIdx < elems.length) {
+              var nRect = elems[nIdx].getBoundingClientRect();
+              if (Math.abs(nRect.top - rRect.top) < 15) positionPointer(elems[nIdx], speakMs);
+            }
+          }
+        });
+      }
     } else if (currentIndex < 0) {
       hidePointer();
     }

@@ -505,7 +505,7 @@
         var reElems = renderer.getSyllableElements();
         var reEl = reElems[restoredState.currentIndex];
         var reBeats = reEl ? (parseInt(reEl.dataset.beats, 10) || 1) : 1;
-        sendToProjector('syllable-update', { index: restoredState.currentIndex, state: 'active', beatMs: reBeatMs, durationMs: reBeats * reBeatMs });
+        sendToProjector('syllable-update', { index: restoredState.currentIndex, state: 'active', beatMs: reBeatMs, durationMs: reBeats * reBeatMs, progress: restoredState.progress });
       }
     });
   });
