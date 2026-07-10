@@ -989,7 +989,9 @@ const dataLayer = (function() {
           shlokaNum: shloka.shlokaNum,
           lines: regularEntries.map(e => ({ text: e.text, iast: e.iast || '', swhtsp: e.swhtsp, sty: e.sty, cont: e.cont, pauseBeats: e.pauseBeats })),
           isHeader: false,
-          meter: shloka.meter
+          meter: shloka.meter,
+          // Per-slide tempo offset (internal bpm) from data — e.g. Invocation santi page −20.
+          bpmOffset: (typeof shloka.bpmOffset === 'number' ? shloka.bpmOffset : undefined)
         };
         // Colophon ("|| ōṃ tatsaditi ...") — leading || distinguishes it from
         // verse 17.23, which also begins with "ōṃ tatsaditi".
@@ -1142,7 +1144,7 @@ const renderer = (function() {
         const textNode = document.createTextNode(displayText);
         lineDiv.appendChild(textNode);
         if (line.sty === 'fh') {
-          lineDiv.style.color = '#FFD700';
+          lineDiv.style.color = 'var(--active, #FFD700)';
           lineDiv.style.fontSize = '3vw';
         }
         target.appendChild(lineDiv);
@@ -1807,6 +1809,9 @@ const ui = (function() {
       pageBpmDrop = currentChapterBpm - 280; // fixed 70 BPM
     } else if (page && page.isHeader && !(page.lines && page.lines[0] && page.lines[0].sty === 'uh')) {
       pageBpmDrop = HEADER_BPM_DROP; // chapter-opening headers chant slower
+    } else if (page && typeof page.bpmOffset === 'number') {
+      // Per-slide tempo offset from data (e.g. Invocation santi page −20 = −5 BPM).
+      pageBpmDrop = -page.bpmOffset;
     }
     if (pageBpmDrop !== 0) {
       animator.setBpm(currentChapterBpm - pageBpmDrop);
@@ -1827,13 +1832,27 @@ const ui = (function() {
     var needsMudra = page && (page.isHeader || page.isCloser ||
       page.shlokaNum === 'sarvadharmān' ||
       (chId === '18' && (page.shlokaNum === '66' || page.shlokaNum === '78')));
+    // Crossed-fingers cue at the start of sloka 1 and sloka 2 of EVERY chapter:
+    // auto-shown once per entry into the sloka, auto-dismissed after ~2 GIF loops.
+    var slokaGifKey = (page && !page.isHeader && (page.shlokaNum === '1' || page.shlokaNum === '2'))
+      ? chId + '/' + page.shlokaNum : null;
     if (needsMudra) {
       // Pranam añjali mudra for every mudra overlay site.
       showInstruction('pranam', { corner: true });
       headerInstructionShowing = true;
+    } else if (slokaGifKey && slokaGifKey !== lastSlokaGifKey) {
+      showInstruction('crossed_fingers', { corner: true });
+      headerInstructionShowing = true;
+      if (slokaGifTimer) clearTimeout(slokaGifTimer);
+      var thisGifKey = slokaGifKey;
+      slokaGifTimer = setTimeout(function() {
+        slokaGifTimer = null;
+        if (headerInstructionShowing && lastSlokaGifKey === thisGifKey) dismissInstruction();
+      }, 3500);
     } else if (headerInstructionShowing) {
       dismissInstruction();
     }
+    lastSlokaGifKey = slokaGifKey;
 
     // Pre-render the next page into the hidden buffer
     var nextIdx = currentPage + 1;
@@ -2123,6 +2142,7 @@ const ui = (function() {
 // Instructional Overlays
 // ============================================================
 var INSTRUCTION_DATA = {
+  crossed_fingers:   { image: 'img/instructions/crossed-fingers.gif' },
   folded_hands:      { image: 'img/instructions/image7.gif' },
   namaskara_anim:    { image: 'img/instructions/image9.gif' },
   pranam:            { text: 'Pran\u0101m', image: 'img/instructions/image7.gif' },
@@ -2140,6 +2160,8 @@ var INSTRUCTION_DATA = {
 // True only when the card was auto-shown (header page / chapter end) — gates the
 // auto-dismiss in ui.showPage so manual instructions survive page flips.
 var headerInstructionShowing = false;
+var lastSlokaGifKey = null;   // chapter/sloka of the last crossed-fingers cue
+var slokaGifTimer = null;
 
 function showInstruction(key, opts) {
   var data = INSTRUCTION_DATA[key];

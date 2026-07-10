@@ -596,7 +596,9 @@ const dataLayer = (function() {
           shlokaNum: shloka.shlokaNum,
           lines: regularEntries.map(e => ({ text: e.text, iast: e.iast || '', swhtsp: e.swhtsp, sty: e.sty, cont: e.cont, pauseBeats: e.pauseBeats })),
           isHeader: false,
-          meter: shloka.meter
+          meter: shloka.meter,
+          // Per-slide tempo offset (internal bpm) from data — e.g. Invocation santi page −20.
+          bpmOffset: (typeof shloka.bpmOffset === 'number' ? shloka.bpmOffset : undefined)
         };
         // Colophon ("|| ōṃ tatsaditi ...") — leading || distinguishes it from
         // verse 17.23, which also begins with "ōṃ tatsaditi".
@@ -760,10 +762,10 @@ const renderer = (function() {
 
       if (pageData.isHeader) {
         if (line.sty === 'fh') {
-          lineDiv.style.color = '#FFD700';
+          lineDiv.style.color = 'var(--active, #FFD700)';
           lineDiv.style.fontSize = '3vw';
         } else if (line.sty === 'sh') {
-          lineDiv.style.color = '#fff';
+          lineDiv.style.color = 'var(--fg, #fff)';
           lineDiv.style.fontSize = '2.5vw';
         }
 

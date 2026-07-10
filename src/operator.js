@@ -127,6 +127,7 @@
   // --- Instruction data ---
   var INSTRUCTION_DATA = {
     folded_hands:      { image: '../img/instructions/folded-hands.png' },
+    crossed_fingers:   { image: '../img/instructions/crossed-fingers.gif' },
     namaskara_anim:    { image: '../img/instructions/image9.gif' },
     pranam:            { text: 'Pran\u0101m', image: '../img/instructions/image7.gif' },
     sit_straight:      { text: 'Sit Straight', image: '../img/instructions/image3.gif' },
@@ -251,6 +252,9 @@
       // Chapter-opening header slides (fh/sh/th) chant headerBpmDrop slower (5-BPM
       // steps via Settings). Closing 'uh' headers keep the chapter pace.
       pageBpmDrop = chantSettings.headerBpmDrop;
+    } else if (page && typeof page.bpmOffset === 'number') {
+      // Per-slide tempo offset from data (e.g. Invocation santi page −20 = −5 BPM).
+      pageBpmDrop = -page.bpmOffset;
     }
     if (pageBpmDrop !== 0) {
       animator.setBpm(currentChapterBpm - pageBpmDrop);
@@ -278,15 +282,33 @@
     var needsMudra = page && (page.isHeader || page.isCloser ||
       page.shlokaNum === 'sarvadharmān' ||
       (chId === '18' && (page.shlokaNum === '66' || page.shlokaNum === '78')));
+    // Crossed-fingers cue at the start of sloka 1 and sloka 2 of EVERY chapter:
+    // auto-shown once per entry into the sloka (repeat passes of the same sloka
+    // don't replay it; re-entering the sloka later does), auto-dismissed after
+    // ~2 GIF loops or on leaving the page.
+    var slokaGifKey = (page && !page.isHeader && (page.shlokaNum === '1' || page.shlokaNum === '2'))
+      ? chId + '/' + page.shlokaNum : null;
     if (needsMudra) {
       // Pranam añjali mudra for every mudra overlay site.
       var mudraKey = 'pranam';
       sendToProjector('show-instruction', INSTRUCTION_DATA[mudraKey]);
       instructionShowing = true;
       headerInstructionShowing = true;
+    } else if (slokaGifKey && slokaGifKey !== lastSlokaGifKey) {
+      sendToProjector('show-instruction', INSTRUCTION_DATA['crossed_fingers']);
+      instructionShowing = true;
+      headerInstructionShowing = true;   // auto card — auto-dismissed on other pages
+      if (slokaGifTimer) clearTimeout(slokaGifTimer);
+      var thisGifKey = slokaGifKey;
+      slokaGifTimer = setTimeout(function() {
+        slokaGifTimer = null;
+        // Only dismiss if OUR card is still the one showing.
+        if (headerInstructionShowing && lastSlokaGifKey === thisGifKey) dismissInstruction();
+      }, 3500);
     } else if (headerInstructionShowing) {
       dismissInstruction();
     }
+    lastSlokaGifKey = slokaGifKey;
 
     // Pre-render next page
     var nextIdx = currentPage + 1;
@@ -523,6 +545,8 @@
 
   // Instruction dropdown
   var instructionShowing = false;
+  var lastSlokaGifKey = null;   // chapter/sloka of the last crossed-fingers cue (sloka-1/2 gif)
+  var slokaGifTimer = null;
   // True only when the card was auto-shown (header page / chapter end) — gates the
   // auto-dismiss in showPage so manual instructions survive page flips.
   var headerInstructionShowing = false;
