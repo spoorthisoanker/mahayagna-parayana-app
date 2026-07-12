@@ -127,7 +127,7 @@
   // --- Instruction data ---
   var INSTRUCTION_DATA = {
     folded_hands:      { image: '../img/instructions/folded-hands.png' },
-    folded_hands_anim: { image: '../img/instructions/folded-hands-anim.gif' },
+    folded_hands_anim: { image: '../img/instructions/folded-hands.png' },
     namaskara_anim:    { image: '../img/instructions/image9.gif' },
     pranam:            { text: 'Pran\u0101m', image: '../img/instructions/image7.gif' },
     sit_straight:      { text: 'Sit Straight', image: '../img/instructions/image3.gif' },
