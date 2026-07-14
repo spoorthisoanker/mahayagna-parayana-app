@@ -288,11 +288,12 @@ body {
   box-shadow: 0 4px 24px rgba(0, 0, 0, 0.7);
 }
 #instruction-overlay.corner .instruction-image {
-  max-height: 22vh;
+  max-height: 32vh;
   max-width: 100%;
 }
 #instruction-overlay.corner .instruction-text {
-  font-size: clamp(13px, 1.8vw, 26px);
+  font-size: clamp(18px, 2.4vw, 36px);
+  font-weight: 600;
   padding: 0;
 }
 #instruction-overlay.corner .instruction-dismiss {
@@ -764,11 +765,13 @@ const prosody = (function() {
     for (let wi = 0; wi < words.length; wi++) {
       const word = words[wi];
 
-      // Check for verse markers
-      if (word === '|' || word === '||') {
+      // Check for verse markers: |, ||, and numbered sloka closers like ||1||
+      // (same rule as the IAST engine, so the double danda after the 4th pada
+      // renders in asterisk mode too)
+      if (/^\|+$/.test(word) || /^\|\|\d+\|\|$/.test(word)) {
         tokens.push({
           text: word,
-          beats: word === '||' ? 4 : 2,
+          beats: word.includes('||') ? 4 : 2,
           isMarker: true,
           isGuru: false,
           wordEnd: true
@@ -2146,7 +2149,7 @@ var INSTRUCTION_DATA = {
   folded_hands:      { image: 'img/instructions/image7.gif' },
   namaskara_anim:    { image: 'img/instructions/image9.gif' },
   pranam:            { text: 'Pran\u0101m', image: 'img/instructions/image7.gif' },
-  louder:            { text: 'LOUDER' },
+  louder:            { text: 'Increase Volume \uD83D\uDD0A', image: 'img/instructions/increase-volume.gif', autoDismissMs: 10000 },
   sit_straight:      { text: 'Sit Straight', image: 'img/instructions/image9.gif' },
   increase_sruti:    { text: 'Increase Sruti', image: 'img/instructions/shruti-increase.png' },
   listen_sync:       { text: 'Listen and Sync\nwith Pace Helpers' },
@@ -2199,10 +2202,19 @@ document.addEventListener('DOMContentLoaded', function() {
   ui.bindControls();
   ui.init();
 
+  var manualCardTimer = null;
   document.getElementById('instruction-select').addEventListener('change', function() {
     if (this.value) {
+      var d = INSTRUCTION_DATA[this.value];
       showInstruction(this.value);
       headerInstructionShowing = false; // manual card — don't auto-dismiss on page change
+      if (manualCardTimer) { clearTimeout(manualCardTimer); manualCardTimer = null; }
+      if (d && d.autoDismissMs) {
+        manualCardTimer = setTimeout(function() {
+          manualCardTimer = null;
+          if (!headerInstructionShowing) dismissInstruction();
+        }, d.autoDismissMs);
+      }
     }
   });
 });

@@ -371,11 +371,13 @@ const prosody = (function() {
     for (let wi = 0; wi < words.length; wi++) {
       const word = words[wi];
 
-      // Check for verse markers
-      if (word === '|' || word === '||') {
+      // Check for verse markers: |, ||, and numbered sloka closers like ||1||
+      // (same rule as the IAST engine, so the double danda after the 4th pada
+      // renders in asterisk mode too)
+      if (/^\|+$/.test(word) || /^\|\|\d+\|\|$/.test(word)) {
         tokens.push({
           text: word,
-          beats: word === '||' ? 4 : 2,
+          beats: word.includes('||') ? 4 : 2,
           isMarker: true,
           isGuru: false,
           wordEnd: true

@@ -132,6 +132,7 @@
     pranam:            { text: 'Pran\u0101m', image: '../img/instructions/image7.gif' },
     sit_straight:      { text: 'Sit Straight', image: '../img/instructions/image3.gif' },
     increase_sruti:    { image: '../img/instructions/shruti-increase.png' },
+    increase_volume:   { text: 'Increase Volume \uD83D\uDD0A', image: '../img/instructions/increase-volume.gif', autoDismissMs: 10000 },
     listen_sync:       { text: 'Listen and Sync\nwith Pace Helpers' },
     good_job:          { image: '../img/instructions/image6.gif' },
     decrease_sruti:    { image: '../img/instructions/image4.jpeg', image2: '../img/instructions/image5.gif', arrow: 'down' },
@@ -558,6 +559,7 @@
     document.getElementById('instruction-select').value = '';
   }
 
+  var manualCardTimer = null;
   document.getElementById('instruction-select').addEventListener('change', function() {
     var key = this.value;
     if (!key) return;
@@ -566,6 +568,15 @@
       sendToProjector('show-instruction', data);
       instructionShowing = true;
       headerInstructionShowing = false; // manual card — don't auto-dismiss on page change
+      // Cards with autoDismissMs (e.g. Increase Volume) hide themselves after a
+      // few seconds; other manual cards persist until dismissed.
+      if (manualCardTimer) { clearTimeout(manualCardTimer); manualCardTimer = null; }
+      if (data.autoDismissMs) {
+        manualCardTimer = setTimeout(function() {
+          manualCardTimer = null;
+          if (instructionShowing && !headerInstructionShowing) dismissInstruction();
+        }, data.autoDismissMs);
+      }
     }
   });
 
