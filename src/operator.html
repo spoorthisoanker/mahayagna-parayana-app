@@ -211,6 +211,26 @@ hr { border: none; border-top: 1px solid #333; margin: 0; }
   white-space: nowrap;
 }
 .settings-section-row input[type="number"] { width: 80px; flex: 0 0 auto; }
+.settings-textarea {
+  width: 100%;
+  min-height: 72px;
+  resize: vertical;
+  background: #222;
+  color: #fff;
+  border: 1px solid #555;
+  border-radius: 8px;
+  padding: 8px 10px;
+  font-family: 'Noto Sans', Arial, sans-serif;
+  font-size: 14px;
+}
+.settings-btn-row {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+}
+.settings-btn-row button { flex: 1; font-size: 13px; padding: 8px 10px; }
+.settings-btn-row button:disabled { opacity: 0.35; }
+.settings-hint { color: #888; font-size: 12px; margin-top: 6px; font-style: italic; }
 .settings-actions {
   display: flex;
   align-items: center;
@@ -380,6 +400,26 @@ hr { border: none; border-top: 1px solid #333; margin: 0; }
 
     <div class="settings-subtitle">Per-section tempo (BPM) — blank = manual / no default</div>
     <div id="settings-section-list" class="settings-section-list"></div>
+
+    <div class="settings-subtitle">Full-Screen Text Box</div>
+    <textarea id="set-fstext" class="settings-textarea" placeholder="Announcement for the congregation (multi-line supported)..."></textarea>
+    <div class="settings-btn-row">
+      <button id="btn-fstext-show">Show on projector</button>
+      <button id="btn-fstext-hide">Hide</button>
+      <button id="btn-fstext-clear">Clear text</button>
+    </div>
+    <div class="settings-hint" id="fstext-hint">Shows full screen on the projector. Available only when nothing is playing.</div>
+
+    <div class="settings-subtitle">Break Timer Countdown</div>
+    <div class="settings-grid">
+      <label for="set-break-minutes">Break duration (minutes)</label>
+      <input type="number" id="set-break-minutes" min="1" max="120" step="1">
+    </div>
+    <div class="settings-btn-row">
+      <button id="btn-break-start">Start countdown</button>
+      <button id="btn-break-reset">Reset / hide</button>
+    </div>
+    <div class="settings-hint" id="break-hint">Full-screen MM:SS countdown on the projector; shows "Break Complete" at zero. Startable only when nothing is playing.</div>
 
     <div class="settings-actions">
       <button id="btn-settings-reset" class="settings-reset">Reset to defaults</button>

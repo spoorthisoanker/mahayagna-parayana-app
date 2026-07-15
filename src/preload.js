@@ -7,7 +7,8 @@ contextBridge.exposeInMainWorld('electronAPI', {
       'countdown', 'display-mode', 'spm-change',
       'show-instruction', 'dismiss-instruction',
       'open-projector', 'close-projector',
-      'verse-zoom', 'theme'
+      'verse-zoom', 'theme',
+      'fullscreen-text', 'break-timer'
     ];
     if (validChannels.includes(channel)) {
       ipcRenderer.send(channel, data);
@@ -19,7 +20,8 @@ contextBridge.exposeInMainWorld('electronAPI', {
       'countdown', 'display-mode', 'spm-change',
       'show-instruction', 'dismiss-instruction',
       'projector-status',
-      'verse-zoom', 'theme'
+      'verse-zoom', 'theme',
+      'fullscreen-text', 'break-timer'
     ];
     if (validChannels.includes(channel)) {
       ipcRenderer.on(channel, (event, ...args) => callback(...args));

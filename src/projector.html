@@ -176,6 +176,43 @@
       font-size: clamp(10px, 1.2vw, 16px);
       margin-top: 4px;
     }
+    /* Full-screen text box (announcements) + break timer — standalone overlays,
+       above the countdown (100) and instruction card (200). */
+    #fullscreen-text-overlay, #break-timer-overlay {
+      position: fixed;
+      inset: 0;
+      background: var(--bg);
+      display: none;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      z-index: 300;
+      padding: 6vh 6vw;
+      text-align: center;
+    }
+    #fullscreen-text-overlay .fs-text {
+      color: var(--active);
+      font-size: clamp(32px, 5.5vw, 110px);
+      font-weight: 600;
+      line-height: 1.4;
+      white-space: pre-line;
+      max-width: 90vw;
+    }
+    #break-timer-overlay .break-label {
+      color: var(--fg);
+      font-size: clamp(24px, 3.5vw, 64px);
+      margin-bottom: 3vh;
+      letter-spacing: 0.08em;
+    }
+    #break-timer-overlay .break-time {
+      color: var(--active);
+      font-size: clamp(80px, 18vw, 340px);
+      font-weight: bold;
+      font-variant-numeric: tabular-nums;
+      line-height: 1;
+    }
+    #break-timer-overlay.complete .break-label { color: var(--active); }
+    #break-timer-overlay.complete .break-time { font-size: clamp(48px, 9vw, 160px); }
     @media (max-width: 900px) {
       .verse-line { font-size: clamp(12px, 3vw, 36px); margin: 0.5em 0; letter-spacing: 0.1em; }
       #display { padding: 2vh 3vw; }
@@ -189,6 +226,13 @@
   </style>
 </head>
 <body>
+  <div id="fullscreen-text-overlay">
+    <div class="fs-text"></div>
+  </div>
+  <div id="break-timer-overlay">
+    <div class="break-label">Break</div>
+    <div class="break-time">00:00</div>
+  </div>
   <div id="instruction-overlay">
     <div class="instruction-content"></div>
   </div>

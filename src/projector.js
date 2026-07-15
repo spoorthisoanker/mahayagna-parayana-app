@@ -168,6 +168,54 @@
     hidePointer(); // reset pointer state so next active syllable snaps cleanly
   });
 
+  // fullscreen-text: operator announcement shown full screen between sections.
+  window.electronAPI.on('fullscreen-text', function(data) {
+    var o = document.getElementById('fullscreen-text-overlay');
+    if (data && data.text) {
+      o.querySelector('.fs-text').textContent = data.text;
+      o.style.display = 'flex';
+    } else {
+      o.style.display = 'none';
+    }
+  });
+
+  // break-timer: full-screen MM:SS countdown for monitor breaks. The projector
+  // ticks locally; the operator starts/hides it. At zero it shows "Break
+  // Complete" until the operator dismisses it.
+  var breakTimerInterval = null;
+  window.electronAPI.on('break-timer', function(data) {
+    var o = document.getElementById('break-timer-overlay');
+    var num = o.querySelector('.break-time');
+    var lbl = o.querySelector('.break-label');
+    if (breakTimerInterval) { clearInterval(breakTimerInterval); breakTimerInterval = null; }
+    if (data && data.action === 'start' && data.seconds > 0) {
+      var remaining = Math.round(data.seconds);
+      var render = function() {
+        var m = Math.floor(remaining / 60), sec = remaining % 60;
+        num.textContent = (m < 10 ? '0' : '') + m + ':' + (sec < 10 ? '0' : '') + sec;
+      };
+      o.classList.remove('complete');
+      lbl.textContent = 'Break';
+      render();
+      o.style.display = 'flex';
+      breakTimerInterval = setInterval(function() {
+        remaining--;
+        if (remaining <= 0) {
+          clearInterval(breakTimerInterval);
+          breakTimerInterval = null;
+          num.textContent = '00:00';
+          lbl.textContent = 'Break Complete';
+          o.classList.add('complete');
+        } else {
+          render();
+        }
+      }, 1000);
+    } else {
+      o.classList.remove('complete');
+      o.style.display = 'none';
+    }
+  });
+
   // verse-zoom: operator-controlled verse text zoom (#34)
   var lastZoomScale = 1;
   window.electronAPI.on('verse-zoom', function(data) {
