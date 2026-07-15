@@ -11,15 +11,15 @@
   // The standalone web app (index.html) keeps its own hardcoded defaults; this panel
   // only affects the Electron operator window.
   var CHANT_DEFAULTS = {
-    colophonBpmDrop: 0,      // internal-bpm slow-down for the closing slide + Sarvadharmān; 0 = chapter pace (#5). Settings field is in BPM (×4).
-    headerBpmDrop: 20,       // internal-bpm slow-down for chapter-opening header slides (default 5 BPM). Settings field is in BPM (×4), 5-BPM steps.
+    colophonBpmDrop: 20,     // internal-bpm slow-down for the closing slide + Sarvadharmān (default 5 BPM). Settings field is in BPM (×4).
+    headerBpmDrop: 40,       // internal-bpm slow-down for chapter-opening header slides (default 10 BPM). Settings field is in BPM (×4), 5-BPM steps.
     countdownSeconds: 5,     // pre-play countdown length
     chapterGapSeconds: 3,    // gap between chapters before the countdown
     verseZoom: 100,          // projector verse-text zoom (%) — #34
     headerPauseBeats: 3,     // pause (mātrās) after each header line — #36.1
     anustubhBeats: 2,        // anuṣṭubh verse line-end pause (mātrās) — section table
     tristubhBeats: 3,        // triṣṭubh verse line-end pause (mātrās) — section table
-    uvacaBeats: 2,           // "... uvāca -" speaker-label line-end pause (mātrās) — #26
+    uvacaBeats: 3,           // "... uvāca -" speaker-label line-end pause (mātrās) — team table 2026-07-15
     mahatmyamBeats: 3,       // Gita Mahātmyam verse line-end pause (mātrās) — section table
     theme: 'dark',           // projector theme: 'dark' (black bg) or 'light' (white bg) — #37
     sectionBpm: {}           // chapterId -> internal BPM override; empty = use data defaultBpm
@@ -246,7 +246,7 @@
     if (page && (page.isCloser || page.shlokaNum === 'sarvadharmān')) {
       pageBpmDrop = chantSettings.colophonBpmDrop;
     } else if (page && chId === 'kshama_prarthana' && page.shlokaNum === '4') {
-      pageBpmDrop = 20; // 5 BPM
+      pageBpmDrop = 40; // 10 BPM
     } else if (page && chId === '0' && page.shlokaNum === '8') {
       pageBpmDrop = currentChapterBpm - 280; // fixed 70 BPM
     } else if (page && page.isHeader && !(page.lines && page.lines[0] && page.lines[0].sty === 'uh')) {
@@ -693,15 +693,15 @@
 
   // Effective internal BPM for a section: Settings override, else data defaultBpm.
   // Returns null when neither is known (sections without a defaultBpm → "manual").
-  // Internal bpm = display BPM × 4. Defaults per the parayana team's BPM/pause table:
-  // Dhyana 60, Ch1 75, Ch2 80, Ch3–15 85, Ch16 80, Ch17–18 75, Datta Stavam 75,
-  // Invocation 65, Mahātmyam 75, Kshama Prārthana 75. Keep in sync with each section's
+  // Internal bpm = display BPM × 4. Defaults per the parayana team's BPM/pause table
+  // (2026-07-15 revision): Dhyana 60, Ch1 75, Ch2 80, Ch3–18 85, Datta Stavam 80,
+  // Invocation 65, Mahātmyam 80, Kshama Prārthana 75. Keep in sync with each section's
   // data defaultBpm.
   var DATA_DEFAULT_BPM = {
-    datta_stavam: 300, invocation_prayers: 260, '0': 240, '1': 300,
+    datta_stavam: 320, invocation_prayers: 260, '0': 240, '1': 300,
     '2': 320, '3': 340, '4': 340, '5': 340, '6': 340, '7': 340, '8': 340,
     '9': 340, '10': 340, '11': 340, '12': 340, '13': 340, '14': 340,
-    '15': 340, '16': 320, '17': 300, '18': 300, gita_mahatmyam: 300,
+    '15': 340, '16': 340, '17': 340, '18': 340, gita_mahatmyam: 320,
     kshama_prarthana: 300
   };
   function effectiveSectionBpm(id) {
