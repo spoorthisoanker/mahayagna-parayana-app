@@ -441,7 +441,10 @@
   var HARD_STOP_CHAPTER_ENDS = { datta_stavam: true, '9': true, '18': true, gita_saram: true, gita_arati: true };
   // Sections that pause after their opening header(s): the first verse page is
   // shown but waits for a manual Start.
-  var STOP_AFTER_HEADER_SECTIONS = { gita_mahatmyam: true, gita_saram: true, gita_arati: true };
+  var STOP_AFTER_HEADER_SECTIONS = { gita_saram: true, gita_arati: true };
+  // Sections whose title header is shown BEFORE the countdown (team flow):
+  // section end -> gap -> title visible -> gap -> countdown -> playback.
+  var HEADER_BEFORE_COUNTDOWN = { kshama_prarthana: true, gita_saram: true, gita_arati: true };
   var hardStopDoneFor = null; // chapter we already hard-stopped at (so Play can continue)
 
   animator.setOnAutoAdvance(async function() {
@@ -472,9 +475,22 @@
         dismissInstruction();
         var nextId = dataLayer.getNextChapterId();
         if (!nextId) return; // no next chapter — stay stopped
-        await loadChapter(nextId, true); // crosses into next chapter, blanked
+        var headerFirst = HEADER_BEFORE_COUNTDOWN[nextId] === true;
+        await loadChapter(nextId, !headerFirst); // header-first sections load UNBLANKED
         var newChapter = dataLayer.getCurrentChapterId();
         if (newChapter === chapterId) return; // chapter load failed — stay stopped
+        if (headerFirst) {
+          // Samarpana / Gita Sāram / Gita Ārati: the section title is visible now;
+          // let it sit for the chapter gap, THEN countdown, then playback.
+          setTimeout(function() {
+            if (dataLayer.getCurrentChapterId() !== nextId) return; // operator navigated away
+            startCountdown(function() {
+              syncProjectorPage();
+              animator.play();
+            });
+          }, gapMs);
+          return;
+        }
         startCountdown(function() {
           // Reveal page 0 (fh header) and animate it as chanting begins.
           syncProjectorPage();

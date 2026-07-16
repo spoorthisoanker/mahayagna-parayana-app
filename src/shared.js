@@ -738,7 +738,7 @@ const renderer = (function() {
 
   // Sections whose title HEADER slide is a plain title (not chanted content): show the
   // romanized title as static text in BOTH display modes and move no pointer over it (#4).
-  const STATIC_TITLE_SECTIONS = { gita_mahatmyam: true, gita_saram: true, gita_arati: true, purnam: true, kshama_prarthana: true };
+  const STATIC_TITLE_SECTIONS = { gita_saram: true, gita_arati: true, purnam: true, kshama_prarthana: true };
 
   // Double-buffer: render next page into the hidden buffer, swap on advance
   const buffers = [
