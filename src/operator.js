@@ -28,6 +28,7 @@
     tristubhBeats: 3,        // triṣṭubh verse line-end pause (mātrās) — section table
     uvacaBeats: 3,           // "... uvāca -" speaker-label line-end pause (mātrās) — team table 2026-07-15
     mahatmyamBeats: 3,       // Gita Mahātmyam verse line-end pause (mātrās) — section table
+    saramAratiCountdown: true, // countdown before Gita Sāram / Ārati recitation (OFF = header -> recitation directly)
     theme: 'dark',           // projector theme: 'dark' (black bg) or 'light' (white bg) — #37
     fullscreenText: '',      // announcement text for the full-screen text box
     breakMinutes: 10,        // break timer duration (minutes)
@@ -46,6 +47,7 @@
       tristubhBeats: CHANT_DEFAULTS.tristubhBeats,
       uvacaBeats: CHANT_DEFAULTS.uvacaBeats,
       mahatmyamBeats: CHANT_DEFAULTS.mahatmyamBeats,
+      saramAratiCountdown: CHANT_DEFAULTS.saramAratiCountdown,
       theme: CHANT_DEFAULTS.theme,
       fullscreenText: CHANT_DEFAULTS.fullscreenText,
       breakMinutes: CHANT_DEFAULTS.breakMinutes,
@@ -66,6 +68,7 @@
           if (typeof parsed.tristubhBeats === 'number') merged.tristubhBeats = parsed.tristubhBeats;
           if (typeof parsed.uvacaBeats === 'number') merged.uvacaBeats = parsed.uvacaBeats;
           if (typeof parsed.mahatmyamBeats === 'number') merged.mahatmyamBeats = parsed.mahatmyamBeats;
+          if (typeof parsed.saramAratiCountdown === 'boolean') merged.saramAratiCountdown = parsed.saramAratiCountdown;
           if (parsed.theme === 'dark' || parsed.theme === 'light') merged.theme = parsed.theme;
           if (typeof parsed.fullscreenText === 'string') merged.fullscreenText = parsed.fullscreenText;
           if (typeof parsed.breakMinutes === 'number') merged.breakMinutes = parsed.breakMinutes;
@@ -484,7 +487,7 @@
           // let it sit for the chapter gap, THEN countdown, then recitation.
           setTimeout(function() {
             if (dataLayer.getCurrentChapterId() !== nextId) return; // operator navigated away
-            startCountdown(function() {
+            var beginRecitation = function() {
               // Begin recitation DIRECTLY at the first content page — the title
               // already had its display time before the countdown (replaying it
               // here read as "countdown -> header" to the team).
@@ -494,7 +497,13 @@
               if (firstContent < total) showPage(firstContent);
               syncProjectorPage();
               animator.play();
-            });
+            };
+            // Optional countdown skip (Settings) for Gita Sāram / Ārati only:
+            // OFF = header -> recitation directly.
+            var skipCountdown = (nextId === 'gita_saram' || nextId === 'gita_arati') &&
+                                chantSettings.saramAratiCountdown === false;
+            if (skipCountdown) beginRecitation();
+            else startCountdown(beginRecitation);
           }, gapMs);
           return;
         }
@@ -784,6 +793,8 @@
   function refreshSettingsInputs() {
     fldColophon.value = chantSettings.colophonBpmDrop / 4;  // stored internal bpm → shown in BPM
     if (fldHeaderSlow) fldHeaderSlow.value = chantSettings.headerBpmDrop / 4;  // stored internal bpm → shown in BPM
+    var fldSaramCd = document.getElementById('set-saram-arati-cd');
+    if (fldSaramCd) fldSaramCd.value = chantSettings.saramAratiCountdown ? 'on' : 'off';
     if (fldFsText) fldFsText.value = chantSettings.fullscreenText || '';
     if (fldBreakMinutes) fldBreakMinutes.value = chantSettings.breakMinutes;
     fldCountdown.value = chantSettings.countdownSeconds;
@@ -819,6 +830,8 @@
   function saveSettings() {
     chantSettings.colophonBpmDrop = Math.round(clampNum(fldColophon.value, 0, 20, 0)) * 4;  // BPM field → internal bpm
     if (fldHeaderSlow) chantSettings.headerBpmDrop = Math.round(clampNum(fldHeaderSlow.value, 0, 20, CHANT_DEFAULTS.headerBpmDrop / 4) / 5) * 5 * 4;  // BPM field (5-BPM steps) → internal bpm
+    var fldSaramCdS = document.getElementById('set-saram-arati-cd');
+    if (fldSaramCdS) chantSettings.saramAratiCountdown = fldSaramCdS.value !== 'off';
     if (fldFsText) chantSettings.fullscreenText = fldFsText.value;
     if (fldBreakMinutes) chantSettings.breakMinutes = Math.round(clampNum(fldBreakMinutes.value, 1, 120, CHANT_DEFAULTS.breakMinutes));
     chantSettings.countdownSeconds = Math.round(clampNum(fldCountdown.value, 0, 15, CHANT_DEFAULTS.countdownSeconds));
