@@ -189,8 +189,19 @@
     var lbl = o.querySelector('.break-label');
     if (breakTimerInterval) { clearInterval(breakTimerInterval); breakTimerInterval = null; }
     if (data && data.action === 'start' && data.seconds > 0) {
-      var remaining = Math.round(data.seconds);
+      // Deadline-based, not tick-decrement: interval jitter/throttling can then
+      // never accumulate drift over a long break.
+      var deadline = Date.now() + Math.round(data.seconds) * 1000;
       var render = function() {
+        var remaining = Math.max(0, Math.round((deadline - Date.now()) / 1000));
+        if (remaining <= 0) {
+          clearInterval(breakTimerInterval);
+          breakTimerInterval = null;
+          num.textContent = '00:00';
+          lbl.textContent = 'Starting Now';
+          o.classList.add('complete');
+          return;
+        }
         var m = Math.floor(remaining / 60), sec = remaining % 60;
         num.textContent = (m < 10 ? '0' : '') + m + ':' + (sec < 10 ? '0' : '') + sec;
       };
@@ -198,18 +209,7 @@
       lbl.textContent = 'Starts In';
       render();
       o.style.display = 'flex';
-      breakTimerInterval = setInterval(function() {
-        remaining--;
-        if (remaining <= 0) {
-          clearInterval(breakTimerInterval);
-          breakTimerInterval = null;
-          num.textContent = '00:00';
-          lbl.textContent = 'Starting Now';
-          o.classList.add('complete');
-        } else {
-          render();
-        }
-      }, 1000);
+      breakTimerInterval = setInterval(render, 500);
     } else {
       o.classList.remove('complete');
       o.style.display = 'none';
