@@ -229,6 +229,7 @@
       currentChapterBpm = animator.getState().bpm;
       closerSlowApplied = false;
       currentPageBpmDrop = 0;
+      hardStopDoneFor = null;
       populateShlokaDropdown();
       currentPage = 0;
       showPage(0, blankProjector);
@@ -432,6 +433,17 @@
   });
 
   // --- Auto-advance: when animator reaches end of page, go to next and resume ---
+  // Sections whose END is a hard stop: rendering pauses on the last page
+  // (Datta Stavam per feedback #2; Ch 9 and Ch 18 stop after their trailing
+  // sarvadharmān; Gita Sāram / Ārati are title-only sections that must wait
+  // for a manual start). Pressing Play after the stop continues to the next
+  // section (the stop fires once per arrival).
+  var HARD_STOP_CHAPTER_ENDS = { datta_stavam: true, '9': true, '18': true, gita_saram: true, gita_arati: true };
+  // Sections that pause after their opening header(s): the first verse page is
+  // shown but waits for a manual Start.
+  var STOP_AFTER_HEADER_SECTIONS = { gita_mahatmyam: true, gita_saram: true, gita_arati: true };
+  var hardStopDoneFor = null; // chapter we already hard-stopped at (so Play can continue)
+
   animator.setOnAutoAdvance(async function() {
     var atChapterEnd = currentPage >= dataLayer.getPageCount() - 1;
     var chapterId = dataLayer.getCurrentChapterId();
@@ -443,8 +455,11 @@
       instructionShowing = true;
       headerInstructionShowing = true;
 
-      // Feedback #2: hard stop after Datta Stavam — operator resumes manually.
-      if (chapterId === 'datta_stavam') return; // stay paused on the last page
+      // Hard stop at designated section ends — operator resumes manually.
+      if (HARD_STOP_CHAPTER_ENDS[chapterId] && hardStopDoneFor !== chapterId) {
+        hardStopDoneFor = chapterId;
+        return; // stay paused on the last page; the next Play continues onward
+      }
 
       // Inter-chapter gap, then countdown, then play (feedback #5).
       // Issue #29: the countdown ("Listen to Śruti") must precede the chapter's
@@ -467,6 +482,16 @@
         });
       }, gapMs);
       return;
+    }
+
+    // After the opening header(s) of designated sections, show the first verse
+    // page but wait for a manual Start instead of auto-playing into it.
+    var finishedPage = dataLayer.getPage(currentPage);
+    var upcomingPage = dataLayer.getPage(currentPage + 1);
+    if (STOP_AFTER_HEADER_SECTIONS[chapterId] && finishedPage && finishedPage.isHeader &&
+        upcomingPage && !upcomingPage.isHeader) {
+      await nextPage();
+      return; // paused — presenter presses Start to begin the verses
     }
 
     // Mid-chapter pages (headers included): advance immediately — old 3s pranam pause removed.
