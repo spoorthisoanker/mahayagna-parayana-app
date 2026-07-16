@@ -481,10 +481,17 @@
         if (newChapter === chapterId) return; // chapter load failed — stay stopped
         if (headerFirst) {
           // Samarpana / Gita Sāram / Gita Ārati: the section title is visible now;
-          // let it sit for the chapter gap, THEN countdown, then playback.
+          // let it sit for the chapter gap, THEN countdown, then recitation.
           setTimeout(function() {
             if (dataLayer.getCurrentChapterId() !== nextId) return; // operator navigated away
             startCountdown(function() {
+              // Begin recitation DIRECTLY at the first content page — the title
+              // already had its display time before the countdown (replaying it
+              // here read as "countdown -> header" to the team).
+              var firstContent = 0;
+              var total = dataLayer.getPageCount();
+              while (firstContent < total && dataLayer.getPage(firstContent).isHeader) firstContent++;
+              if (firstContent < total) showPage(firstContent);
               syncProjectorPage();
               animator.play();
             });
