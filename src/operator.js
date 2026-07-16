@@ -10,6 +10,13 @@
   // --- Chant timing/tempo settings (operator-only, persisted in localStorage) ---
   // The standalone web app (index.html) keeps its own hardcoded defaults; this panel
   // only affects the Electron operator window.
+  // Bumped whenever the team revises the DEFAULT values. Stored settings from an
+  // older revision are migrated on load: per-section tempo overrides are dropped
+  // (they were frozen pre-fill hints, see saveSettings), and pause/slow-down
+  // values still at their OLD defaults are upgraded to the new defaults —
+  // genuinely customized values are kept.
+  var SETTINGS_REV = 2;
+
   var CHANT_DEFAULTS = {
     colophonBpmDrop: 20,     // internal-bpm slow-down for the closing slide + Sarvadharmān (default 5 BPM). Settings field is in BPM (×4).
     headerBpmDrop: 40,       // internal-bpm slow-down for chapter-opening header slides (default 10 BPM). Settings field is in BPM (×4), 5-BPM steps.
@@ -62,7 +69,14 @@
           if (parsed.theme === 'dark' || parsed.theme === 'light') merged.theme = parsed.theme;
           if (typeof parsed.fullscreenText === 'string') merged.fullscreenText = parsed.fullscreenText;
           if (typeof parsed.breakMinutes === 'number') merged.breakMinutes = parsed.breakMinutes;
-          if (parsed.sectionBpm && typeof parsed.sectionBpm === 'object') {
+          var isCurrentRev = parsed.settingsRev === SETTINGS_REV;
+          if (!isCurrentRev) {
+            // Old-revision store: upgrade values still sitting at the old defaults.
+            if (merged.uvacaBeats === 2) merged.uvacaBeats = CHANT_DEFAULTS.uvacaBeats;
+            if (merged.headerBpmDrop === 20) merged.headerBpmDrop = CHANT_DEFAULTS.headerBpmDrop;
+            if (merged.colophonBpmDrop === 0) merged.colophonBpmDrop = CHANT_DEFAULTS.colophonBpmDrop;
+          }
+          if (isCurrentRev && parsed.sectionBpm && typeof parsed.sectionBpm === 'object') {
             for (var k in parsed.sectionBpm) {
               if (Object.prototype.hasOwnProperty.call(parsed.sectionBpm, k) && typeof parsed.sectionBpm[k] === 'number') {
                 merged.sectionBpm[k] = parsed.sectionBpm[k];
@@ -74,6 +88,7 @@
     } catch (e) {
       console.warn('Bad gitaChantSettings — using defaults:', e);
     }
+    merged.settingsRev = SETTINGS_REV;
     return merged;
   }
 
@@ -613,8 +628,9 @@
 
   // Keyboard shortcuts
   document.addEventListener('keydown', function(e) {
-    // Don't intercept if user is typing in an input/select
-    if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT') return;
+    // Don't intercept if user is typing in an input/select/textarea (space, R,
+    // +/- and arrows are shortcuts — they must not fire while typing text).
+    if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT' || e.target.tagName === 'TEXTAREA') return;
 
     if (e.code === 'Space') {
       e.preventDefault();
@@ -767,14 +783,20 @@
     if (fldMahatmyam) chantSettings.mahatmyamBeats = clampNum(fldMahatmyam.value, 0, 12, CHANT_DEFAULTS.mahatmyamBeats);
     if (fldTheme) chantSettings.theme = (fldTheme.value === 'light') ? 'light' : 'dark';
 
-    // Per-section BPM: a value present → store internal = BPM*4; blank → clear override.
+    // Per-section BPM: store an override ONLY when it differs from the data
+    // default. The panel pre-fills every row with the default as a hint, so
+    // storing all filled rows froze the whole table at whatever the defaults
+    // were at first save — future default updates could never show through.
     chantSettings.sectionBpm = {};
     for (var id in sectionBpmInputs) {
       if (!Object.prototype.hasOwnProperty.call(sectionBpmInputs, id)) continue;
       var raw = sectionBpmInputs[id].value;
       if (raw !== '' && raw !== null && !isNaN(parseFloat(raw))) {
         var spm = clampNum(raw, 10, 150, 95);
-        chantSettings.sectionBpm[id] = Math.round(spm) * 4;
+        var internal = Math.round(spm) * 4;
+        if (internal !== DATA_DEFAULT_BPM[id]) {
+          chantSettings.sectionBpm[id] = internal;
+        }
       }
     }
 

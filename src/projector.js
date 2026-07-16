@@ -195,7 +195,7 @@
         num.textContent = (m < 10 ? '0' : '') + m + ':' + (sec < 10 ? '0' : '') + sec;
       };
       o.classList.remove('complete');
-      lbl.textContent = 'Break';
+      lbl.textContent = 'Starts In';
       render();
       o.style.display = 'flex';
       breakTimerInterval = setInterval(function() {
@@ -204,7 +204,7 @@
           clearInterval(breakTimerInterval);
           breakTimerInterval = null;
           num.textContent = '00:00';
-          lbl.textContent = 'Break Complete';
+          lbl.textContent = 'Starting Now';
           o.classList.add('complete');
         } else {
           render();
