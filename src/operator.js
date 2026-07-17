@@ -244,6 +244,10 @@
 
   // --- Page display ---
   function showPage(index, blankProjector) {
+    if (blankHoldActive) {
+      blankHoldActive = false;
+      sendToProjector('countdown', { number: 0 }); // release the Sāram/Ārati blank hold
+    }
     animator.reset();
     sendToProjector('animation-reset');
 
@@ -305,14 +309,17 @@
     // ("|| ōṃ tatsaditi ...") page, on each chapter's trailing sarvadharmān recitation,
     // and on 18.66 / 18.78. Auto-dismissed on other pages.
     // Only auto-shown cards are auto-dismissed — manual instructions survive page flips.
-    var needsMudra = page && (page.isHeader || page.isCloser ||
+    var needsMudra = page && (page.isHeader ||
+      (page.isCloser && chId !== '18') ||  // ch18's closing text is long — the mudra card overlapped it
       page.shlokaNum === 'sarvadharmān' ||
       (chId === '18' && (page.shlokaNum === '66' || page.shlokaNum === '78')));
     // Folded-hands cue at the start of sloka 1 and sloka 2 of EVERY chapter:
     // auto-shown once per entry into the sloka (repeat passes of the same sloka
     // don't replay it; re-entering the sloka later does), auto-dismissed after
     // ~2 GIF loops or on leaving the page.
-    var slokaGifKey = (page && !page.isHeader && (page.shlokaNum === '1' || page.shlokaNum === '2'))
+    // (No cue for Dhyana, Invocation Prayers, or Samarpana per the team.)
+    var slokaGifKey = (page && !page.isHeader && (page.shlokaNum === '1' || page.shlokaNum === '2') &&
+      chId !== '0' && chId !== 'invocation_prayers' && chId !== 'kshama_prarthana')
       ? chId + '/' + page.shlokaNum : null;
     if (needsMudra) {
       // Pranam añjali mudra for every mudra overlay site.
@@ -382,6 +389,15 @@
   }
 
   function playWithCountdown() {
+    if (blankHoldActive) {
+      // Blank-hold after the Sāram/Ārati countdown: reveal and play directly —
+      // the countdown already ran before the blank.
+      blankHoldActive = false;
+      sendToProjector('countdown', { number: 0 });
+      syncProjectorPage();
+      animator.play();
+      return;
+    }
     if (currentPage === 0 && animator.getState().currentIndex < 0) {
       // Blank projector, pre-render behind the blank, then countdown
       sendToProjector('countdown', { number: -1 });
@@ -450,6 +466,10 @@
   var HEADER_BEFORE_COUNTDOWN = { kshama_prarthana: true, gita_saram: true, gita_arati: true };
   var hardStopDoneFor = null; // chapter we already hard-stopped at (so Play can continue)
   var chapterTransitionPending = false; // a chapter-end transition (gap/countdown) is already scheduled
+  // Sāram/Ārati flow: after their countdown the projector holds on a BLANK slide
+  // until the operator acts (Play reveals and starts; any page change reveals).
+  var HOLD_BLANK_AFTER_COUNTDOWN = { gita_saram: true, gita_arati: true };
+  var blankHoldActive = false;
 
   animator.setOnAutoAdvance(async function() {
     var atChapterEnd = currentPage >= dataLayer.getPageCount() - 1;
@@ -499,6 +519,17 @@
           setTimeout(function() {
             if (dataLayer.getCurrentChapterId() !== nextId) return; // operator navigated away
             var beginRecitation = function() {
+              // Sāram/Ārati: hold on a BLANK slide after the countdown — no text,
+              // no pointer, nothing plays until the operator acts.
+              if (HOLD_BLANK_AFTER_COUNTDOWN[nextId]) {
+                var fc = 0;
+                var tot = dataLayer.getPageCount();
+                while (fc < tot && dataLayer.getPage(fc).isHeader) fc++;
+                if (fc < tot) showPage(fc); // pre-position so Play starts the first content page
+                sendToProjector('countdown', { number: -1 }); // opaque blank overlay
+                blankHoldActive = true;
+                return;
+              }
               // Begin recitation DIRECTLY at the first content page — the title
               // already had its display time before the countdown (replaying it
               // here read as "countdown -> header" to the team).
