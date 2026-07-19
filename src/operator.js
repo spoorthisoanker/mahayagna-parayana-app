@@ -29,6 +29,7 @@
     uvacaBeats: 3,           // "... uvāca -" speaker-label line-end pause (mātrās) — team table 2026-07-15
     mahatmyamBeats: 3,       // Gita Mahātmyam verse line-end pause (mātrās) — section table
     saramAratiCountdown: true, // countdown before Gita Sāram / Ārati recitation (OFF = header -> recitation directly)
+    heavyPadaAdjust: true,   // TEST: stretch mātrā duration on heavy pādas (M/S > 1.75); OFF = current production pacing
     theme: 'dark',           // projector theme: 'dark' (black bg) or 'light' (white bg) — #37
     fullscreenText: '',      // announcement text for the full-screen text box
     breakMinutes: 10,        // break timer duration (minutes)
@@ -48,6 +49,7 @@
       uvacaBeats: CHANT_DEFAULTS.uvacaBeats,
       mahatmyamBeats: CHANT_DEFAULTS.mahatmyamBeats,
       saramAratiCountdown: CHANT_DEFAULTS.saramAratiCountdown,
+      heavyPadaAdjust: CHANT_DEFAULTS.heavyPadaAdjust,
       theme: CHANT_DEFAULTS.theme,
       fullscreenText: CHANT_DEFAULTS.fullscreenText,
       breakMinutes: CHANT_DEFAULTS.breakMinutes,
@@ -69,6 +71,7 @@
           if (typeof parsed.uvacaBeats === 'number') merged.uvacaBeats = parsed.uvacaBeats;
           if (typeof parsed.mahatmyamBeats === 'number') merged.mahatmyamBeats = parsed.mahatmyamBeats;
           if (typeof parsed.saramAratiCountdown === 'boolean') merged.saramAratiCountdown = parsed.saramAratiCountdown;
+          if (typeof parsed.heavyPadaAdjust === 'boolean') merged.heavyPadaAdjust = parsed.heavyPadaAdjust;
           if (parsed.theme === 'dark' || parsed.theme === 'light') merged.theme = parsed.theme;
           if (typeof parsed.fullscreenText === 'string') merged.fullscreenText = parsed.fullscreenText;
           if (typeof parsed.breakMinutes === 'number') merged.breakMinutes = parsed.breakMinutes;
@@ -121,7 +124,8 @@
       anustubhBeats: chantSettings.anustubhBeats,
       tristubhBeats: chantSettings.tristubhBeats,
       uvacaBeats: chantSettings.uvacaBeats,
-      mahatmyamBeats: chantSettings.mahatmyamBeats
+      mahatmyamBeats: chantSettings.mahatmyamBeats,
+      heavyPadaAdjust: chantSettings.heavyPadaAdjust
     });
     // Projector theme — dark (black bg) / light (white bg) — #37
     sendToProjector('theme', { theme: chantSettings.theme });
@@ -837,6 +841,8 @@
     if (fldHeaderSlow) fldHeaderSlow.value = chantSettings.headerBpmDrop / 4;  // stored internal bpm → shown in BPM
     var fldSaramCd = document.getElementById('set-saram-arati-cd');
     if (fldSaramCd) fldSaramCd.value = chantSettings.saramAratiCountdown ? 'on' : 'off';
+    var fldHeavyPada = document.getElementById('set-heavy-pada');
+    if (fldHeavyPada) fldHeavyPada.value = chantSettings.heavyPadaAdjust ? 'on' : 'off';
     if (fldFsText) fldFsText.value = chantSettings.fullscreenText || '';
     if (fldBreakMinutes) fldBreakMinutes.value = chantSettings.breakMinutes;
     fldCountdown.value = chantSettings.countdownSeconds;
@@ -874,6 +880,8 @@
     if (fldHeaderSlow) chantSettings.headerBpmDrop = Math.round(clampNum(fldHeaderSlow.value, 0, 20, CHANT_DEFAULTS.headerBpmDrop / 4) / 5) * 5 * 4;  // BPM field (5-BPM steps) → internal bpm
     var fldSaramCdS = document.getElementById('set-saram-arati-cd');
     if (fldSaramCdS) chantSettings.saramAratiCountdown = fldSaramCdS.value !== 'off';
+    var fldHeavyPadaS = document.getElementById('set-heavy-pada');
+    if (fldHeavyPadaS) chantSettings.heavyPadaAdjust = fldHeavyPadaS.value !== 'off';
     if (fldFsText) chantSettings.fullscreenText = fldFsText.value;
     if (fldBreakMinutes) chantSettings.breakMinutes = Math.round(clampNum(fldBreakMinutes.value, 1, 120, CHANT_DEFAULTS.breakMinutes));
     chantSettings.countdownSeconds = Math.round(clampNum(fldCountdown.value, 0, 15, CHANT_DEFAULTS.countdownSeconds));

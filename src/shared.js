@@ -666,6 +666,14 @@ const dataLayer = (function() {
     return { name: chapterName, pageCount: pages.length, defaultBpm: data.defaultBpm || null };
   }
 
+  // Data-file defaultBpm (internal units) of the chapter currently loaded. The
+  // heavy-pāda timing gate keys off this FIXED per-chapter value, not the live
+  // tempo, so nudging BPM mid-session never flips a pāda in or out of the rule.
+  function getCurrentDefaultBpm() {
+    var d = cache[currentChapterId];
+    return (d && typeof d.defaultBpm === 'number') ? d.defaultBpm : null;
+  }
+
   function getPage(index) {
     if (index < 0 || index >= pages.length) return null;
     return pages[index];
@@ -695,7 +703,7 @@ const dataLayer = (function() {
     return null;
   }
 
-  return { fetchChapter, getPage, getPageCount, getChapterName, getCurrentChapterId, getNextChapterId, getPrevChapterId, CHAPTER_ORDER };
+  return { fetchChapter, getPage, getPageCount, getChapterName, getCurrentChapterId, getCurrentDefaultBpm, getNextChapterId, getPrevChapterId, CHAPTER_ORDER };
 })();
 
 // ============================================================
@@ -719,7 +727,7 @@ const renderer = (function() {
   //   mahatmyamBeats — Gita Mahātmyam verse line-end pause. Its verses are tagged
   //     triṣṭubh but sung at an anuṣṭubh-ish clip; this dedicated pause (default 2.5,
   //     #44) overrides the meter default for that section so it stops dragging.
-  const paceConfig = { headerPauseBeats: 3, anustubhBeats: 2, tristubhBeats: 3, uvacaBeats: 3, mahatmyamBeats: 3 };
+  const paceConfig = { headerPauseBeats: 3, anustubhBeats: 2, tristubhBeats: 3, uvacaBeats: 3, mahatmyamBeats: 3, heavyPadaAdjust: true };
   // Per-section line-pause overrides (parayana team's section table): Dhyana ('0') and
   // Invocation Prayers use gentler pauses (anuṣṭubh 1.5 / triṣṭubh 2.5). Every other
   // section uses the global paceConfig defaults (anuṣṭubh 2 / triṣṭubh 3, header 3).
@@ -734,6 +742,51 @@ const renderer = (function() {
     if (typeof cfg.tristubhBeats === 'number') paceConfig.tristubhBeats = cfg.tristubhBeats;
     if (typeof cfg.uvacaBeats === 'number') paceConfig.uvacaBeats = cfg.uvacaBeats;
     if (typeof cfg.mahatmyamBeats === 'number') paceConfig.mahatmyamBeats = cfg.mahatmyamBeats;
+    if (typeof cfg.heavyPadaAdjust === 'boolean') paceConfig.heavyPadaAdjust = cfg.heavyPadaAdjust;
+  }
+
+  // --- Heavy-pāda timing adjustment (TEST BUILD, branch heavy-pada-test) ---
+  // Stretch the mātrā duration on unusually heavy pādas so chanters aren't
+  // rushed. A pāda qualifies only when ALL gates pass:
+  //   • chapter data defaultBpm ≥ 340 internal (85 display BPM)
+  //   • śloka is not triṣṭubh
+  //   • śloka carries no uvāca speaker-label line (whole śloka excluded)
+  //   • not a header or colophon slide
+  //   • pāda M/S (mātrās ÷ syllables) > 1.75
+  // Factors are multiplicative so they track any effective tempo (per-śloka
+  // offsets, live BPM nudges): at 85 BPM, 176.47 ms/mātrā → 182.5 / 187.5 ms.
+  // Only syllable spans are scaled — markers (dandas) and line-end pauses keep
+  // their exact current values. Toggle: paceConfig.heavyPadaAdjust (operator
+  // settings); OFF reproduces the current production algorithm bit-for-bit.
+  const HEAVY_PADA_MODERATE = 182 / 176; // 1.750 < M/S < 1.800
+  const HEAVY_PADA_EXTREME  = 187 / 176; // M/S ≥ 1.800
+
+  function isUvacaLabelLine(line) {
+    var li = line.iast || '', lt = line.text || '';
+    return (/uvāca/.test(li) && /-\s*$/.test(li)) ||
+           (/उवाच/.test(lt) && /-\s*$/.test(lt));
+  }
+
+  function pageHasUvaca(pageData) {
+    for (var i = 0; i < pageData.lines.length; i++) {
+      if (isUvacaLabelLine(pageData.lines[i])) return true;
+    }
+    return false;
+  }
+
+  function heavyPadaFactor(pageData, sylBeats, sylCount) {
+    if (!paceConfig.heavyPadaAdjust || !sylCount) return 1;
+    if (pageData.isHeader) return 1;
+    // Colophon slides already run slower via colophonBpmDrop — never stack the
+    // heavy-pāda stretch on top (their formula lines are all M/S ≥ 1.8).
+    if (pageData.isCloser) return 1;
+    if (pageData.meter === 'tristubh') return 1;
+    if ((dataLayer.getCurrentDefaultBpm() || 0) < 340) return 1;
+    if (pageHasUvaca(pageData)) return 1;
+    var mps = sylBeats / sylCount;
+    if (mps >= 1.8) return HEAVY_PADA_EXTREME;
+    if (mps > 1.75) return HEAVY_PADA_MODERATE;
+    return 1;
   }
 
   // Sections whose title HEADER slide is a plain title (not chanted content): show the
@@ -836,10 +889,17 @@ const renderer = (function() {
       const analyzer = hasDevanagari ? prosody : iastProsody;
 
       if (currentMode === 'english') {
-        // English mode: show IAST text, one span per line with total beats
+        // English mode: show IAST text, one span per line with total beats.
+        // Heavy-pāda adjustment scales only the syllable share of the total —
+        // marker (danda) beats stay exact — so both display modes give the
+        // pāda the identical stretched duration.
         const displayText = line.iast || line.text;
         const tokens = analyzer.analyzeLine(analyzeText);
-        const totalBeats = tokens.reduce((sum, t) => sum + t.beats, 0);
+        const eSylToks = tokens.filter(t => !t.isMarker);
+        const eSylBeats = eSylToks.reduce((sum, t) => sum + t.beats, 0);
+        const eMarkerBeats = tokens.reduce((sum, t) => sum + (t.isMarker ? t.beats : 0), 0);
+        const eFactor = heavyPadaFactor(pageData, eSylBeats, eSylToks.length);
+        const totalBeats = eSylBeats * eFactor + eMarkerBeats;
 
         // Each data entry = one pāda (display line). Long pādas are NOT split
         // into two display lines — fitLines() shrinks them to fit. This matches
@@ -863,8 +923,12 @@ const renderer = (function() {
         // preserved. Markers (dandas) keep their own beats for the line-end pause.
         const tokens = analyzer.analyzeLine(analyzeText);
         const sylToks = tokens.filter(t => !t.isMarker);
+        const sylBeats = sylToks.reduce((s, t) => s + t.beats, 0);
+        // Heavy-pāda adjustment: qualifying pādas get every syllable's average
+        // beat value stretched by the factor (markers keep their own beats).
+        const factor = heavyPadaFactor(pageData, sylBeats, sylToks.length);
         const avgBeats = sylToks.length
-          ? (sylToks.reduce((s, t) => s + t.beats, 0) / sylToks.length)
+          ? (sylBeats * factor / sylToks.length)
           : 1;
 
         for (let ti = 0; ti < tokens.length; ti++) {
@@ -892,9 +956,7 @@ const renderer = (function() {
       // pause 2 mātrās (one guru) at the line end before the verse begins.
       // Speaker labels end with a trailing dash — that distinguishes them from
       // verse lines that merely contain "uvāca" (e.g. "uvāca madhusūdanaḥ ||1||").
-      var lblIast = line.iast || '', lblText = line.text || '';
-      var isUvaca = (/uvāca/.test(lblIast) && /-\s*$/.test(lblIast)) ||
-                    (/उवाच/.test(lblText) && /-\s*$/.test(lblText));
+      var isUvaca = isUvacaLabelLine(line);
       for (let i = elements.length - 1; i >= lineStartIndex; i--) {
         if (!elements[i].classList.contains('verse-marker')) {
           elements[i].dataset.lineEnd = '1';
