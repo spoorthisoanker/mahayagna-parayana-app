@@ -1,6 +1,6 @@
 {
   "name": "mahayagna-parayana-app",
-  "version": "0.12.16-heavy.1",
+  "version": "0.12.16-heavy.2",
   "main": "main.js",
   "scripts": {
     "start": "electron .",

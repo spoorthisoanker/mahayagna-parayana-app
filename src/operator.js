@@ -29,7 +29,7 @@
     uvacaBeats: 3,           // "... uvāca -" speaker-label line-end pause (mātrās) — team table 2026-07-15
     mahatmyamBeats: 3,       // Gita Mahātmyam verse line-end pause (mātrās) — section table
     saramAratiCountdown: true, // countdown before Gita Sāram / Ārati recitation (OFF = header -> recitation directly)
-    heavyPadaAdjust: true,   // TEST: stretch mātrā duration on heavy pādas (M/S > 1.75); OFF = current production pacing
+    heavyPadaAdjust: true,   // TEST v2: stretch heavy pādas (M/S > 1.70) / shrink light (M/S < 1.50); OFF = production pacing
     theme: 'dark',           // projector theme: 'dark' (black bg) or 'light' (white bg) — #37
     fullscreenText: '',      // announcement text for the full-screen text box
     breakMinutes: 10,        // break timer duration (minutes)

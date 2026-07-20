@@ -745,21 +745,24 @@ const renderer = (function() {
     if (typeof cfg.heavyPadaAdjust === 'boolean') paceConfig.heavyPadaAdjust = cfg.heavyPadaAdjust;
   }
 
-  // --- Heavy-pāda timing adjustment (TEST BUILD, branch heavy-pada-test) ---
-  // Stretch the mātrā duration on unusually heavy pādas so chanters aren't
-  // rushed. A pāda qualifies only when ALL gates pass:
+  // --- Heavy/light pāda timing adjustment (TEST BUILD v2, branch heavy-pada-test) ---
+  // Stretch the mātrā duration on heavy pādas (so chanters aren't rushed) and
+  // shrink it on light pādas (so the pointer doesn't drag). A pāda qualifies
+  // only when ALL gates pass:
   //   • chapter data defaultBpm ≥ 340 internal (85 display BPM)
   //   • śloka is not triṣṭubh
   //   • śloka carries no uvāca speaker-label line (whole śloka excluded)
   //   • not a header or colophon slide
-  //   • pāda M/S (mātrās ÷ syllables) > 1.75
+  //   • pāda M/S (mātrās ÷ syllables) > 1.70 (heavy) or < 1.50 (light);
+  //     the 1.50–1.70 band is untouched
   // Factors are multiplicative so they track any effective tempo (per-śloka
-  // offsets, live BPM nudges): at 85 BPM, 176.47 ms/mātrā → 182.5 / 187.5 ms.
-  // Only syllable spans are scaled — markers (dandas) and line-end pauses keep
-  // their exact current values. Toggle: paceConfig.heavyPadaAdjust (operator
-  // settings); OFF reproduces the current production algorithm bit-for-bit.
-  const HEAVY_PADA_MODERATE = 182 / 176; // 1.750 < M/S < 1.800
-  const HEAVY_PADA_EXTREME  = 187 / 176; // M/S ≥ 1.800
+  // offsets, live BPM nudges): at 85 BPM, 176.47 ms/mātrā → 187.5 heavy /
+  // 166.4 light. Only syllable spans are scaled — markers (dandas) and
+  // line-end pauses keep their exact current values. Toggle:
+  // paceConfig.heavyPadaAdjust (operator settings); OFF reproduces the
+  // current production algorithm bit-for-bit.
+  const HEAVY_PADA_FACTOR = 187 / 176; // M/S > 1.70
+  const LIGHT_PADA_FACTOR = 166 / 176; // M/S < 1.50
 
   function isUvacaLabelLine(line) {
     var li = line.iast || '', lt = line.text || '';
@@ -784,8 +787,8 @@ const renderer = (function() {
     if ((dataLayer.getCurrentDefaultBpm() || 0) < 340) return 1;
     if (pageHasUvaca(pageData)) return 1;
     var mps = sylBeats / sylCount;
-    if (mps >= 1.8) return HEAVY_PADA_EXTREME;
-    if (mps > 1.75) return HEAVY_PADA_MODERATE;
+    if (mps > 1.7) return HEAVY_PADA_FACTOR;
+    if (mps < 1.5) return LIGHT_PADA_FACTOR;
     return 1;
   }
 
