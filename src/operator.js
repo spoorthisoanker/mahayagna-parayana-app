@@ -153,11 +153,11 @@
     folded_hands:      { image: '../img/instructions/folded-hands.png' },
     folded_hands_anim: { image: '../img/instructions/folded-hands.png' },
     namaskara_anim:    { image: '../img/instructions/image9.gif' },
-    pranam:            { text: 'Pran\u0101m', image: '../img/instructions/image7.gif' },
+    pranam:            { image: '../img/instructions/image7.gif' },  // GIF only \u2014 no text label per team 07-19
     sit_straight:      { text: 'Sit Straight', image: '../img/instructions/image3.gif' },
     increase_sruti:    { image: '../img/instructions/shruti-increase.png' },
     increase_volume:   { text: 'Increase Volume \uD83D\uDD0A', image: '../img/instructions/increase-volume.gif', autoDismissMs: 10000 },
-    listen_sync:       { text: 'Listen and Sync\nwith Pace Helpers' },
+    listen_sync:       { text: 'Listen & Sync\nwith Pace' },
     good_job:          { image: '../img/instructions/image6.gif' },
     decrease_sruti:    { image: '../img/instructions/image4.jpeg', image2: '../img/instructions/image5.gif', arrow: 'down' },
     stop:              { text: 'STOP', color: '#ff4444' },
@@ -318,8 +318,12 @@
     // don't replay it; re-entering the sloka later does), auto-dismissed after
     // ~2 GIF loops or on leaving the page.
     // (No cue for Dhyana, Invocation Prayers, or Samarpana per the team.)
-    var slokaGifKey = (page && !page.isHeader && (page.shlokaNum === '1' || page.shlokaNum === '2') &&
-      chId !== '0' && chId !== 'invocation_prayers' && chId !== 'kshama_prarthana')
+    // Datta Stavam: EVERY sloka shows the Pranam GIF instead (team 07-19) —
+    // same trigger/timing as the sloka-1/2 cue, only the card differs.
+    var isDattaSloka = chId === 'datta_stavam';
+    var slokaGifKey = (page && !page.isHeader && (isDattaSloka ||
+      ((page.shlokaNum === '1' || page.shlokaNum === '2') &&
+       chId !== '0' && chId !== 'invocation_prayers' && chId !== 'kshama_prarthana')))
       ? chId + '/' + page.shlokaNum : null;
     if (needsMudra) {
       // Pranam añjali mudra for every mudra overlay site.
@@ -328,7 +332,7 @@
       instructionShowing = true;
       headerInstructionShowing = true;
     } else if (slokaGifKey && slokaGifKey !== lastSlokaGifKey) {
-      sendToProjector('show-instruction', INSTRUCTION_DATA['folded_hands_anim']);
+      sendToProjector('show-instruction', INSTRUCTION_DATA[isDattaSloka ? 'pranam' : 'folded_hands_anim']);
       instructionShowing = true;
       headerInstructionShowing = true;   // auto card — auto-dismissed on other pages
       if (slokaGifTimer) clearTimeout(slokaGifTimer);

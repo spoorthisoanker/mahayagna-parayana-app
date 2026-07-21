@@ -387,7 +387,7 @@ body {
     <option value="louder">Louder</option>
     <option value="sit_straight">Sit Straight</option>
     <option value="increase_sruti">Increase Sruti</option>
-    <option value="listen_sync">Listen &amp; Sync with Pace Helpers</option>
+    <option value="listen_sync">Listen &amp; Sync with Pace</option>
     <option value="good_job">Good Job</option>
     <option value="decrease_sruti">Decrease Sruti</option>
     <option value="stop">Stop</option>
@@ -1838,15 +1838,19 @@ const ui = (function() {
       (chId === '18' && (page.shlokaNum === '66' || page.shlokaNum === '78')));
     // Folded-hands cue at the start of sloka 1 and sloka 2 of EVERY chapter:
     // auto-shown once per entry into the sloka, auto-dismissed after ~2 GIF loops.
-    var slokaGifKey = (page && !page.isHeader && (page.shlokaNum === '1' || page.shlokaNum === '2') &&
-      chId !== '0' && chId !== 'invocation_prayers' && chId !== 'kshama_prarthana')
+    // Datta Stavam: EVERY sloka shows the Pranam GIF instead (team 07-19) —
+    // same trigger/timing as the sloka-1/2 cue, only the card differs.
+    var isDattaSloka = chId === 'datta_stavam';
+    var slokaGifKey = (page && !page.isHeader && (isDattaSloka ||
+      ((page.shlokaNum === '1' || page.shlokaNum === '2') &&
+       chId !== '0' && chId !== 'invocation_prayers' && chId !== 'kshama_prarthana')))
       ? chId + '/' + page.shlokaNum : null;
     if (needsMudra) {
       // Pranam añjali mudra for every mudra overlay site.
       showInstruction('pranam', { corner: true });
       headerInstructionShowing = true;
     } else if (slokaGifKey && slokaGifKey !== lastSlokaGifKey) {
-      showInstruction('folded_hands_anim', { corner: true });
+      showInstruction(isDattaSloka ? 'pranam' : 'folded_hands_anim', { corner: true });
       headerInstructionShowing = true;
       if (slokaGifTimer) clearTimeout(slokaGifTimer);
       var thisGifKey = slokaGifKey;
@@ -2150,11 +2154,11 @@ var INSTRUCTION_DATA = {
   folded_hands_anim: { image: 'img/instructions/folded-hands.png' },
   folded_hands:      { image: 'img/instructions/image7.gif' },
   namaskara_anim:    { image: 'img/instructions/image9.gif' },
-  pranam:            { text: 'Pran\u0101m', image: 'img/instructions/image7.gif' },
+  pranam:            { image: 'img/instructions/image7.gif' },  // GIF only — no text label per team 07-19
   louder:            { text: 'Increase Volume \uD83D\uDD0A', image: 'img/instructions/increase-volume.gif', autoDismissMs: 10000 },
   sit_straight:      { text: 'Sit Straight', image: 'img/instructions/image9.gif' },
   increase_sruti:    { text: 'Increase Sruti', image: 'img/instructions/shruti-increase.png' },
-  listen_sync:       { text: 'Listen and Sync\nwith Pace Helpers' },
+  listen_sync:       { text: 'Listen & Sync\nwith Pace' },
   good_job:          { image: 'img/instructions/image12.gif' },
   decrease_sruti:    { text: 'Decrease Sruti', image: 'img/instructions/image8.gif' },
   stop:              { text: 'STOP', color: '#ff4444' },
