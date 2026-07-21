@@ -39,7 +39,7 @@ Datta Stavam → Starting Prayers (Sadguru Stavam) → Gita Dhyana Shlokas → C
 
 ## Controls
 
-- **SPM (Syllables Per Minute)**: Controls animation tempo. +/- buttons or keyboard `+`/`-`. Range: 40-600.
+- **BPM (Beats Per Minute)**: Controls animation tempo. +/- buttons or keyboard `+`/`-`. Range: 40-600. The displayed value is `internal bpm ÷ 4` (one beat = 4 mātrās); line-end pauses are configured separately in mātrās and scale automatically with the tempo.
 - **Play/Pause**: Space bar or buttons
 - **Reset**: `R` key or button
 - **Prev/Next page**: Arrow keys or buttons. At chapter boundaries, navigates to adjacent chapters.
@@ -54,8 +54,8 @@ Datta Stavam → Starting Prayers (Sadguru Stavam) → Gita Dhyana Shlokas → C
 | Arrow Right | Next page |
 | Arrow Left | Previous page |
 | R | Reset animation |
-| +/= | Increase SPM by 10 |
-| -/_ | Decrease SPM by 10 |
+| +/= | Increase BPM by 10 |
+| -/_ | Decrease BPM by 10 |
 
 ## Design Reference
 

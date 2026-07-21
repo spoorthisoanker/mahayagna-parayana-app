@@ -32,19 +32,23 @@
   var pointer = document.getElementById('pointer');
   var lastPointerLine = -1; // track which line the pointer is on for line-change detection
 
-  function positionPointerAbove(el, beatMs, durationMs) {
+  function positionPointerAbove(el, beatMs, durationMs, progress) {
     var rect = el.getBoundingClientRect();
     var newTop = (rect.top - 40) + 'px';
     var isEnglish = renderer.getMode() === 'english';
+    // Carried fractional progress within the element (#8): after a display-mode
+    // toggle the hand must resume MID-element — an english line is a whole pāda,
+    // so starting the sweep at its left edge reads as a position reset.
+    var frac = (progress > 0 && progress < 1) ? progress : 0;
 
     if (isEnglish && durationMs) {
-      // English mode: snap to left edge of element, sweep to right over full duration
+      // English mode: snap to the carried position, sweep the REMAINDER of the line
       pointer.style.transition = 'none';
-      pointer.style.left = (rect.left - 18) + 'px';
+      pointer.style.left = (rect.left + frac * rect.width - 18) + 'px';
       pointer.style.top = newTop;
       pointer.style.display = 'block';
       pointer.offsetWidth; // force reflow — commits snap before sweep starts
-      pointer.style.transition = 'left ' + (durationMs / 1000) + 's linear';
+      pointer.style.transition = 'left ' + ((durationMs * (1 - frac)) / 1000) + 's linear';
       pointer.style.left = (rect.right - 18) + 'px';
       lastPointerLine = rect.top;
       return;
@@ -79,7 +83,7 @@
       }
     }
 
-    var glideMs = durationMs || beatMs || 200;
+    var glideMs = (durationMs || beatMs || 200) * (1 - frac);
     if (nextSameLineEl) {
       // Glide toward center of next syllable on this line
       var nr = nextSameLineEl.getBoundingClientRect();
@@ -102,12 +106,19 @@
     var elems = renderer.getSyllableElements();
     if (data.index >= 0 && data.index < elems.length) {
       if (data.state === 'active') {
+        // Backfill 'done' on everything before the active syllable — after a
+        // display-mode re-render (#8) only the active index is re-announced, and
+        // the invariant "everything before the active syllable is done" always holds.
+        for (var b = 0; b < data.index; b++) {
+          elems[b].classList.remove('active');
+          elems[b].classList.add('done');
+        }
         elems[data.index].classList.add('active');
         // Static-title header spans (#4) carry noPointer — keep the hand hidden.
         if (elems[data.index].dataset && elems[data.index].dataset.noPointer) {
           hidePointer();
         } else {
-          positionPointerAbove(elems[data.index], data.beatMs, data.durationMs);
+          positionPointerAbove(elems[data.index], data.beatMs, data.durationMs, data.progress);
         }
       } else if (data.state === 'done') {
         elems[data.index].classList.remove('active');
@@ -157,9 +168,72 @@
     hidePointer(); // reset pointer state so next active syllable snaps cleanly
   });
 
+  // fullscreen-text: operator announcement shown full screen between sections.
+  window.electronAPI.on('fullscreen-text', function(data) {
+    var o = document.getElementById('fullscreen-text-overlay');
+    if (data && data.text) {
+      o.querySelector('.fs-text').textContent = data.text;
+      o.style.display = 'flex';
+    } else {
+      o.style.display = 'none';
+    }
+  });
+
+  // break-timer: full-screen MM:SS countdown for monitor breaks. The projector
+  // ticks locally; the operator starts/hides it. At zero it shows "Break
+  // Complete" until the operator dismisses it.
+  var breakTimerInterval = null;
+  window.electronAPI.on('break-timer', function(data) {
+    var o = document.getElementById('break-timer-overlay');
+    var num = o.querySelector('.break-time');
+    var lbl = o.querySelector('.break-label');
+    if (breakTimerInterval) { clearInterval(breakTimerInterval); breakTimerInterval = null; }
+    if (data && data.action === 'start' && data.seconds > 0) {
+      // Deadline-based, not tick-decrement: interval jitter/throttling can then
+      // never accumulate drift over a long break.
+      var deadline = Date.now() + Math.round(data.seconds) * 1000;
+      var render = function() {
+        var remaining = Math.max(0, Math.round((deadline - Date.now()) / 1000));
+        if (remaining <= 0) {
+          clearInterval(breakTimerInterval);
+          breakTimerInterval = null;
+          num.textContent = '00:00';
+          lbl.textContent = 'Starting Now';
+          o.classList.add('complete');
+          return;
+        }
+        var m = Math.floor(remaining / 60), sec = remaining % 60;
+        num.textContent = (m < 10 ? '0' : '') + m + ':' + (sec < 10 ? '0' : '') + sec;
+      };
+      o.classList.remove('complete');
+      lbl.textContent = 'Starts In';
+      render();
+      o.style.display = 'flex';
+      breakTimerInterval = setInterval(render, 500);
+    } else {
+      o.classList.remove('complete');
+      o.style.display = 'none';
+    }
+  });
+
   // verse-zoom: operator-controlled verse text zoom (#34)
+  var lastZoomScale = 1;
   window.electronAPI.on('verse-zoom', function(data) {
-    document.documentElement.style.setProperty('--verse-zoom', String(data.scale || 1));
+    var scale = data.scale || 1;
+    document.documentElement.style.setProperty('--verse-zoom', String(scale));
+    if (scale === lastZoomScale) return;
+    lastZoomScale = scale;
+    // Zoom shifts element geometry: re-anchor the hand over the active syllable,
+    // otherwise (especially while paused) it floats at the pre-zoom pixel position
+    // until the next syllable-update.
+    var active = document.querySelector('.syllable.active');
+    if (active && pointer.style.display !== 'none') {
+      if (active.dataset && active.dataset.noPointer) { hidePointer(); return; }
+      var rect = active.getBoundingClientRect(); // measured after the zoom applies
+      pointer.style.transition = 'none';
+      pointer.style.left = (rect.left + rect.width / 2 - 18) + 'px';
+      pointer.style.top = (rect.top - 40) + 'px';
+    }
   });
 
   // theme: operator-controlled dark/light projector theme (#37)

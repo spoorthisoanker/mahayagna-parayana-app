@@ -2,7 +2,7 @@
   "name": "āvāhana ślōkāḥ",
   "iastName": "āvāhana ślōkāḥ",
   "chapterNum": "invocation_prayers",
-  "defaultBpm": 280,
+  "defaultBpm": 260,
   "shloka": [
     {
       "shlokaNum": "",
@@ -50,6 +50,7 @@
     },
     {
       "shlokaNum": "",
+      "bpmOffset": -40,
       "entry": [
         {"text": "ōṁ śāntiḥ śāntiḥ śāntiḥ ||", "iast": "ōṁ śāntiḥ śāntiḥ śāntiḥ ||", "swhtsp": "l", "shlNbr": "00", "sty": ""},
         {"text": "hariḥ ōṁ |", "iast": "hariḥ ōṁ |", "swhtsp": "l", "shlNbr": "00", "sty": ""},

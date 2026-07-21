@@ -128,22 +128,28 @@
       display: none;
       /* transition set dynamically by projector.js based on beat duration */
     }
+    @keyframes instruction-in {
+      0%   { transform: scale(0.7); opacity: 0; }
+      60%  { transform: scale(1.06); opacity: 1; }
+      100% { transform: scale(1); opacity: 1; }
+    }
     #instruction-overlay {
       position: fixed;
       top: 3vh;
       right: 3vw;
-      width: 28vw;
-      max-width: 420px;
-      background: rgba(0, 0, 0, 0.88);
-      border: 2px solid #c94;
-      border-radius: 12px;
-      padding: 16px 20px;
+      width: 36vw;
+      max-width: 580px;
+      background: rgba(0, 0, 0, 0.9);
+      border: 3px solid #FFD700;
+      border-radius: 16px;
+      padding: 20px 24px;
       display: none;
       flex-direction: column;
       align-items: center;
-      gap: 12px;
+      gap: 14px;
       z-index: 200;
-      box-shadow: 0 4px 24px rgba(0,0,0,0.7);
+      box-shadow: 0 6px 32px rgba(0,0,0,0.75), 0 0 18px rgba(255,215,0,0.25);
+      animation: instruction-in 0.45s ease-out;
     }
     #instruction-overlay .instruction-content {
       display: flex;
@@ -152,13 +158,14 @@
       gap: 10px;
     }
     #instruction-overlay .instruction-image {
-      max-height: 22vh;
+      max-height: 32vh;
       max-width: 100%;
       object-fit: contain;
     }
     #instruction-overlay .instruction-text {
       color: #FFD700;
-      font-size: clamp(13px, 1.8vw, 26px);
+      font-weight: 600;
+      font-size: clamp(18px, 2.4vw, 36px);
       text-align: center;
       max-width: 100%;
       line-height: 1.3;
@@ -169,6 +176,43 @@
       font-size: clamp(10px, 1.2vw, 16px);
       margin-top: 4px;
     }
+    /* Full-screen text box (announcements) + break timer — standalone overlays,
+       above the countdown (100) and instruction card (200). */
+    #fullscreen-text-overlay, #break-timer-overlay {
+      position: fixed;
+      inset: 0;
+      background: var(--bg);
+      display: none;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      z-index: 300;
+      padding: 6vh 6vw;
+      text-align: center;
+    }
+    #fullscreen-text-overlay .fs-text {
+      color: var(--active);
+      font-size: clamp(32px, 5.5vw, 110px);
+      font-weight: 600;
+      line-height: 1.4;
+      white-space: pre-line;
+      max-width: 90vw;
+    }
+    #break-timer-overlay .break-label {
+      color: var(--fg);
+      font-size: clamp(24px, 3.5vw, 64px);
+      margin-bottom: 3vh;
+      letter-spacing: 0.08em;
+    }
+    #break-timer-overlay .break-time {
+      color: var(--active);
+      font-size: clamp(80px, 18vw, 340px);
+      font-weight: bold;
+      font-variant-numeric: tabular-nums;
+      line-height: 1;
+    }
+    #break-timer-overlay.complete .break-label { color: var(--active); }
+    #break-timer-overlay.complete .break-time { font-size: clamp(48px, 9vw, 160px); }
     @media (max-width: 900px) {
       .verse-line { font-size: clamp(12px, 3vw, 36px); margin: 0.5em 0; letter-spacing: 0.1em; }
       #display { padding: 2vh 3vw; }
@@ -182,6 +226,13 @@
   </style>
 </head>
 <body>
+  <div id="fullscreen-text-overlay">
+    <div class="fs-text"></div>
+  </div>
+  <div id="break-timer-overlay">
+    <div class="break-label">Starts In</div>
+    <div class="break-time">00:00</div>
+  </div>
   <div id="instruction-overlay">
     <div class="instruction-content"></div>
   </div>
