@@ -243,6 +243,19 @@
     }
   }
 
+  // Pages that carry the persistent Pranam mudra card: headers, colophons
+  // (except ch18's long closer), sarvadharmān, Datta Stavam page 1 (the
+  // salutations page — no shlokaNum; team 07-24 — its old timed cue fired at
+  // chapter-load and auto-dismissed behind the countdown, so it was never
+  // seen), and 18.66 / 18.78.
+  function pageNeedsMudra(page, chId) {
+    return !!(page && (page.isHeader ||
+      (page.isCloser && chId !== '18') ||  // ch18's closing text is long — the mudra card overlapped it
+      page.shlokaNum === 'sarvadharmān' ||
+      (chId === 'datta_stavam' && !page.shlokaNum) ||
+      (chId === '18' && (page.shlokaNum === '66' || page.shlokaNum === '78'))));
+  }
+
   // --- Page display ---
   function showPage(index, blankProjector) {
     if (blankHoldActive) {
@@ -312,14 +325,7 @@
     // ("|| ōṃ tatsaditi ...") page, on each chapter's trailing sarvadharmān recitation,
     // and on 18.66 / 18.78. Auto-dismissed on other pages.
     // Only auto-shown cards are auto-dismissed — manual instructions survive page flips.
-    var needsMudra = page && (page.isHeader ||
-      (page.isCloser && chId !== '18') ||  // ch18's closing text is long — the mudra card overlapped it
-      page.shlokaNum === 'sarvadharmān' ||
-      // Datta Stavam page 1 (the salutations page — no shlokaNum): persistent
-      // Pranam card like a header (team 07-24). The timed sloka cue fired at
-      // chapter-load and auto-dismissed behind the countdown, so it was never seen.
-      (chId === 'datta_stavam' && !page.shlokaNum) ||
-      (chId === '18' && (page.shlokaNum === '66' || page.shlokaNum === '78')));
+    var needsMudra = pageNeedsMudra(page, chId);
     // Folded-hands cue at the start of sloka 1 and sloka 2 of EVERY chapter:
     // auto-shown once per entry into the sloka (repeat passes of the same sloka
     // don't replay it; re-entering the sloka later does), auto-dismissed after
@@ -787,6 +793,15 @@
       projectorBlanked = true;
       applyChantSettings(); // push current verse-zoom (#34) to the (re)opened projector
       syncProjectorPage();
+      // Instruction cards don't survive a projector (re)open — the show-instruction
+      // was sent before the window existed (e.g. app starts on Datta Stavam, THEN
+      // the operator opens the projector). Re-send the persistent mudra card for
+      // the current page; never over a Sāram/Ārati bare hold.
+      if (!blankHoldActive && pageNeedsMudra(dataLayer.getPage(currentPage), dataLayer.getCurrentChapterId())) {
+        sendToProjector('show-instruction', INSTRUCTION_DATA['pranam']);
+        instructionShowing = true;
+        headerInstructionShowing = true;
+      }
     }
   });
 
