@@ -217,6 +217,10 @@
   // only appears after the countdown. blankProjector=false: for auto-advance — show immediately.
   async function loadChapter(chapterId, blankProjector) {
     try {
+      // Manual navigation aborts any in-flight start flow: a ticking countdown
+      // or a pending Sāram/Ārati title-gap must not fire on the new section.
+      cancelCountdown();
+      manualTitlePending = false;
       renderer.invalidatePrefetch();
       var chData = await dataLayer.fetchChapter(chapterId);
       // Apply BPM for this section: a Settings override (internal bpm) wins over the
@@ -392,19 +396,30 @@
   // require the countdown flow); the Saram/Arati blank-hold is NOT released this
   // way — Play owns that.
   var projectorBlanked = false;
+  // A manual Sāram/Ārati start is mid-flow (title showing, countdown/hold coming).
+  var manualTitlePending = false;
 
   // holdBlankAtEnd: finish on the opaque blank (-1) instead of revealing (0) —
   // the overlay never drops, so no content can flash between countdown end and
   // whatever the callback sets up (Sāram/Ārati blank-hold, #07-24).
+  var countdownInterval = null;
+  // Abandon a running countdown (operator navigated away mid-transition) so its
+  // ticks and completion callback can't fire on whatever loads next.
+  function cancelCountdown() {
+    if (countdownInterval) { clearInterval(countdownInterval); countdownInterval = null; }
+    countdownActive = false;
+  }
+
   function startCountdown(callback, holdBlankAtEnd) {
     if (countdownActive) return;
     countdownActive = true;
     var count = chantSettings.countdownSeconds;
     sendToProjector('countdown', { number: count });
-    var interval = setInterval(function() {
+    var interval = countdownInterval = setInterval(function() {
       count--;
       if (count <= 0) {
         clearInterval(interval);
+        countdownInterval = null;
         countdownActive = false;
         if (holdBlankAtEnd) {
           sendToProjector('countdown', { number: -1, bare: true }); // pure black — no labels
@@ -434,16 +449,24 @@
       return;
     }
     if (currentPage === 0 && animator.getState().currentIndex < 0) {
-      // Blank projector, pre-render behind the blank, then countdown
-      sendToProjector('countdown', { number: -1 });
-      projectorBlanked = true;
-      syncProjectorPage();
-      // Sāram/Ārati started MANUALLY (chapter dropdown → Play): same blank-hold
-      // as the auto-advance path (#07-24) — countdown ends on the opaque blank,
-      // pre-positioned at the first content page; nothing shows or plays until
-      // the operator presses Play again.
+      // Sāram/Ārati started MANUALLY (chapter dropdown → Play): mirror the
+      // auto-advance flow exactly (#07-25) — reveal the section TITLE first,
+      // let it sit for the chapter gap, then countdown into the bare hold;
+      // nothing plays until the operator presses Play again.
       var holdId = dataLayer.getCurrentChapterId();
       if (HOLD_BLANK_AFTER_COUNTDOWN[holdId]) {
+        // One flow at a time: ignore Play during the title gap OR the countdown
+        // (re-entering would schedule a second reveal mid-countdown).
+        if (manualTitlePending || countdownActive) return;
+        manualTitlePending = true;
+        syncProjectorPage(); // render the title behind the selection blank...
+        setTimeout(function() {
+          // ...and reveal it once the projector has had time to draw it —
+          // unless the operator navigated away in the meantime.
+          if (!manualTitlePending || dataLayer.getCurrentChapterId() !== holdId) return;
+          projectorBlanked = false;
+          sendToProjector('countdown', { number: 0 });
+        }, 300);
         var enterHold = function() {
           var fc = 0;
           var tot = dataLayer.getPageCount();
@@ -456,11 +479,25 @@
           blankHoldActive = true;
           projectorBlanked = true;
         };
-        // Same countdown-skip rule as the auto-advance path (Settings toggle).
-        if (chantSettings.saramAratiCountdown === false) enterHold();
-        else startCountdown(enterHold, true);
+        setTimeout(function() {
+          manualTitlePending = false;
+          // Operator navigated away during the title display — abandon the flow.
+          if (dataLayer.getCurrentChapterId() !== holdId || currentPage !== 0) return;
+          // Same countdown-skip rule as the auto-advance path (Settings toggle).
+          if (chantSettings.saramAratiCountdown === false) {
+            sendToProjector('countdown', { number: -1, bare: true });
+            projectorBlanked = true;
+            enterHold();
+          } else {
+            startCountdown(enterHold, true);
+          }
+        }, Math.max(300, chantSettings.chapterGapSeconds * 1000));
         return;
       }
+      // Blank projector, pre-render behind the blank, then countdown
+      sendToProjector('countdown', { number: -1 });
+      projectorBlanked = true;
+      syncProjectorPage();
       startCountdown(function() {
         animator.play();
       });
@@ -516,7 +553,9 @@
   // sarvadharmān; Gita Sāram / Ārati are title-only sections that must wait
   // for a manual start). Pressing Play after the stop continues to the next
   // section (the stop fires once per arrival).
-  var HARD_STOP_CHAPTER_ENDS = { datta_stavam: true, '9': true, '18': true, gita_saram: true, gita_arati: true };
+  // kshama_prarthana (Samarpana): stop on its last sloka-4 slide — Gita Sāram
+  // must not begin without the operator (team 07-25).
+  var HARD_STOP_CHAPTER_ENDS = { datta_stavam: true, '9': true, '18': true, kshama_prarthana: true, gita_saram: true, gita_arati: true };
   // Sections that pause after their opening header(s): the first verse page is
   // shown but waits for a manual Start.
   var STOP_AFTER_HEADER_SECTIONS = { gita_saram: true, gita_arati: true };
