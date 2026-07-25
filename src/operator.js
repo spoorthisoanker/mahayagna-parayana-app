@@ -315,6 +315,10 @@
     var needsMudra = page && (page.isHeader ||
       (page.isCloser && chId !== '18') ||  // ch18's closing text is long — the mudra card overlapped it
       page.shlokaNum === 'sarvadharmān' ||
+      // Datta Stavam page 1 (the salutations page — no shlokaNum): persistent
+      // Pranam card like a header (team 07-24). The timed sloka cue fired at
+      // chapter-load and auto-dismissed behind the countdown, so it was never seen.
+      (chId === 'datta_stavam' && !page.shlokaNum) ||
       (chId === '18' && (page.shlokaNum === '66' || page.shlokaNum === '78')));
     // Folded-hands cue at the start of sloka 1 and sloka 2 of EVERY chapter:
     // auto-shown once per entry into the sloka (repeat passes of the same sloka
@@ -383,7 +387,10 @@
   // way — Play owns that.
   var projectorBlanked = false;
 
-  function startCountdown(callback) {
+  // holdBlankAtEnd: finish on the opaque blank (-1) instead of revealing (0) —
+  // the overlay never drops, so no content can flash between countdown end and
+  // whatever the callback sets up (Sāram/Ārati blank-hold, #07-24).
+  function startCountdown(callback, holdBlankAtEnd) {
     if (countdownActive) return;
     countdownActive = true;
     var count = chantSettings.countdownSeconds;
@@ -393,8 +400,13 @@
       if (count <= 0) {
         clearInterval(interval);
         countdownActive = false;
-        projectorBlanked = false;
-        sendToProjector('countdown', { number: 0 });
+        if (holdBlankAtEnd) {
+          sendToProjector('countdown', { number: -1 });
+          projectorBlanked = true;
+        } else {
+          projectorBlanked = false;
+          sendToProjector('countdown', { number: 0 });
+        }
         if (callback) callback();
       } else {
         sendToProjector('countdown', { number: count });
@@ -418,6 +430,25 @@
       sendToProjector('countdown', { number: -1 });
       projectorBlanked = true;
       syncProjectorPage();
+      // Sāram/Ārati started MANUALLY (chapter dropdown → Play): same blank-hold
+      // as the auto-advance path (#07-24) — countdown ends on the opaque blank,
+      // pre-positioned at the first content page; nothing shows or plays until
+      // the operator presses Play again.
+      var holdId = dataLayer.getCurrentChapterId();
+      if (HOLD_BLANK_AFTER_COUNTDOWN[holdId]) {
+        var enterHold = function() {
+          var fc = 0;
+          var tot = dataLayer.getPageCount();
+          while (fc < tot && dataLayer.getPage(fc).isHeader) fc++;
+          if (fc < tot) showPage(fc); // renders behind the still-opaque blank
+          blankHoldActive = true;
+          projectorBlanked = true;
+        };
+        // Same countdown-skip rule as the auto-advance path (Settings toggle).
+        if (chantSettings.saramAratiCountdown === false) enterHold();
+        else startCountdown(enterHold, true);
+        return;
+      }
       startCountdown(function() {
         animator.play();
       });
