@@ -147,9 +147,14 @@
 
   // countdown: show/hide countdown overlay
   // number > 0: show with digit; number = 0: hide; number < 0: blank black screen (pre-countdown)
+  // data.bare (with number < 0): pure-black hold (Sāram/Ārati blank-hold, #07-24) —
+  // the "Start in" / "Listen to Śruti" labels are hidden so NOTHING is on screen.
+  // Labels are restored on any non-bare countdown message.
   window.electronAPI.on('countdown', function(data) {
     var overlay = document.getElementById('countdown-overlay');
     var numberEl = overlay.querySelector('.countdown-number');
+    var labelEls = overlay.querySelectorAll('.countdown-label, .countdown-sruti');
+    for (var i = 0; i < labelEls.length; i++) labelEls[i].style.display = data.bare ? 'none' : '';
     if (data.number > 0) {
       numberEl.textContent = data.number;
       overlay.style.display = 'flex';

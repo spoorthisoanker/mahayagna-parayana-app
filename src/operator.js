@@ -401,7 +401,7 @@
         clearInterval(interval);
         countdownActive = false;
         if (holdBlankAtEnd) {
-          sendToProjector('countdown', { number: -1 });
+          sendToProjector('countdown', { number: -1, bare: true }); // pure black — no labels
           projectorBlanked = true;
         } else {
           projectorBlanked = false;
@@ -417,11 +417,13 @@
   function playWithCountdown() {
     if (blankHoldActive) {
       // Blank-hold after the Sāram/Ārati countdown: reveal and play directly —
-      // the countdown already ran before the blank.
+      // the countdown already ran before the blank. Full showPage (not just a
+      // sync) so the revealed page gets its normal cue cards back (the mudra
+      // card was dismissed when the hold began).
       blankHoldActive = false;
       projectorBlanked = false;
       sendToProjector('countdown', { number: 0 });
-      syncProjectorPage();
+      showPage(currentPage);
       animator.play();
       return;
     }
@@ -441,6 +443,10 @@
           var tot = dataLayer.getPageCount();
           while (fc < tot && dataLayer.getPage(fc).isHeader) fc++;
           if (fc < tot) showPage(fc); // renders behind the still-opaque blank
+          // Nothing may show over the hold — not even the mudra card (it floats
+          // above the blank overlay). Title-only sections keep their header card
+          // otherwise, since the fc loop finds no content page to switch to.
+          if (headerInstructionShowing) dismissInstruction();
           blankHoldActive = true;
           projectorBlanked = true;
         };
@@ -573,7 +579,8 @@
                 var tot = dataLayer.getPageCount();
                 while (fc < tot && dataLayer.getPage(fc).isHeader) fc++;
                 if (fc < tot) showPage(fc); // pre-position so Play starts the first content page
-                sendToProjector('countdown', { number: -1 }); // opaque blank overlay
+                sendToProjector('countdown', { number: -1, bare: true }); // pure black — no labels
+                if (headerInstructionShowing) dismissInstruction(); // no mudra card over the hold
                 projectorBlanked = true;
                 blankHoldActive = true;
                 return;
