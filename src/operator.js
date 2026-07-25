@@ -246,6 +246,7 @@
   function showPage(index, blankProjector) {
     if (blankHoldActive) {
       blankHoldActive = false;
+      projectorBlanked = false;
       sendToProjector('countdown', { number: 0 }); // release the Sāram/Ārati blank hold
     }
     animator.reset();
@@ -301,6 +302,7 @@
     if (blankProjector) {
       // Blank the projector now — header will appear after countdown
       sendToProjector('countdown', { number: -1 });
+      projectorBlanked = true;
     } else {
       syncProjectorPage();
     }
@@ -373,6 +375,12 @@
 
   // --- Countdown ---
   var countdownActive = false;
+  // True while the projector sits behind the opaque blank overlay (countdown -1)
+  // waiting for a countdown to reveal it. Selecting a specific sloka releases the
+  // blank directly (aunty 07-24: jump-to-sloka after a chapter change must not
+  // require the countdown flow); the Saram/Arati blank-hold is NOT released this
+  // way — Play owns that.
+  var projectorBlanked = false;
 
   function startCountdown(callback) {
     if (countdownActive) return;
@@ -384,6 +392,7 @@
       if (count <= 0) {
         clearInterval(interval);
         countdownActive = false;
+        projectorBlanked = false;
         sendToProjector('countdown', { number: 0 });
         if (callback) callback();
       } else {
@@ -397,6 +406,7 @@
       // Blank-hold after the Sāram/Ārati countdown: reveal and play directly —
       // the countdown already ran before the blank.
       blankHoldActive = false;
+      projectorBlanked = false;
       sendToProjector('countdown', { number: 0 });
       syncProjectorPage();
       animator.play();
@@ -405,6 +415,7 @@
     if (currentPage === 0 && animator.getState().currentIndex < 0) {
       // Blank projector, pre-render behind the blank, then countdown
       sendToProjector('countdown', { number: -1 });
+      projectorBlanked = true;
       syncProjectorPage();
       startCountdown(function() {
         animator.play();
@@ -531,6 +542,7 @@
                 while (fc < tot && dataLayer.getPage(fc).isHeader) fc++;
                 if (fc < tot) showPage(fc); // pre-position so Play starts the first content page
                 sendToProjector('countdown', { number: -1 }); // opaque blank overlay
+                projectorBlanked = true;
                 blankHoldActive = true;
                 return;
               }
@@ -610,6 +622,15 @@
     var pageIndex = parseInt(shlokaSelect.value, 10);
     if (!isNaN(pageIndex) && pageIndex >= 0 && pageIndex < dataLayer.getPageCount()) {
       showPage(pageIndex);
+      // Jump-to-sloka after a manual chapter change: the projector is still behind
+      // the pre-countdown blank — reveal the selected page directly so Play starts
+      // it without the countdown flow (aunty 07-24). Header selection (index 0)
+      // keeps the blank so a normal Play → countdown → header start is preserved,
+      // as does an actively running countdown.
+      if (pageIndex > 0 && projectorBlanked && !countdownActive && !blankHoldActive) {
+        projectorBlanked = false;
+        sendToProjector('countdown', { number: 0 });
+      }
     }
   });
 
@@ -724,6 +745,7 @@
     if (projectorOpen) {
       // Re-apply blank overlay, then render behind it (maintain pre-play blank state)
       sendToProjector('countdown', { number: -1 });
+      projectorBlanked = true;
       applyChantSettings(); // push current verse-zoom (#34) to the (re)opened projector
       syncProjectorPage();
     }
