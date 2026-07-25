@@ -15,12 +15,12 @@
   // (they were frozen pre-fill hints, see saveSettings), and pause/slow-down
   // values still at their OLD defaults are upgraded to the new defaults —
   // genuinely customized values are kept.
-  var SETTINGS_REV = 3;
+  var SETTINGS_REV = 2;
 
   var CHANT_DEFAULTS = {
     colophonBpmDrop: 20,     // internal-bpm slow-down for the closing slide + Sarvadharmān (default 5 BPM). Settings field is in BPM (×4).
     headerBpmDrop: 40,       // internal-bpm slow-down for chapter-opening header slides (default 10 BPM). Settings field is in BPM (×4), 5-BPM steps.
-    countdownSeconds: 3,     // pre-play countdown length — team 07-24 (was 5)
+    countdownSeconds: 5,     // pre-play countdown length
     chapterGapSeconds: 3,    // gap between chapters before the countdown
     verseZoom: 100,          // projector verse-text zoom (%) — #34
     headerPauseBeats: 3,     // pause (mātrās) after each header line — #36.1
@@ -78,7 +78,6 @@
             if (merged.uvacaBeats === 2) merged.uvacaBeats = CHANT_DEFAULTS.uvacaBeats;
             if (merged.headerBpmDrop === 20) merged.headerBpmDrop = CHANT_DEFAULTS.headerBpmDrop;
             if (merged.colophonBpmDrop === 0) merged.colophonBpmDrop = CHANT_DEFAULTS.colophonBpmDrop;
-            if (merged.countdownSeconds === 5) merged.countdownSeconds = CHANT_DEFAULTS.countdownSeconds;  // 5 → 3, team 07-24
           }
           if (isCurrentRev && parsed.sectionBpm && typeof parsed.sectionBpm === 'object') {
             for (var k in parsed.sectionBpm) {

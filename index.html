@@ -312,7 +312,7 @@ body {
   <div id="pace-indicator"></div>
   <div id="countdown-overlay">
     <div class="countdown-label">Listen to Sruti</div>
-    <div class="countdown-number">3</div>
+    <div class="countdown-number">5</div>
   </div>
   <div id="pointer" style="display:none">&#128071;</div>
   <div id="verse-container-a"></div>
@@ -1963,7 +1963,7 @@ const ui = (function() {
     var countdownNumber = countdownOverlay.querySelector('.countdown-number');
     countdownOverlay.style.display = 'flex';
     broadcastState();
-    var count = 3;  // team 07-24 (was 5)
+    var count = 5;
     countdownNumber.textContent = count;
     var interval = setInterval(function() {
       count--;
