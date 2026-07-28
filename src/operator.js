@@ -449,47 +449,59 @@
       return;
     }
     if (currentPage === 0 && animator.getState().currentIndex < 0) {
-      // Sāram/Ārati started MANUALLY (chapter dropdown → Play): mirror the
-      // auto-advance flow exactly (#07-25) — reveal the section TITLE first,
-      // let it sit for the chapter gap, then countdown into the bare hold;
-      // nothing plays until the operator presses Play again.
-      var holdId = dataLayer.getCurrentChapterId();
-      if (HOLD_BLANK_AFTER_COUNTDOWN[holdId]) {
+      // Title-before-countdown sections started MANUALLY (chapter dropdown →
+      // Play) mirror the auto-advance flow exactly: reveal the section TITLE
+      // first, let it sit for the chapter gap, then countdown. Sāram/Ārati end
+      // in the bare black hold (nothing plays until the operator presses Play
+      // again, #07-25); the others (Samarpana, Datta Stavam, Invocation
+      // Prayers, Gita Mahātmyam — #07-27) begin recitation directly at the
+      // first content page.
+      var secId = dataLayer.getCurrentChapterId();
+      if (HEADER_BEFORE_COUNTDOWN[secId]) {
         // One flow at a time: ignore Play during the title gap OR the countdown
         // (re-entering would schedule a second reveal mid-countdown).
         if (manualTitlePending || countdownActive) return;
         manualTitlePending = true;
+        var isHold = HOLD_BLANK_AFTER_COUNTDOWN[secId] === true;
         syncProjectorPage(); // render the title behind the selection blank...
         setTimeout(function() {
           // ...and reveal it once the projector has had time to draw it —
           // unless the operator navigated away in the meantime.
-          if (!manualTitlePending || dataLayer.getCurrentChapterId() !== holdId) return;
+          if (!manualTitlePending || dataLayer.getCurrentChapterId() !== secId) return;
           projectorBlanked = false;
           sendToProjector('countdown', { number: 0 });
         }, 300);
-        var enterHold = function() {
+        var finish = function() {
           var fc = 0;
           var tot = dataLayer.getPageCount();
           while (fc < tot && dataLayer.getPage(fc).isHeader) fc++;
-          if (fc < tot) showPage(fc); // renders behind the still-opaque blank
-          // Nothing may show over the hold — not even the mudra card (it floats
-          // above the blank overlay). Title-only sections keep their header card
-          // otherwise, since the fc loop finds no content page to switch to.
-          if (headerInstructionShowing) dismissInstruction();
-          blankHoldActive = true;
-          projectorBlanked = true;
+          if (isHold) {
+            if (fc < tot) showPage(fc); // renders behind the still-opaque blank
+            // Nothing may show over the hold — not even the mudra card (it floats
+            // above the blank overlay). Title-only sections keep their header card
+            // otherwise, since the fc loop finds no content page to switch to.
+            if (headerInstructionShowing) dismissInstruction();
+            blankHoldActive = true;
+            projectorBlanked = true;
+          } else {
+            // Begin recitation directly at the first content page — the title
+            // already had its display time before the countdown.
+            if (fc < tot) showPage(fc);
+            animator.play();
+          }
         };
         setTimeout(function() {
           manualTitlePending = false;
           // Operator navigated away during the title display — abandon the flow.
-          if (dataLayer.getCurrentChapterId() !== holdId || currentPage !== 0) return;
-          // Same countdown-skip rule as the auto-advance path (Settings toggle).
-          if (chantSettings.saramAratiCountdown === false) {
+          if (dataLayer.getCurrentChapterId() !== secId || currentPage !== 0) return;
+          // Same countdown-skip rule as the auto-advance path (Settings toggle,
+          // Sāram/Ārati only).
+          if (isHold && chantSettings.saramAratiCountdown === false) {
             sendToProjector('countdown', { number: -1, bare: true });
             projectorBlanked = true;
-            enterHold();
+            finish();
           } else {
-            startCountdown(enterHold, true);
+            startCountdown(finish, isHold);
           }
         }, Math.max(300, chantSettings.chapterGapSeconds * 1000));
         return;
@@ -561,7 +573,10 @@
   var STOP_AFTER_HEADER_SECTIONS = { gita_saram: true, gita_arati: true };
   // Sections whose title header is shown BEFORE the countdown (team flow):
   // section end -> gap -> title visible -> gap -> countdown -> playback.
-  var HEADER_BEFORE_COUNTDOWN = { kshama_prarthana: true, gita_saram: true, gita_arati: true };
+  // 07-27: Datta Stavam, Invocation Prayers and Gita Mahātmyam join the flow
+  // (title established ~3s, countdown, recitation begins at the first content page).
+  var HEADER_BEFORE_COUNTDOWN = { kshama_prarthana: true, gita_saram: true, gita_arati: true,
+    datta_stavam: true, invocation_prayers: true, gita_mahatmyam: true };
   var hardStopDoneFor = null; // chapter we already hard-stopped at (so Play can continue)
   var chapterTransitionPending = false; // a chapter-end transition (gap/countdown) is already scheduled
   // Sāram/Ārati flow: after their countdown the projector holds on a BLANK slide

@@ -738,7 +738,11 @@ const renderer = (function() {
 
   // Sections whose title HEADER slide is a plain title (not chanted content): show the
   // romanized title as static text in BOTH display modes and move no pointer over it (#4).
-  const STATIC_TITLE_SECTIONS = { gita_saram: true, gita_arati: true, purnam: true, kshama_prarthana: true };
+  const STATIC_TITLE_SECTIONS = { gita_saram: true, gita_arati: true, purnam: true, kshama_prarthana: true,
+    // Title-before-countdown sections (team 07-27): their 'th' title slides are
+    // plain readable title cards, displayed for the chapter gap before the
+    // countdown — not chanted content. Mahātmyam's closing 'uh' stays animated.
+    datta_stavam: true, invocation_prayers: true, gita_mahatmyam: true };
 
   // Double-buffer: render next page into the hidden buffer, swap on advance
   const buffers = [
