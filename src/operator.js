@@ -402,6 +402,24 @@
   // holdBlankAtEnd: finish on the opaque blank (-1) instead of revealing (0) —
   // the overlay never drops, so no content can flash between countdown end and
   // whatever the callback sets up (Sāram/Ārati blank-hold, #07-24).
+  // Where recitation begins after a title-before-countdown flow. Sections whose
+  // page 0 is a display-only static title skip ONLY the title card(s) — a
+  // chanted header that follows (Mahātmyam's "atha gītāmāhātmyam", #07-30) is
+  // recited. Sections without a static title keep the old behavior of skipping
+  // all leading header pages (their title already displayed pre-countdown).
+  function firstRecitationPage() {
+    var tot = dataLayer.getPageCount();
+    var titleFlow = renderer.isStaticTitlePage(dataLayer.getPage(0));
+    var fc = 0;
+    while (fc < tot) {
+      var p = dataLayer.getPage(fc);
+      if (!p.isHeader) break;
+      if (titleFlow && !renderer.isStaticTitlePage(p)) break; // chanted header — recite it
+      fc++;
+    }
+    return fc;
+  }
+
   var countdownInterval = null;
   // Abandon a running countdown (operator navigated away mid-transition) so its
   // ticks and completion callback can't fire on whatever loads next.
@@ -472,9 +490,8 @@
           sendToProjector('countdown', { number: 0 });
         }, 300);
         var finish = function() {
-          var fc = 0;
+          var fc = firstRecitationPage();
           var tot = dataLayer.getPageCount();
-          while (fc < tot && dataLayer.getPage(fc).isHeader) fc++;
           if (isHold) {
             if (fc < tot) showPage(fc); // renders behind the still-opaque blank
             // Nothing may show over the hold — not even the mudra card (it floats
@@ -635,9 +652,8 @@
               // Sāram/Ārati: hold on a BLANK slide after the countdown — no text,
               // no pointer, nothing plays until the operator acts.
               if (HOLD_BLANK_AFTER_COUNTDOWN[nextId]) {
-                var fc = 0;
+                var fc = firstRecitationPage();
                 var tot = dataLayer.getPageCount();
-                while (fc < tot && dataLayer.getPage(fc).isHeader) fc++;
                 if (fc < tot) showPage(fc); // pre-position so Play starts the first content page
                 sendToProjector('countdown', { number: -1, bare: true }); // pure black — no labels
                 if (headerInstructionShowing) dismissInstruction(); // no mudra card over the hold
@@ -648,9 +664,8 @@
               // Begin recitation DIRECTLY at the first content page — the title
               // already had its display time before the countdown (replaying it
               // here read as "countdown -> header" to the team).
-              var firstContent = 0;
+              var firstContent = firstRecitationPage();
               var total = dataLayer.getPageCount();
-              while (firstContent < total && dataLayer.getPage(firstContent).isHeader) firstContent++;
               if (firstContent < total) showPage(firstContent);
               syncProjectorPage();
               animator.play();
