@@ -115,6 +115,11 @@
     .syllable.done {
       color: var(--done);
     }
+    /* English per-syllable mode (Case 2): restore the inter-word space the
+       syllable tokenizer consumed. Asterisk mode is unaffected (no word-end). */
+    .syllable.word-end {
+      margin-right: 0.35em;
+    }
     .verse-marker {
       display: inline-block;
       margin-left: 0.3em;

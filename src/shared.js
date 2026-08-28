@@ -722,7 +722,12 @@ const renderer = (function() {
   //   mahatmyamBeats — Gita Mahātmyam verse line-end pause. Its verses are tagged
   //     triṣṭubh but sung at an anuṣṭubh-ish clip; this dedicated pause (default 2.5,
   //     #44) overrides the meter default for that section so it stops dragging.
-  const paceConfig = { headerPauseBeats: 3, anustubhBeats: 2, tristubhBeats: 3, uvacaBeats: 3, mahatmyamBeats: 3 };
+  //   perSyllableTiming — Case 2 (team 07-30): every syllable span carries its
+  //     OWN guru/laghu weight, so the pointer dwells 2 mātrās on a guru and 1 on
+  //     a laghu, matching the chant's real rhythm. OFF = the original line-average
+  //     glide (every asterisk gets the line's mean beat value). Line totals are
+  //     identical either way — only the motion WITHIN the line changes.
+  const paceConfig = { headerPauseBeats: 3, anustubhBeats: 2, tristubhBeats: 3, uvacaBeats: 3, mahatmyamBeats: 3, perSyllableTiming: true };
   // Per-section line-pause overrides (parayana team's section table): Dhyana ('0') and
   // Invocation Prayers use gentler pauses (anuṣṭubh 1.5 / triṣṭubh 2.5). Every other
   // section uses the global paceConfig defaults (anuṣṭubh 2 / triṣṭubh 3, header 3).
@@ -737,6 +742,7 @@ const renderer = (function() {
     if (typeof cfg.tristubhBeats === 'number') paceConfig.tristubhBeats = cfg.tristubhBeats;
     if (typeof cfg.uvacaBeats === 'number') paceConfig.uvacaBeats = cfg.uvacaBeats;
     if (typeof cfg.mahatmyamBeats === 'number') paceConfig.mahatmyamBeats = cfg.mahatmyamBeats;
+    if (typeof cfg.perSyllableTiming === 'boolean') paceConfig.perSyllableTiming = cfg.perSyllableTiming;
   }
 
   // Sections whose title HEADER slide is a plain title (not chanted content): show the
@@ -846,17 +852,43 @@ const renderer = (function() {
       const analyzer = hasDevanagari ? prosody : iastProsody;
 
       if (currentMode === 'english') {
-        // English mode: show IAST text, one span per line with total beats
-        const displayText = line.iast || line.text;
-        const tokens = analyzer.analyzeLine(analyzeText);
-        const totalBeats = tokens.reduce((sum, t) => sum + t.beats, 0);
-
+        // English mode: show IAST text.
+        // perSyllableTiming ON (Case 2, team 07-30): one span PER SYLLABLE of
+        // the displayed text, each with its own guru/laghu weight — the pointer
+        // moves syllable-by-syllable over the words exactly as in asterisk
+        // mode, so a reader can verify the pointer sits on the syllable being
+        // sung. The IAST text itself is analyzed so display and timing are the
+        // same token stream. OFF: the original single span per line with the
+        // line's total beats.
+        //
         // Each data entry = one pāda (display line). Long pādas are NOT split
         // into two display lines — fitLines() shrinks them to fit. This matches
         // the reference deck (each pāda on one line) and the web build
         // (index.html), and fixes the "Dhyana line mixups" (feedback #10–19)
         // that came from breaking a pāda at the wrong mid-pāda point.
-        {
+        const displayText = line.iast || line.text;
+        if (paceConfig.perSyllableTiming) {
+          const eAnalyzer = /[\u0900-\u097F]/.test(displayText) ? prosody : iastProsody;
+          const eTokens = eAnalyzer.analyzeLine(displayText);
+          for (let ei = 0; ei < eTokens.length; ei++) {
+            const token = eTokens[ei];
+            const span = document.createElement('span');
+            span.dataset.beats = token.beats;
+            if (token.isMarker) {
+              span.className = 'verse-marker';
+              span.textContent = token.text;
+            } else {
+              // word-end: restores the inter-word space the tokenizer consumed
+              span.className = 'syllable' + (token.wordEnd ? ' word-end' : '');
+              span.dataset.index = elements.length;
+              span.textContent = token.text;
+            }
+            elements.push(span);
+            lineDiv.appendChild(span);
+          }
+        } else {
+          const tokens = analyzer.analyzeLine(analyzeText);
+          const totalBeats = tokens.reduce((sum, t) => sum + t.beats, 0);
           const span = document.createElement('span');
           span.className = 'syllable';
           span.dataset.index = elements.length;
@@ -866,11 +898,13 @@ const renderer = (function() {
           lineDiv.appendChild(span);
         }
       } else {
-        // Asterisk mode: one asterisk per syllable. For EVEN pointer movement,
-        // every syllable carries the line's AVERAGE beat value (not its own
-        // guru/laghu weight), so the hand glides at a constant rate across all
-        // asterisks while the line's total time \u2014 and thus the set tempo \u2014 is
-        // preserved. Markers (dandas) keep their own beats for the line-end pause.
+        // Asterisk mode: one asterisk per syllable.
+        // perSyllableTiming ON (Case 2, team 07-30): each asterisk carries its
+        // own guru/laghu weight \u2014 the pointer dwells on long syllables the way
+        // the chant does. OFF: the original EVEN glide \u2014 every syllable carries
+        // the line's AVERAGE beat value. The line's total time \u2014 and thus the
+        // set tempo \u2014 is identical either way. Markers (dandas) keep their own
+        // beats for the line-end pause.
         const tokens = analyzer.analyzeLine(analyzeText);
         const sylToks = tokens.filter(t => !t.isMarker);
         const avgBeats = sylToks.length
@@ -887,7 +921,7 @@ const renderer = (function() {
             span.textContent = token.text;
             elements.push(span);
           } else {
-            span.dataset.beats = avgBeats;
+            span.dataset.beats = paceConfig.perSyllableTiming ? token.beats : avgBeats;
             span.className = 'syllable';
             span.dataset.index = elements.length;
             span.textContent = '\u2731';
