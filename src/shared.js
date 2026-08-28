@@ -727,7 +727,11 @@ const renderer = (function() {
   //     a laghu, matching the chant's real rhythm. OFF = the original line-average
   //     glide (every asterisk gets the line's mean beat value). Line totals are
   //     identical either way — only the motion WITHIN the line changes.
-  const paceConfig = { headerPauseBeats: 3, anustubhBeats: 2, tristubhBeats: 3, uvacaBeats: 3, mahatmyamBeats: 3, perSyllableTiming: true };
+  //   headerWordGapMs — tiny pause inserted after the last syllable of each WORD
+  //     on chanted header lines (team 07-30: "atha · śrīmad · bhagavad ·  gītā"),
+  //     plus a visible gap between the word groups of asterisks. Milliseconds,
+  //     fixed (not tempo-scaled). 0 disables.
+  const paceConfig = { headerPauseBeats: 3, anustubhBeats: 2, tristubhBeats: 3, uvacaBeats: 3, mahatmyamBeats: 3, perSyllableTiming: true, headerWordGapMs: 2 };
   // Per-section line-pause overrides (parayana team's section table): Dhyana ('0') and
   // Invocation Prayers use gentler pauses (anuṣṭubh 1.5 / triṣṭubh 2.5). Every other
   // section uses the global paceConfig defaults (anuṣṭubh 2 / triṣṭubh 3, header 3).
@@ -743,6 +747,7 @@ const renderer = (function() {
     if (typeof cfg.uvacaBeats === 'number') paceConfig.uvacaBeats = cfg.uvacaBeats;
     if (typeof cfg.mahatmyamBeats === 'number') paceConfig.mahatmyamBeats = cfg.mahatmyamBeats;
     if (typeof cfg.perSyllableTiming === 'boolean') paceConfig.perSyllableTiming = cfg.perSyllableTiming;
+    if (typeof cfg.headerWordGapMs === 'number') paceConfig.headerWordGapMs = cfg.headerWordGapMs;
   }
 
   // Sections whose title HEADER slide is a plain title (not chanted content): show the
@@ -812,7 +817,9 @@ const renderer = (function() {
           elements.push(span);
           lineDiv.appendChild(span);
         } else {
-          // Asterisk mode: one ✱ per syllable, all animated
+          // Asterisk mode: one ✱ per syllable, all animated. Word ends get a
+          // visible gap between the asterisk groups and a small extra pause
+          // (headerWordGapMs) so the words of a header read separately (#07-30).
           for (let ti = 0; ti < hTokens.length; ti++) {
             const token = hTokens[ti];
             const span = document.createElement('span');
@@ -822,7 +829,10 @@ const renderer = (function() {
               span.textContent = token.text;
               elements.push(span);
             } else {
-              span.className = 'syllable';
+              span.className = 'syllable' + (token.wordEnd ? ' word-end' : '');
+              if (token.wordEnd && paceConfig.headerWordGapMs > 0) {
+                span.dataset.extraMs = paceConfig.headerWordGapMs;
+              }
               span.dataset.index = elements.length;
               span.textContent = '✱';
               elements.push(span);
@@ -1302,7 +1312,8 @@ const animator = (function() {
     // preserved. In English mode the single line-span carries the line's total
     // beats. parseFloat because averaged beats can be fractional.
     const beats = parseFloat(el.dataset.beats) || 1;
-    const durationMs = beats * getBeatMs();
+    // extraMs: fixed word-gap pause on chanted header word ends (#07-30)
+    const durationMs = beats * getBeatMs() + (parseFloat(el.dataset.extraMs) || 0);
     elementStartedAt = Date.now();
     elementDurationMs = durationMs;
     frozenProgress = 0;
