@@ -425,7 +425,28 @@ const prosody = (function() {
       }
     }
 
+    resegmentCodas(tokens);
     return tokens;
+  }
+
+  // Conjunct resegmentation (#07-30): the splitter attaches a whole conjunct to
+  // the FOLLOWING syllable (अ|न्त|व|त्तु), but the chanted akṣaras close the
+  // previous syllable with the conjunct's dead consonant (अन्|त|वत्|तु —
+  // an|ta|vat|tu). Move ONE dead consonant (C + virāma) of a syllable-initial
+  // cluster onto the previous syllable of the same word. DISPLAY-ONLY: token
+  // count, beats, guru/laghu and word flags are untouched (the weights already
+  // sat on the correct positions via the guru-by-position rule).
+  function resegmentCodas(tokens) {
+    for (let ti = 1; ti < tokens.length; ti++) {
+      const prev = tokens[ti - 1];
+      const cur = tokens[ti];
+      if (cur.isMarker || prev.isMarker || prev.wordEnd) continue;
+      const m = cur.text.match(/^([\u0915-\u0939\u0958-\u095F]\u094D)([\u0915-\u0939\u0958-\u095F].*)$/);
+      if (m) {
+        prev.text += m[1];
+        cur.text = m[2];
+      }
+    }
   }
 
   return { splitSyllables, isGuru, analyzeLine };
@@ -553,7 +574,47 @@ const iastProsody = (function() {
         tokens[ti - 1].beats = 2;
       }
     }
+    resegmentCodas(tokens);
     return tokens;
+  }
+
+  // Conjunct resegmentation (#07-30) — IAST twin of the Devanagari rule: a
+  // syllable-initial consonant cluster gives its FIRST consonant to the previous
+  // syllable of the same word (a|nta|va|ttu → an|ta|vat|tu; ka|rmā → kar|mā;
+  // śā|stra → śās|tra). Aspirate digraphs (kh, gh, th, dh, ...) count as one
+  // consonant. DISPLAY-ONLY: token count, beats and flags are untouched.
+  const IAST_CONS_UNITS = ['kh','gh','ch','jh','ṭh','ḍh','th','dh','ph','bh',
+    'ṅ','ñ','ṇ','ṭ','ḍ','ś','ṣ','ḷ','k','g','c','j','t','d','n','p','b','m',
+    'y','r','l','v','s','h'];
+  function leadingConsUnits(text) {
+    const units = [];
+    let rest = text;
+    let matched = true;
+    while (matched && rest) {
+      matched = false;
+      for (let ci = 0; ci < IAST_CONS_UNITS.length; ci++) {
+        const c = IAST_CONS_UNITS[ci];
+        if (rest.startsWith(c)) {
+          units.push(c);
+          rest = rest.slice(c.length);
+          matched = true;
+          break;
+        }
+      }
+    }
+    return { units: units, rest: rest };
+  }
+  function resegmentCodas(tokens) {
+    for (let ti = 1; ti < tokens.length; ti++) {
+      const prev = tokens[ti - 1];
+      const cur = tokens[ti];
+      if (cur.isMarker || prev.isMarker || prev.wordEnd) continue;
+      const lead = leadingConsUnits(cur.text);
+      if (lead.units.length >= 2) {
+        prev.text += lead.units[0];
+        cur.text = lead.units.slice(1).join('') + lead.rest;
+      }
+    }
   }
 
   return { splitSyllables, isGuru, analyzeLine };
