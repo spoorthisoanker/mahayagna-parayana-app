@@ -11,6 +11,7 @@
   // current page under the new config.
   window.electronAPI.on('pace-config', function(data) {
     renderer.setPaceConfig(data);
+    if (data.pacingMode) dataLayer.setPacingMode(data.pacingMode); // bcOnly ślokas (Sāram/Ārati B/C content)
     if (lastRenderReq) {
       var replay = lastRenderReq;
       dataLayer.fetchChapter(replay.chapter).then(function() {

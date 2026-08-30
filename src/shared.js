@@ -638,11 +638,20 @@ const dataLayer = (function() {
   let chapterName = '';
   let currentChapterId = null;
   const cache = {}; // chapterId -> parsed JSON data
+  // Pacing version (A/B/C) — ślokas flagged bcOnly in the data (Gita Sāram /
+  // Ārati verse content, team 08-30) exist only in versions B and C; version A
+  // (the parayana base) keeps those sections title-only. The operator/projector
+  // must re-fetch the chapter after changing this so pages are rebuilt.
+  let pacingMode = 'C';
+  function setPacingMode(mode) {
+    if (mode === 'A' || mode === 'B' || mode === 'C') pacingMode = mode;
+  }
 
   function groupIntoPages(shlokas) {
     const result = [];
 
     for (const shloka of shlokas) {
+      if (shloka.bcOnly === true && pacingMode === 'A') continue;
       const headerEntries = shloka.entry.filter(e => e.sty === 'fh' || e.sty === 'sh' || e.sty === 'th' || e.sty === 'uh');
       const regularEntries = shloka.entry.filter(e => e.sty !== 'fh' && e.sty !== 'sh' && e.sty !== 'th' && e.sty !== 'uh');
 
@@ -759,7 +768,7 @@ const dataLayer = (function() {
     return null;
   }
 
-  return { fetchChapter, getPage, getPageCount, getChapterName, getCurrentChapterId, getNextChapterId, getPrevChapterId, CHAPTER_ORDER };
+  return { fetchChapter, getPage, getPageCount, getChapterName, getCurrentChapterId, getNextChapterId, getPrevChapterId, setPacingMode, CHAPTER_ORDER };
 })();
 
 // ============================================================
