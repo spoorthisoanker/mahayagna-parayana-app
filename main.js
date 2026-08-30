@@ -136,7 +136,7 @@ var projectorChannels = [
   'render-page', 'syllable-update', 'animation-reset',
   'countdown', 'display-mode', 'spm-change',
   'show-instruction', 'dismiss-instruction',
-  'verse-zoom', 'theme',
+  'verse-zoom', 'theme', 'pace-config',
   'fullscreen-text', 'break-timer'
 ];
 

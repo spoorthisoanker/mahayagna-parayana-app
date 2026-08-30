@@ -3,9 +3,27 @@
 (function() {
   var pageReady = false; // true once render-page has completed
   var pendingUpdates = []; // queued syllable-updates that arrived before page was ready
+  var lastRenderReq = null; // last render-page request — replayed after a pace-config change
+
+  // pace-config: the operator's pacing version (A/B/C) — the versions differ in
+  // STAR COUNTS (C: one per mātrā), so the projector must render with the same
+  // config or pointer indexes would land on the wrong element. Re-render the
+  // current page under the new config.
+  window.electronAPI.on('pace-config', function(data) {
+    renderer.setPaceConfig(data);
+    if (lastRenderReq) {
+      var replay = lastRenderReq;
+      dataLayer.fetchChapter(replay.chapter).then(function() {
+        if (replay.displayMode) renderer.setMode(replay.displayMode);
+        var page = dataLayer.getPage(replay.pageIndex);
+        if (page) renderer.renderPage(page);
+      }).catch(function() {});
+    }
+  });
 
   // render-page: load chapter and render a specific page
   window.electronAPI.on('render-page', function(data) {
+    lastRenderReq = data;
     pageReady = false;
     dataLayer.fetchChapter(data.chapter).then(function() {
       if (data.displayMode) {
