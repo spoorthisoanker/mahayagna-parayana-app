@@ -29,8 +29,9 @@
     uvacaBeats: 3,           // "... uvāca -" speaker-label line-end pause (mātrās) — team table 2026-07-15
     mahatmyamBeats: 3,       // Gita Mahātmyam verse line-end pause (mātrās) — section table
     saramAratiCountdown: true, // countdown before Gita Sāram / Ārati recitation (OFF = header -> recitation directly)
-    perSyllableTiming: true, // Case 2 (team 07-30): pointer dwells per guru/laghu weight; OFF = line-average glide
-    headerWordGapMs: 2,      // pause (ms) after each WORD on chanted header lines (team 07-30); 0 = off
+    pacingVersion: 'B',      // A = parayana baseline (v0.12.21 behavior: even glide, no word gaps);
+                             // B = experimental (per-syllable guru/laghu timing, syllable display, header word gaps)
+    headerWordGapMs: 2,      // pause (ms) after each WORD on chanted header lines — applies in version B only; 0 = off
     theme: 'dark',           // projector theme: 'dark' (black bg) or 'light' (white bg) — #37
     fullscreenText: '',      // announcement text for the full-screen text box
     breakMinutes: 10,        // break timer duration (minutes)
@@ -50,7 +51,7 @@
       uvacaBeats: CHANT_DEFAULTS.uvacaBeats,
       mahatmyamBeats: CHANT_DEFAULTS.mahatmyamBeats,
       saramAratiCountdown: CHANT_DEFAULTS.saramAratiCountdown,
-      perSyllableTiming: CHANT_DEFAULTS.perSyllableTiming,
+      pacingVersion: CHANT_DEFAULTS.pacingVersion,
       headerWordGapMs: CHANT_DEFAULTS.headerWordGapMs,
       theme: CHANT_DEFAULTS.theme,
       fullscreenText: CHANT_DEFAULTS.fullscreenText,
@@ -73,7 +74,8 @@
           if (typeof parsed.uvacaBeats === 'number') merged.uvacaBeats = parsed.uvacaBeats;
           if (typeof parsed.mahatmyamBeats === 'number') merged.mahatmyamBeats = parsed.mahatmyamBeats;
           if (typeof parsed.saramAratiCountdown === 'boolean') merged.saramAratiCountdown = parsed.saramAratiCountdown;
-          if (typeof parsed.perSyllableTiming === 'boolean') merged.perSyllableTiming = parsed.perSyllableTiming;
+          if (parsed.pacingVersion === 'A' || parsed.pacingVersion === 'B') merged.pacingVersion = parsed.pacingVersion;
+          else if (typeof parsed.perSyllableTiming === 'boolean') merged.pacingVersion = parsed.perSyllableTiming ? 'B' : 'A'; // legacy toggle
           if (typeof parsed.headerWordGapMs === 'number') merged.headerWordGapMs = parsed.headerWordGapMs;
           if (parsed.theme === 'dark' || parsed.theme === 'light') merged.theme = parsed.theme;
           if (typeof parsed.fullscreenText === 'string') merged.fullscreenText = parsed.fullscreenText;
@@ -129,8 +131,10 @@
       tristubhBeats: chantSettings.tristubhBeats,
       uvacaBeats: chantSettings.uvacaBeats,
       mahatmyamBeats: chantSettings.mahatmyamBeats,
-      perSyllableTiming: chantSettings.perSyllableTiming,
-      headerWordGapMs: chantSettings.headerWordGapMs
+      // The A/B switch maps onto the two renderer knobs: version A reproduces
+      // the v0.12.21 parayana behavior exactly (even glide, no word gaps).
+      perSyllableTiming: chantSettings.pacingVersion !== 'A',
+      headerWordGapMs: chantSettings.pacingVersion !== 'A' ? chantSettings.headerWordGapMs : 0
     });
     // Projector theme — dark (black bg) / light (white bg) — #37
     sendToProjector('theme', { theme: chantSettings.theme });
@@ -995,8 +999,8 @@
     if (fldHeaderSlow) fldHeaderSlow.value = chantSettings.headerBpmDrop / 4;  // stored internal bpm → shown in BPM
     var fldSaramCd = document.getElementById('set-saram-arati-cd');
     if (fldSaramCd) fldSaramCd.value = chantSettings.saramAratiCountdown ? 'on' : 'off';
-    var fldPerSyl = document.getElementById('set-per-syllable');
-    if (fldPerSyl) fldPerSyl.value = chantSettings.perSyllableTiming ? 'on' : 'off';
+    var fldPacing = document.getElementById('set-pacing-version');
+    if (fldPacing) fldPacing.value = chantSettings.pacingVersion === 'A' ? 'A' : 'B';
     var fldWordGap = document.getElementById('set-header-word-gap');
     if (fldWordGap) fldWordGap.value = chantSettings.headerWordGapMs;
     if (fldFsText) fldFsText.value = chantSettings.fullscreenText || '';
@@ -1036,8 +1040,8 @@
     if (fldHeaderSlow) chantSettings.headerBpmDrop = Math.round(clampNum(fldHeaderSlow.value, 0, 20, CHANT_DEFAULTS.headerBpmDrop / 4) / 5) * 5 * 4;  // BPM field (5-BPM steps) → internal bpm
     var fldSaramCdS = document.getElementById('set-saram-arati-cd');
     if (fldSaramCdS) chantSettings.saramAratiCountdown = fldSaramCdS.value !== 'off';
-    var fldPerSylS = document.getElementById('set-per-syllable');
-    if (fldPerSylS) chantSettings.perSyllableTiming = fldPerSylS.value !== 'off';
+    var fldPacingS = document.getElementById('set-pacing-version');
+    if (fldPacingS) chantSettings.pacingVersion = fldPacingS.value === 'A' ? 'A' : 'B';
     var fldWordGapS = document.getElementById('set-header-word-gap');
     if (fldWordGapS) chantSettings.headerWordGapMs = Math.round(clampNum(fldWordGapS.value, 0, 500, CHANT_DEFAULTS.headerWordGapMs));
     if (fldFsText) chantSettings.fullscreenText = fldFsText.value;

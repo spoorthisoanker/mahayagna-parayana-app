@@ -391,14 +391,14 @@ hr { border: none; border-top: 1px solid #333; margin: 0; }
 
       <div class="settings-note">Pauses are in mātrās — 4 mātrās = 1 beat (BPM). They scale automatically with the tempo.</div>
 
-      <label for="set-header-word-gap">Header word gap (ms)</label>
-      <input type="number" id="set-header-word-gap" min="0" max="500" step="1">
-
-      <label for="set-per-syllable">Per-syllable pointer timing (test)</label>
-      <select id="set-per-syllable">
-        <option value="on">On (pointer follows guru/laghu rhythm)</option>
-        <option value="off">Off (even glide — previous behavior)</option>
+      <label for="set-pacing-version">Pacing version</label>
+      <select id="set-pacing-version">
+        <option value="A">A — Parayana (even glide, as at the event)</option>
+        <option value="B">B — Experimental (guru/laghu rhythm)</option>
       </select>
+
+      <label for="set-header-word-gap">Header word gap (ms) — version B</label>
+      <input type="number" id="set-header-word-gap" min="0" max="500" step="1">
 
       <label for="set-saram-arati-cd">Countdown for Gita Sāram &amp; Ārati</label>
       <select id="set-saram-arati-cd">
