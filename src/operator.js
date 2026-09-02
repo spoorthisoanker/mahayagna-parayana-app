@@ -28,6 +28,7 @@
     tristubhBeats: 3,        // triṣṭubh verse line-end pause (mātrās) — section table
     uvacaBeats: 3,           // "... uvāca -" speaker-label line-end pause (mātrās) — team table 2026-07-15
     mahatmyamBeats: 3,       // Gita Mahātmyam verse line-end pause (mātrās) — section table
+    lastSlokaPauseBeats: 5,  // pause after the LAST sloka of ch 1–18, before "om tatsaditi" (team 09-02; 3–7)
     saramAratiCountdown: true, // countdown before Gita Sāram / Ārati recitation (OFF = header -> recitation directly)
     pacingVersion: 'C',      // A = parayana baseline (even glide) · B = per-syllable dwell · C = mātrā stars, constant pointer
     headerWordGapMs: 2,      // pause (ms) after each WORD on chanted header lines — applies in version B only; 0 = off
@@ -49,6 +50,7 @@
       tristubhBeats: CHANT_DEFAULTS.tristubhBeats,
       uvacaBeats: CHANT_DEFAULTS.uvacaBeats,
       mahatmyamBeats: CHANT_DEFAULTS.mahatmyamBeats,
+      lastSlokaPauseBeats: CHANT_DEFAULTS.lastSlokaPauseBeats,
       saramAratiCountdown: CHANT_DEFAULTS.saramAratiCountdown,
       pacingVersion: CHANT_DEFAULTS.pacingVersion,
       headerWordGapMs: CHANT_DEFAULTS.headerWordGapMs,
@@ -72,6 +74,7 @@
           if (typeof parsed.tristubhBeats === 'number') merged.tristubhBeats = parsed.tristubhBeats;
           if (typeof parsed.uvacaBeats === 'number') merged.uvacaBeats = parsed.uvacaBeats;
           if (typeof parsed.mahatmyamBeats === 'number') merged.mahatmyamBeats = parsed.mahatmyamBeats;
+          if (typeof parsed.lastSlokaPauseBeats === 'number') merged.lastSlokaPauseBeats = parsed.lastSlokaPauseBeats;
           if (typeof parsed.saramAratiCountdown === 'boolean') merged.saramAratiCountdown = parsed.saramAratiCountdown;
           if (parsed.pacingVersion === 'A' || parsed.pacingVersion === 'B' || parsed.pacingVersion === 'C') merged.pacingVersion = parsed.pacingVersion;
           else if (typeof parsed.perSyllableTiming === 'boolean') merged.pacingVersion = parsed.perSyllableTiming ? 'B' : 'A'; // legacy toggle
@@ -130,6 +133,7 @@
       tristubhBeats: chantSettings.tristubhBeats,
       uvacaBeats: chantSettings.uvacaBeats,
       mahatmyamBeats: chantSettings.mahatmyamBeats,
+      lastSlokaPauseBeats: chantSettings.lastSlokaPauseBeats,
       // A/B/C switch: A reproduces the v0.12.21 parayana behavior exactly
       // (even glide, no word gaps); B = per-syllable dwell; C = mātrā stars.
       pacingMode: chantSettings.pacingVersion,
@@ -524,9 +528,11 @@
             projectorBlanked = true;
           } else {
             // Begin recitation directly at the first content page — the title
-            // already had its display time before the countdown.
+            // already had its display time before the countdown. Manual
+            // sections (Sāram/Ārati in B/C) only SHOW the page: the presenter
+            // drives with Next/Previous, the pointer stays off.
             if (fc < tot) showPage(fc);
-            animator.play();
+            if (!inManualSection(secId)) animator.play();
           }
         };
         setTimeout(function() {
@@ -553,6 +559,9 @@
         animator.play();
       });
     } else {
+      // Manual sections: Play never starts the pointer — slides are advanced
+      // with Next/Previous only.
+      if (inManualSection(dataLayer.getCurrentChapterId())) return;
       animator.play();
     }
   }
@@ -622,6 +631,13 @@
   // Sāram/Ārati flow: after their countdown the projector holds on a BLANK slide
   // until the operator acts (Play reveals and starts; any page change reveals).
   var HOLD_BLANK_AFTER_COUNTDOWN = { gita_saram: true, gita_arati: true };
+  // Team 09-02: in versions B/C, Gita Sāram & Ārati are PRESENTER-DRIVEN —
+  // no automatic pointer movement or auto-advance; the presenter flips slides
+  // with Next/Previous. (Version A keeps its parayana behavior untouched.)
+  var MANUAL_POINTER_OFF = { gita_saram: true, gita_arati: true };
+  function inManualSection(chId) {
+    return MANUAL_POINTER_OFF[chId] === true && chantSettings.pacingVersion !== 'A';
+  }
   var blankHoldActive = false;
 
   animator.setOnAutoAdvance(async function() {
@@ -691,7 +707,7 @@
               var total = dataLayer.getPageCount();
               if (firstContent < total) showPage(firstContent);
               syncProjectorPage();
-              animator.play();
+              if (!inManualSection(nextId)) animator.play();
             };
             // Optional countdown skip (Settings) for Gita Sāram / Ārati only:
             // OFF = header -> recitation directly.
@@ -1023,6 +1039,8 @@
     if (fldTristubh) fldTristubh.value = chantSettings.tristubhBeats;
     if (fldUvaca) fldUvaca.value = chantSettings.uvacaBeats;
     if (fldMahatmyam) fldMahatmyam.value = chantSettings.mahatmyamBeats;
+    var fldLastSloka = document.getElementById('set-last-sloka-pause');
+    if (fldLastSloka) fldLastSloka.value = chantSettings.lastSlokaPauseBeats;
     if (fldTheme) fldTheme.value = chantSettings.theme;
     for (var id in sectionBpmInputs) {
       if (!Object.prototype.hasOwnProperty.call(sectionBpmInputs, id)) continue;
@@ -1065,6 +1083,8 @@
     if (fldTristubh) chantSettings.tristubhBeats = clampNum(fldTristubh.value, 0, 12, CHANT_DEFAULTS.tristubhBeats);
     if (fldUvaca) chantSettings.uvacaBeats = clampNum(fldUvaca.value, 0, 12, CHANT_DEFAULTS.uvacaBeats);
     if (fldMahatmyam) chantSettings.mahatmyamBeats = clampNum(fldMahatmyam.value, 0, 12, CHANT_DEFAULTS.mahatmyamBeats);
+    var fldLastSlokaS = document.getElementById('set-last-sloka-pause');
+    if (fldLastSlokaS) chantSettings.lastSlokaPauseBeats = clampNum(fldLastSlokaS.value, 3, 7, CHANT_DEFAULTS.lastSlokaPauseBeats);
     if (fldTheme) chantSettings.theme = (fldTheme.value === 'light') ? 'light' : 'dark';
 
     // Per-section BPM: store an override ONLY when it differs from the data
