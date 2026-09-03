@@ -819,7 +819,7 @@ const renderer = (function() {
   //     fixed (not tempo-scaled). 0 disables.
   //   lastSlokaPauseBeats — pause (mātrās) after the LAST sloka of each Gita
   //     chapter (1–18), before the "om tatsaditi" slide (team 09-02; 3–7, default 5).
-  const paceConfig = { headerPauseBeats: 3, anustubhBeats: 2, tristubhBeats: 3, uvacaBeats: 3, mahatmyamBeats: 3, pacingMode: 'C', headerWordGapMs: 2, lastSlokaPauseBeats: 5 };
+  const paceConfig = { headerPauseBeats: 3, anustubhBeats: 2, tristubhBeats: 3, uvacaBeats: 3, mahatmyamBeats: 3, pacingMode: 'C', headerWordGapMs: 0, lastSlokaPauseBeats: 5 };
   // Per-section line-pause overrides (parayana team's section table): Dhyana ('0') and
   // Invocation Prayers use gentler pauses (anuṣṭubh 1.5 / triṣṭubh 2.5). Every other
   // section uses the global paceConfig defaults (anuṣṭubh 2 / triṣṭubh 3, header 3).
