@@ -371,11 +371,13 @@ const prosody = (function() {
     for (let wi = 0; wi < words.length; wi++) {
       const word = words[wi];
 
-      // Check for verse markers
-      if (word === '|' || word === '||') {
+      // Check for verse markers: |, ||, and numbered sloka closers like ||1||
+      // (same rule as the IAST engine, so the double danda after the 4th pada
+      // renders in asterisk mode too)
+      if (/^\|+$/.test(word) || /^\|\|\d+\|\|$/.test(word)) {
         tokens.push({
           text: word,
-          beats: word === '||' ? 4 : 2,
+          beats: word.includes('||') ? 4 : 2,
           isMarker: true,
           isGuru: false,
           wordEnd: true
@@ -423,7 +425,28 @@ const prosody = (function() {
       }
     }
 
+    resegmentCodas(tokens);
     return tokens;
+  }
+
+  // Conjunct resegmentation (#07-30): the splitter attaches a whole conjunct to
+  // the FOLLOWING syllable (अ|न्त|व|त्तु), but the chanted akṣaras close the
+  // previous syllable with the conjunct's dead consonant (अन्|त|वत्|तु —
+  // an|ta|vat|tu). Move ONE dead consonant (C + virāma) of a syllable-initial
+  // cluster onto the previous syllable of the same word. DISPLAY-ONLY: token
+  // count, beats, guru/laghu and word flags are untouched (the weights already
+  // sat on the correct positions via the guru-by-position rule).
+  function resegmentCodas(tokens) {
+    for (let ti = 1; ti < tokens.length; ti++) {
+      const prev = tokens[ti - 1];
+      const cur = tokens[ti];
+      if (cur.isMarker || prev.isMarker || prev.wordEnd) continue;
+      const m = cur.text.match(/^([\u0915-\u0939\u0958-\u095F]\u094D)([\u0915-\u0939\u0958-\u095F].*)$/);
+      if (m) {
+        prev.text += m[1];
+        cur.text = m[2];
+      }
+    }
   }
 
   return { splitSyllables, isGuru, analyzeLine };
@@ -551,7 +574,47 @@ const iastProsody = (function() {
         tokens[ti - 1].beats = 2;
       }
     }
+    resegmentCodas(tokens);
     return tokens;
+  }
+
+  // Conjunct resegmentation (#07-30) — IAST twin of the Devanagari rule: a
+  // syllable-initial consonant cluster gives its FIRST consonant to the previous
+  // syllable of the same word (a|nta|va|ttu → an|ta|vat|tu; ka|rmā → kar|mā;
+  // śā|stra → śās|tra). Aspirate digraphs (kh, gh, th, dh, ...) count as one
+  // consonant. DISPLAY-ONLY: token count, beats and flags are untouched.
+  const IAST_CONS_UNITS = ['kh','gh','ch','jh','ṭh','ḍh','th','dh','ph','bh',
+    'ṅ','ñ','ṇ','ṭ','ḍ','ś','ṣ','ḷ','k','g','c','j','t','d','n','p','b','m',
+    'y','r','l','v','s','h'];
+  function leadingConsUnits(text) {
+    const units = [];
+    let rest = text;
+    let matched = true;
+    while (matched && rest) {
+      matched = false;
+      for (let ci = 0; ci < IAST_CONS_UNITS.length; ci++) {
+        const c = IAST_CONS_UNITS[ci];
+        if (rest.startsWith(c)) {
+          units.push(c);
+          rest = rest.slice(c.length);
+          matched = true;
+          break;
+        }
+      }
+    }
+    return { units: units, rest: rest };
+  }
+  function resegmentCodas(tokens) {
+    for (let ti = 1; ti < tokens.length; ti++) {
+      const prev = tokens[ti - 1];
+      const cur = tokens[ti];
+      if (cur.isMarker || prev.isMarker || prev.wordEnd) continue;
+      const lead = leadingConsUnits(cur.text);
+      if (lead.units.length >= 2) {
+        prev.text += lead.units[0];
+        cur.text = lead.units.slice(1).join('') + lead.rest;
+      }
+    }
   }
 
   return { splitSyllables, isGuru, analyzeLine };
@@ -575,18 +638,30 @@ const dataLayer = (function() {
   let chapterName = '';
   let currentChapterId = null;
   const cache = {}; // chapterId -> parsed JSON data
+  // Pacing version (A/B/C) — ślokas flagged bcOnly in the data (Gita Sāram /
+  // Ārati verse content, team 08-30) exist only in versions B and C; version A
+  // (the parayana base) keeps those sections title-only. The operator/projector
+  // must re-fetch the chapter after changing this so pages are rebuilt.
+  let pacingMode = 'C';
+  function setPacingMode(mode) {
+    if (mode === 'A' || mode === 'B' || mode === 'C') pacingMode = mode;
+  }
 
   function groupIntoPages(shlokas) {
     const result = [];
 
     for (const shloka of shlokas) {
+      if (shloka.bcOnly === true && pacingMode === 'A') continue;
       const headerEntries = shloka.entry.filter(e => e.sty === 'fh' || e.sty === 'sh' || e.sty === 'th' || e.sty === 'uh');
       const regularEntries = shloka.entry.filter(e => e.sty !== 'fh' && e.sty !== 'sh' && e.sty !== 'th' && e.sty !== 'uh');
 
       for (const hdr of headerEntries) {
         result.push({
           shlokaNum: shloka.shlokaNum,
-          lines: [{ text: hdr.text, iast: hdr.iast || '', swhtsp: hdr.swhtsp, sty: hdr.sty }],
+          // staticTitle: per-entry display-only title card (e.g. Mahātmyam's
+          // "gītāmāhātmyam" card, #07-30) — static text, no pointer, and the
+          // recitation position skips it, unlike its chanted "atha..." header.
+          lines: [{ text: hdr.text, iast: hdr.iast || '', swhtsp: hdr.swhtsp, sty: hdr.sty, staticTitle: hdr.staticTitle === true }],
           isHeader: true
         });
       }
@@ -596,7 +671,9 @@ const dataLayer = (function() {
           shlokaNum: shloka.shlokaNum,
           lines: regularEntries.map(e => ({ text: e.text, iast: e.iast || '', swhtsp: e.swhtsp, sty: e.sty, cont: e.cont, pauseBeats: e.pauseBeats })),
           isHeader: false,
-          meter: shloka.meter
+          meter: shloka.meter,
+          // Per-slide tempo offset (internal bpm) from data — e.g. Invocation santi page −20.
+          bpmOffset: (typeof shloka.bpmOffset === 'number' ? shloka.bpmOffset : undefined)
         };
         // Colophon ("|| ōṃ tatsaditi ...") — leading || distinguishes it from
         // verse 17.23, which also begins with "ōṃ tatsaditi".
@@ -652,6 +729,17 @@ const dataLayer = (function() {
     currentChapterId = id;
     chapterName = data.name || '';
     pages = groupIntoPages(data.shloka || []);
+    // Chapters 1–18: mark the LAST sloka page (the verse page right before the
+    // "om tatsaditi" closer) so the renderer can apply the configurable
+    // Pause-After-Last-Sloka (team 09-02) to its final line.
+    var chNum = parseInt(id, 10);
+    if (!isNaN(chNum) && chNum >= 1 && chNum <= 18) {
+      for (var pi = 0; pi < pages.length - 1; pi++) {
+        if (pages[pi + 1].isCloser && !pages[pi].isHeader && !pages[pi].isCloser) {
+          pages[pi].lastSlokaOfChapter = true;
+        }
+      }
+    }
 
     // Prefetch next chapter in background
     var idx = CHAPTER_ORDER.indexOf(id);
@@ -691,7 +779,7 @@ const dataLayer = (function() {
     return null;
   }
 
-  return { fetchChapter, getPage, getPageCount, getChapterName, getCurrentChapterId, getNextChapterId, getPrevChapterId, CHAPTER_ORDER };
+  return { fetchChapter, getPage, getPageCount, getChapterName, getCurrentChapterId, getNextChapterId, getPrevChapterId, setPacingMode, CHAPTER_ORDER };
 })();
 
 // ============================================================
@@ -715,7 +803,30 @@ const renderer = (function() {
   //   mahatmyamBeats — Gita Mahātmyam verse line-end pause. Its verses are tagged
   //     triṣṭubh but sung at an anuṣṭubh-ish clip; this dedicated pause (default 2.5,
   //     #44) overrides the meter default for that section so it stops dragging.
-  const paceConfig = { headerPauseBeats: 3, anustubhBeats: 3, tristubhBeats: 4.5, uvacaBeats: 2, mahatmyamBeats: 2.5 };
+  //   pacingMode — the A/B/C pacing version (team 07-30/08-30). Line totals are
+  //     identical in all three — only the motion WITHIN a line changes:
+  //     'A' — parayana baseline: one star per syllable, every star carries the
+  //           line's AVERAGE beat value (even glide); English = one span per line.
+  //     'B' — per-syllable: one star per syllable with its OWN guru/laghu weight
+  //           (pointer dwells 2 mātrās on a guru); English = one span per
+  //           syllable of the book text, same weights.
+  //     'C' — mātrā stars: one star per MĀTRĀ (guru → 2 identical stars), every
+  //           star worth exactly 1 mātrā — constant pointer motion; English
+  //           renders as in B (book text untouched, pointer dwells).
+  //   headerWordGapMs — tiny pause inserted after the last syllable of each WORD
+  //     on chanted header lines (team 07-30: "atha · śrīmad · bhagavad ·  gītā"),
+  //     plus a visible gap between the word groups of asterisks. Milliseconds,
+  //     fixed (not tempo-scaled). 0 disables.
+  //   lastSlokaPauseBeats — pause (mātrās) after the LAST sloka of each Gita
+  //     chapter (1–18), before the "om tatsaditi" slide (team 09-02; 3–7, default 5).
+  const paceConfig = { headerPauseBeats: 3, anustubhBeats: 2, tristubhBeats: 3, uvacaBeats: 3, mahatmyamBeats: 3, pacingMode: 'C', headerWordGapMs: 0, lastSlokaPauseBeats: 5 };
+  // Per-section line-pause overrides (parayana team's section table): Dhyana ('0') and
+  // Invocation Prayers use gentler pauses (anuṣṭubh 1.5 / triṣṭubh 2.5). Every other
+  // section uses the global paceConfig defaults (anuṣṭubh 2 / triṣṭubh 3, header 3).
+  const SECTION_PAUSE_OVERRIDES = {
+    '0':                { anustubhBeats: 1.5, tristubhBeats: 2.5 },
+    invocation_prayers: { anustubhBeats: 1.5, tristubhBeats: 2.5 }
+  };
   function setPaceConfig(cfg) {
     if (!cfg) return;
     if (typeof cfg.headerPauseBeats === 'number') paceConfig.headerPauseBeats = cfg.headerPauseBeats;
@@ -723,11 +834,22 @@ const renderer = (function() {
     if (typeof cfg.tristubhBeats === 'number') paceConfig.tristubhBeats = cfg.tristubhBeats;
     if (typeof cfg.uvacaBeats === 'number') paceConfig.uvacaBeats = cfg.uvacaBeats;
     if (typeof cfg.mahatmyamBeats === 'number') paceConfig.mahatmyamBeats = cfg.mahatmyamBeats;
+    if (cfg.pacingMode === 'A' || cfg.pacingMode === 'B' || cfg.pacingMode === 'C') paceConfig.pacingMode = cfg.pacingMode;
+    else if (typeof cfg.perSyllableTiming === 'boolean') paceConfig.pacingMode = cfg.perSyllableTiming ? 'B' : 'A'; // legacy
+    if (typeof cfg.headerWordGapMs === 'number') paceConfig.headerWordGapMs = cfg.headerWordGapMs;
+    if (typeof cfg.lastSlokaPauseBeats === 'number') paceConfig.lastSlokaPauseBeats = cfg.lastSlokaPauseBeats;
   }
 
   // Sections whose title HEADER slide is a plain title (not chanted content): show the
   // romanized title as static text in BOTH display modes and move no pointer over it (#4).
-  const STATIC_TITLE_SECTIONS = { gita_mahatmyam: true, gita_saram: true, gita_arati: true };
+  const STATIC_TITLE_SECTIONS = { gita_saram: true, gita_arati: true, purnam: true, kshama_prarthana: true,
+    // Title-before-countdown sections (team 07-27): their 'th' title slides are
+    // plain readable title cards, displayed for the chapter gap before the
+    // countdown — not chanted content.
+    // Gita Mahātmyam is NOT here (team 07-30): only its dedicated title card
+    // (entry staticTitle flag) is static — "atha gītāmāhātmyam" is CHANTED as
+    // asterisks after the countdown, followed by the slokas.
+    datta_stavam: true, invocation_prayers: true };
 
   // Double-buffer: render next page into the hidden buffer, swap on advance
   const buffers = [
@@ -745,6 +867,10 @@ const renderer = (function() {
     target.textContent = '';
     // Colophon (closer) pages are center-aligned; all other pages left-aligned.
     target.classList.toggle('centered', !!pageData.isCloser);
+    // Om tatsaditi slide in ENGLISH script: render at 70% so the namaskara
+    // instruction card never overlaps the long transliterated lines (team
+    // 09-02). All pacing versions; asterisk mode unaffected.
+    target.classList.toggle('closer-zoom', !!pageData.isCloser && currentMode === 'english');
     const elements = [];
 
     for (const line of pageData.lines) {
@@ -753,10 +879,10 @@ const renderer = (function() {
 
       if (pageData.isHeader) {
         if (line.sty === 'fh') {
-          lineDiv.style.color = '#FFD700';
+          lineDiv.style.color = 'var(--active, #FFD700)';
           lineDiv.style.fontSize = '3vw';
         } else if (line.sty === 'sh') {
-          lineDiv.style.color = '#fff';
+          lineDiv.style.color = 'var(--fg, #fff)';
           lineDiv.style.fontSize = '2.5vw';
         }
 
@@ -767,7 +893,9 @@ const renderer = (function() {
         const hLineStart = elements.length;
 
         // Gita Mahātmyam / Sāram / Ārati title headers: static title, no pointer (#4).
-        const staticTitle = STATIC_TITLE_SECTIONS[dataLayer.getCurrentChapterId()] === true;
+        // The CLOSING header ('uh', e.g. Mahātmyam's "|| iti śrī varāhapurāṇē ... ||")
+        // is chanted, so it stays a normal animated header (asterisks + pointer).
+        const staticTitle = (STATIC_TITLE_SECTIONS[dataLayer.getCurrentChapterId()] === true || line.staticTitle === true) && line.sty !== 'uh';
         if (currentMode !== 'asterisk' || staticTitle) {
           // English mode (or a static title): one span per header line with the text.
           // A static title also carries dataset.noPointer so the hand never moves over it,
@@ -783,22 +911,37 @@ const renderer = (function() {
           elements.push(span);
           lineDiv.appendChild(span);
         } else {
-          // Asterisk mode: one ✱ per syllable, all animated
+          // Asterisk mode: all animated. Word ends get a visible gap between
+          // the asterisk groups and a small extra pause (headerWordGapMs) so
+          // the words of a header read separately (#07-30).
+          // Mode C: one ✱ per MĀTRĀ (a guru contributes two identical stars,
+          // each worth 1 mātrā) — constant pointer motion. A/B: one ✱ per
+          // syllable with the token's own beats (headers were never averaged).
           for (let ti = 0; ti < hTokens.length; ti++) {
             const token = hTokens[ti];
-            const span = document.createElement('span');
-            span.dataset.beats = token.beats;
             if (token.isMarker) {
+              const span = document.createElement('span');
+              span.dataset.beats = token.beats;
               span.className = 'verse-marker';
               span.textContent = token.text;
               elements.push(span);
-            } else {
-              span.className = 'syllable';
+              lineDiv.appendChild(span);
+              continue;
+            }
+            const starCount = paceConfig.pacingMode === 'C' ? Math.max(1, Math.round(token.beats)) : 1;
+            for (let mi = 0; mi < starCount; mi++) {
+              const span = document.createElement('span');
+              span.dataset.beats = paceConfig.pacingMode === 'C' ? 1 : token.beats;
+              const isLastOfToken = mi === starCount - 1;
+              span.className = 'syllable' + (token.wordEnd && isLastOfToken ? ' word-end' : '');
+              if (token.wordEnd && isLastOfToken && paceConfig.headerWordGapMs > 0) {
+                span.dataset.extraMs = paceConfig.headerWordGapMs;
+              }
               span.dataset.index = elements.length;
               span.textContent = '✱';
               elements.push(span);
+              lineDiv.appendChild(span);
             }
-            lineDiv.appendChild(span);
           }
         }
 
@@ -822,56 +965,111 @@ const renderer = (function() {
       const analyzeText = hasDevanagari ? line.text : (line.iast || line.text);
       const analyzer = hasDevanagari ? prosody : iastProsody;
 
-      if (currentMode === 'english') {
-        // English mode: show IAST text, one span per line with total beats
-        const displayText = line.iast || line.text;
-        const tokens = analyzer.analyzeLine(analyzeText);
-        const totalBeats = tokens.reduce((sum, t) => sum + t.beats, 0);
+      // Version C hybrid (team 09-02): verse ślokas render like version A —
+      // even glide in asterisk mode, single-span sweep in English — everywhere
+      // EXCEPT Gita Sāram/Ārati (kept as-is) and the om-tatsaditi closers
+      // (mātrā stars). Section headers keep their C treatment above.
+      const vSection = dataLayer.getCurrentChapterId();
+      const effMode = (paceConfig.pacingMode === 'C' && !pageData.isCloser &&
+        vSection !== 'gita_saram' && vSection !== 'gita_arati') ? 'A' : paceConfig.pacingMode;
 
+      if (currentMode === 'english') {
+        // English mode: show IAST text, exactly as the book — never modified.
+        // Versions B and C: one span PER SYLLABLE, each with its own guru/laghu
+        // weight — the pointer dwells on long syllables (C's constant-motion
+        // idea lives in the asterisk display only; the text is untouched).
+        // Version A: the original single span per line with the line's total.
+        //
         // Each data entry = one pāda (display line). Long pādas are NOT split
         // into two display lines — fitLines() shrinks them to fit. This matches
         // the reference deck (each pāda on one line) and the web build
         // (index.html), and fixes the "Dhyana line mixups" (feedback #10–19)
         // that came from breaking a pāda at the wrong mid-pāda point.
-        {
+        const displayText = line.iast || line.text;
+        if (effMode !== 'A') {
+          const eAnalyzer = /[\u0900-\u097F]/.test(displayText) ? prosody : iastProsody;
+          const eTokens = eAnalyzer.analyzeLine(displayText);
+          for (let ei = 0; ei < eTokens.length; ei++) {
+            const token = eTokens[ei];
+            const span = document.createElement('span');
+            span.dataset.beats = token.beats;
+            if (token.isMarker) {
+              span.className = 'verse-marker';
+              span.textContent = token.text;
+            } else {
+              // word-end: restores the inter-word space the tokenizer consumed
+              span.className = 'syllable' + (token.wordEnd ? ' word-end' : '');
+              span.dataset.index = elements.length;
+              span.textContent = token.text;
+            }
+            elements.push(span);
+            lineDiv.appendChild(span);
+          }
+        } else {
+          const tokens = analyzer.analyzeLine(analyzeText);
+          const totalBeats = tokens.reduce((sum, t) => sum + t.beats, 0);
+          // Version A: the whole line is ONE swept span. A trailing sloka
+          // NUMBER (||N||) is split into a separate non-animated tail span so
+          // the pointer's sweep ends at the last chanted syllable and never
+          // travels over the digits (team 09-02). Timing is unchanged: the
+          // number's mātrās remain inside totalBeats on the swept span.
+          // Mid-line dandas and non-numeric markers stay in the swept text.
+          let sweepText = displayText;
+          let tailText = null;
+          const mTail = displayText.match(/^(.*?)\s*(\|\|\s*\d+\s*\|\|)\s*$/);
+          if (mTail && mTail[1]) { sweepText = mTail[1]; tailText = mTail[2]; }
           const span = document.createElement('span');
           span.className = 'syllable';
           span.dataset.index = elements.length;
           span.dataset.beats = totalBeats;
-          span.textContent = displayText;
+          span.textContent = sweepText;
           elements.push(span);
           lineDiv.appendChild(span);
+          if (tailText) {
+            const tail = document.createElement('span');
+            tail.className = 'line-number-tail';
+            tail.textContent = tailText;
+            lineDiv.appendChild(tail);
+          }
         }
       } else {
-        // Asterisk mode: one asterisk per syllable. For EVEN pointer movement,
-        // every syllable carries the line's AVERAGE beat value (not its own
-        // guru/laghu weight), so the hand glides at a constant rate across all
-        // asterisks while the line's total time \u2014 and thus the set tempo \u2014 is
-        // preserved. Markers (dandas) keep their own beats for the line-end pause.
+        // Asterisk mode — see the pacing-version comment below. Markers (dandas)
+        // keep their own beats for the line-end pause.
         const tokens = analyzer.analyzeLine(analyzeText);
         const sylToks = tokens.filter(t => !t.isMarker);
         const avgBeats = sylToks.length
           ? (sylToks.reduce((s, t) => s + t.beats, 0) / sylToks.length)
           : 1;
 
+        // By pacing version (line totals identical in all):
+        //   A — one ✱ per syllable at the line's AVERAGE beats (even glide)
+        //   B — one ✱ per syllable at its OWN guru/laghu weight (dwell)
+        //   C — one ✱ per MĀTRĀ, each worth exactly 1 (constant motion;
+        //       a guru simply occupies two identical stars)
         for (let ti = 0; ti < tokens.length; ti++) {
           const token = tokens[ti];
-          const span = document.createElement('span');
 
           if (token.isMarker) {
+            const span = document.createElement('span');
             span.dataset.beats = token.beats;
             span.className = 'verse-marker';
             span.textContent = token.text;
             elements.push(span);
-          } else {
-            span.dataset.beats = avgBeats;
+            lineDiv.appendChild(span);
+            continue;
+          }
+
+          const starCount = effMode === 'C' ? Math.max(1, Math.round(token.beats)) : 1;
+          for (let mi = 0; mi < starCount; mi++) {
+            const span = document.createElement('span');
+            span.dataset.beats = effMode === 'C' ? 1
+              : (effMode === 'B' ? token.beats : avgBeats);
             span.className = 'syllable';
             span.dataset.index = elements.length;
             span.textContent = '\u2731';
             elements.push(span);
+            lineDiv.appendChild(span);
           }
-
-          lineDiv.appendChild(span);
         }
       }
 
@@ -894,16 +1092,19 @@ const renderer = (function() {
             // Explicit per-line override (e.g. Samarpana repeated invocation, #36.3).
             elements[i].dataset.lineEndPauseBeats = String(line.pauseBeats);
           } else {
-            // Meter-aware line-end pause (Issues #20/#21), configurable via the
-            // operator settings: triṣṭubh (default 4.5) vs anuṣṭubh (default 3).
-            // Dhyana (chapter '0') carries per-shloka meter too, so it uses the
-            // same rule (no flat-3 special case). Gita Mahātmyam is mis-tagged triṣṭubh
-            // but chanted faster, so it takes its own pause (default 2.5, #44).
+            // Meter-aware line-end pause (Issues #20/#21): triṣṭubh (default 3) vs
+            // anuṣṭubh (default 2). Dhyana ('0') and Invocation Prayers use gentler
+            // per-section overrides (1.5 / 2.5). Gita Mahātmyam is all triṣṭubh and
+            // takes its own single pause (default 3).
             var lineEndBeats;
-            if (dataLayer.getCurrentChapterId() === 'gita_mahatmyam') {
+            var section = dataLayer.getCurrentChapterId();
+            if (section === 'gita_mahatmyam') {
               lineEndBeats = paceConfig.mahatmyamBeats;
             } else {
-              lineEndBeats = (pageData.meter === 'tristubh' ? paceConfig.tristubhBeats : paceConfig.anustubhBeats);
+              var ov = SECTION_PAUSE_OVERRIDES[section];
+              var aB = ov ? ov.anustubhBeats : paceConfig.anustubhBeats;
+              var tB = ov ? ov.tristubhBeats : paceConfig.tristubhBeats;
+              lineEndBeats = (pageData.meter === 'tristubh' ? tB : aB);
             }
             elements[i].dataset.lineEndPauseBeats = String(lineEndBeats);
           }
@@ -912,6 +1113,31 @@ const renderer = (function() {
       }
 
       target.appendChild(lineDiv);
+    }
+
+    // Pause-After-Last-Sloka (team 09-02): on the last sloka page of a Gita
+    // chapter, the FINAL line's end pause uses the configurable value instead
+    // of the meter default, giving breathing room before "om tatsaditi".
+    if (pageData.lastSlokaOfChapter) {
+      for (let li = elements.length - 1; li >= 0; li--) {
+        if (elements[li].dataset.lineEnd) {
+          elements[li].dataset.lineEndPauseBeats = String(paceConfig.lastSlokaPauseBeats);
+          break;
+        }
+      }
+    }
+
+    // Stamp a mode-independent line number on every element (#8): element indices
+    // differ between display modes (asterisk = one span per syllable, english = one
+    // span per line), so the pointer position is mapped across a mode switch by
+    // (line, fraction-within-line) instead of by raw index. Elements of a line are
+    // contiguous, so group by parent lineDiv.
+    var lineDivs = [];
+    for (let i = 0; i < elements.length; i++) {
+      var lp = elements[i].parentElement;
+      var ln = lineDivs.indexOf(lp);
+      if (ln === -1) { lineDivs.push(lp); ln = lineDivs.length - 1; }
+      elements[i].dataset.lineNum = String(ln);
     }
 
     return elements;
@@ -1035,6 +1261,57 @@ const renderer = (function() {
     return syllableElements;
   }
 
+  // Cross-mode pointer mapping (#8). Element indices differ between display modes
+  // (asterisk = one span per syllable, english = one span per line), so a position is
+  // carried across a re-render as a mode-independent FRACTION of its line:
+  //   getLinePosition(index, progress) → { line, fine } where fine ∈ [0,1) is
+  //     (elements consumed within the line + progress through the current element)
+  //     ÷ (elements in the line). `progress` is animator.getState().progress.
+  //   mapLinePosition(pos) → { index, progress } — the element in the NEW render at
+  //     that fraction, plus the residual progress within it. Round trips are exact:
+  //     asterisk syl 5 of 8 → english (fine .5) → back → asterisk syl 5.
+  function getLinePosition(index, progress) {
+    if (index < 0 || index >= syllableElements.length) return null;
+    var ln = parseInt(syllableElements[index].dataset.lineNum, 10) || 0;
+    var first = -1, count = 0;
+    for (var i = 0; i < syllableElements.length; i++) {
+      if ((parseInt(syllableElements[i].dataset.lineNum, 10) || 0) === ln) {
+        if (first === -1) first = i;
+        count++;
+      }
+    }
+    var p = (progress > 0 && progress < 1) ? progress : 0;
+    return { line: ln, fine: ((index - first) + p) / count };
+  }
+  function mapLinePosition(pos) {
+    if (!pos || !syllableElements.length) return { index: -1, progress: 0 };
+    var first = -1, count = 0;
+    for (var i = 0; i < syllableElements.length; i++) {
+      if ((parseInt(syllableElements[i].dataset.lineNum, 10) || 0) === pos.line) {
+        if (first === -1) first = i;
+        count++;
+      }
+    }
+    if (first === -1) return { index: syllableElements.length - 1, progress: 0 }; // line missing — clamp
+    var scaled = Math.max(0, Math.min(count - 1e-9, (pos.fine || 0) * count));
+    var off = Math.floor(scaled);
+    var idx = first + off;
+    // Never land on a danda marker — settle on the preceding syllable of the line.
+    while (idx > first && syllableElements[idx].classList.contains('verse-marker')) idx--;
+    return { index: idx, progress: idx === first + off ? scaled - off : 0 };
+  }
+
+  // Display-only title page: static text, no pointer, skipped when positioning
+  // the recitation start. True for pages of STATIC_TITLE_SECTIONS and for
+  // pages whose line carries the per-entry staticTitle flag; a closing 'uh'
+  // header is never a static title.
+  function isStaticTitlePage(pageData) {
+    if (!pageData || !pageData.isHeader) return false;
+    var line = pageData.lines[0];
+    if (!line || line.sty === 'uh') return false;
+    return line.staticTitle === true || STATIC_TITLE_SECTIONS[dataLayer.getCurrentChapterId()] === true;
+  }
+
   return {
     renderPage: renderPage,
     prefetchPage: prefetchPage,
@@ -1042,7 +1319,10 @@ const renderer = (function() {
     invalidatePrefetch: invalidatePrefetch,
     setMode: setMode,
     setPaceConfig: setPaceConfig,
+    isStaticTitlePage: isStaticTitlePage,
     getSyllableElements: getSyllableElements,
+    getLinePosition: getLinePosition,
+    mapLinePosition: mapLinePosition,
     getMode: function() { return currentMode; }
   };
 })();
@@ -1057,6 +1337,11 @@ const animator = (function() {
   let currentIndex = -1;
   let timeoutId = null;
   let bpm = 380; // internal beats; displayed as whole notes (bpm/4), default 95
+  // Progress through the current element, for cross-mode position mapping (#8):
+  // stamped when an element activates; frozen on pause; carried in via restore().
+  let elementStartedAt = 0;   // Date.now() when the current element became active
+  let elementDurationMs = 0;  // that element's scheduled speech duration
+  let frozenProgress = 0;     // progress captured at pause / injected by restore()
   // Fallback default when a line-end element carries no dataset.lineEndPauseBeats.
   // Line-end pauses are now data-driven (per-line dataset.lineEndPauseBeats set by
   // the renderer from chapter/meter), so this is only a safety net.
@@ -1087,7 +1372,17 @@ const animator = (function() {
     advance();
   }
 
+  function currentProgress() {
+    if (currentIndex < 0) return 0;
+    // Paused: report the carried/frozen progress even if nothing has played yet
+    // this session (elementDurationMs is only stamped by advance()).
+    if (!isPlaying) return frozenProgress;
+    if (!elementDurationMs) return 0;
+    return Math.max(0, Math.min(1, (Date.now() - elementStartedAt) / elementDurationMs));
+  }
+
   function pause() {
+    frozenProgress = currentProgress();
     isPlaying = false;
     if (timeoutId) {
       clearTimeout(timeoutId);
@@ -1105,6 +1400,9 @@ const animator = (function() {
       elems[i].classList.remove('done');
     }
     currentIndex = -1;
+    elementStartedAt = 0;
+    elementDurationMs = 0;
+    frozenProgress = 0;
     hidePointer();
   }
 
@@ -1157,7 +1455,11 @@ const animator = (function() {
     // preserved. In English mode the single line-span carries the line's total
     // beats. parseFloat because averaged beats can be fractional.
     const beats = parseFloat(el.dataset.beats) || 1;
-    const durationMs = beats * getBeatMs();
+    // extraMs: fixed word-gap pause on chanted header word ends (#07-30)
+    const durationMs = beats * getBeatMs() + (parseFloat(el.dataset.extraMs) || 0);
+    elementStartedAt = Date.now();
+    elementDurationMs = durationMs;
+    frozenProgress = 0;
 
     // Find the next non-marker syllable
     var nextIdx = currentIndex + 1;
@@ -1253,7 +1555,7 @@ const animator = (function() {
   }
 
   function getState() {
-    return { isPlaying: isPlaying, currentIndex: currentIndex, bpm: bpm };
+    return { isPlaying: isPlaying, currentIndex: currentIndex, bpm: bpm, progress: currentProgress() };
   }
 
   function restore(state) {
@@ -1274,6 +1576,26 @@ const animator = (function() {
       }
     }
 
+    // Carry the caller's sub-element progress (#8) so a later getState()/toggle
+    // still knows the within-line position while paused.
+    frozenProgress = (state.progress > 0 && state.progress < 1) ? state.progress : 0;
+
+    // Visual: place the hand at the carried fractional position WITHIN the element —
+    // an english line spans a whole pāda, so leaving the hand at its left edge/center
+    // reads as a reset to the pāda start (#8).
+    var carriedP = frozenProgress;
+    if (currentIndex >= 0 && carriedP > 0) {
+      var curEl = elems[currentIndex];
+      if (curEl && !(curEl.dataset && curEl.dataset.noPointer)) {
+        var cRect = curEl.getBoundingClientRect();
+        pointer.style.transition = 'none';
+        pointer.style.display = 'block';
+        pointer.style.left = (cRect.left + carriedP * cRect.width - 18) + 'px';
+        pointer.style.top = (cRect.top - 40) + 'px';
+        pointer.offsetWidth;
+      }
+    }
+
     // Resume playing if it was playing
     if (state.isPlaying && currentIndex >= 0) {
       isPlaying = true;
@@ -1282,7 +1604,35 @@ const animator = (function() {
       var beats = parseFloat(elems[currentIndex].dataset.beats) || 1;
       var lp = parseFloat(elems[currentIndex].dataset.lineEndPauseBeats);
       var lineEndPause = elems[currentIndex].dataset.lineEnd ? (lp > 0 ? lp : LINE_END_PAUSE_BEATS) : 0;
-      timeoutId = setTimeout(advance, (beats + lineEndPause) * getBeatMs());
+      var totalMs = (beats + lineEndPause) * getBeatMs();
+      // Resume from the carried progress instead of restarting the element: the
+      // element's remaining time (and thus the group's pace) is preserved.
+      var resumeFrom = frozenProgress;
+      elementStartedAt = Date.now() - resumeFrom * (beats * getBeatMs());
+      elementDurationMs = beats * getBeatMs();
+      frozenProgress = 0;
+      timeoutId = setTimeout(advance, Math.max(50, totalMs * (1 - resumeFrom)));
+      // Recreate the forward sweep/glide for the REMAINDER of the element, from the
+      // carried position (advance() only creates it at element activation).
+      var runEl = elems[currentIndex];
+      if (runEl && !(runEl.dataset && runEl.dataset.noPointer)) {
+        var speakMs = Math.max(50, beats * getBeatMs() * (1 - resumeFrom));
+        var rRect = runEl.getBoundingClientRect();
+        var resumeIdx = currentIndex;
+        requestAnimationFrame(function() {
+          if (renderer.getMode() === 'english') {
+            pointer.style.transition = 'left ' + (speakMs / 1000) + 's linear';
+            pointer.style.left = (rRect.right - 18) + 'px';
+          } else {
+            var nIdx = resumeIdx + 1;
+            while (nIdx < elems.length && elems[nIdx].classList.contains('verse-marker')) nIdx++;
+            if (nIdx < elems.length) {
+              var nRect = elems[nIdx].getBoundingClientRect();
+              if (Math.abs(nRect.top - rRect.top) < 15) positionPointer(elems[nIdx], speakMs);
+            }
+          }
+        });
+      }
     } else if (currentIndex < 0) {
       hidePointer();
     }

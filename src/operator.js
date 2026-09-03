@@ -10,23 +10,38 @@
   // --- Chant timing/tempo settings (operator-only, persisted in localStorage) ---
   // The standalone web app (index.html) keeps its own hardcoded defaults; this panel
   // only affects the Electron operator window.
+  // Bumped whenever the team revises the DEFAULT values. Stored settings from an
+  // older revision are migrated on load: per-section tempo overrides are dropped
+  // (they were frozen pre-fill hints, see saveSettings), and pause/slow-down
+  // values still at their OLD defaults are upgraded to the new defaults —
+  // genuinely customized values are kept.
+  var SETTINGS_REV = 4;
+
   var CHANT_DEFAULTS = {
-    colophonBpmDrop: 0,      // internal-bpm slow-down for the closing slide + Sarvadharmān; 0 = chapter pace (#5). Settings field is in SPM (×4).
-    countdownSeconds: 5,     // pre-play countdown length
+    colophonBpmDrop: 20,     // internal-bpm slow-down for the closing slide + Sarvadharmān (default 5 BPM). Settings field is in BPM (×4).
+    headerBpmDrop: 40,       // internal-bpm slow-down for chapter-opening header slides (default 10 BPM). Settings field is in BPM (×4), 5-BPM steps.
+    countdownSeconds: 3,     // pre-play countdown length — team 07-24 (was 5)
     chapterGapSeconds: 3,    // gap between chapters before the countdown
     verseZoom: 100,          // projector verse-text zoom (%) — #34
     headerPauseBeats: 3,     // pause (mātrās) after each header line — #36.1
-    anustubhBeats: 3,        // anuṣṭubh verse line-end pause (mātrās) — #36.2
-    tristubhBeats: 4.5,      // triṣṭubh verse line-end pause (mātrās) — #36.2
-    uvacaBeats: 2,           // "... uvāca -" speaker-label line-end pause (mātrās) — #26
-    mahatmyamBeats: 2.5,     // Gita Mahātmyam verse line-end pause (mātrās) — #44
+    anustubhBeats: 2,        // anuṣṭubh verse line-end pause (mātrās) — section table
+    tristubhBeats: 3,        // triṣṭubh verse line-end pause (mātrās) — section table
+    uvacaBeats: 3,           // "... uvāca -" speaker-label line-end pause (mātrās) — team table 2026-07-15
+    mahatmyamBeats: 3,       // Gita Mahātmyam verse line-end pause (mātrās) — section table
+    lastSlokaPauseBeats: 5,  // pause after the LAST sloka of ch 1–18, before "om tatsaditi" (team 09-02; 3–7)
+    saramAratiCountdown: true, // countdown before Gita Sāram / Ārati recitation (OFF = header -> recitation directly)
+    pacingVersion: 'C',      // A = parayana baseline (even glide) · B = per-syllable dwell · C = mātrā stars, constant pointer
+    headerWordGapMs: 0,      // pause (ms) after each WORD on chanted header lines — applies in version B only; 0 = off
     theme: 'dark',           // projector theme: 'dark' (black bg) or 'light' (white bg) — #37
+    fullscreenText: '',      // announcement text for the full-screen text box
+    breakMinutes: 10,        // break timer duration (minutes)
     sectionBpm: {}           // chapterId -> internal BPM override; empty = use data defaultBpm
   };
 
   function loadChantSettings() {
     var merged = {
       colophonBpmDrop: CHANT_DEFAULTS.colophonBpmDrop,
+      headerBpmDrop: CHANT_DEFAULTS.headerBpmDrop,
       countdownSeconds: CHANT_DEFAULTS.countdownSeconds,
       chapterGapSeconds: CHANT_DEFAULTS.chapterGapSeconds,
       verseZoom: CHANT_DEFAULTS.verseZoom,
@@ -35,7 +50,13 @@
       tristubhBeats: CHANT_DEFAULTS.tristubhBeats,
       uvacaBeats: CHANT_DEFAULTS.uvacaBeats,
       mahatmyamBeats: CHANT_DEFAULTS.mahatmyamBeats,
+      lastSlokaPauseBeats: CHANT_DEFAULTS.lastSlokaPauseBeats,
+      saramAratiCountdown: CHANT_DEFAULTS.saramAratiCountdown,
+      pacingVersion: CHANT_DEFAULTS.pacingVersion,
+      headerWordGapMs: CHANT_DEFAULTS.headerWordGapMs,
       theme: CHANT_DEFAULTS.theme,
+      fullscreenText: CHANT_DEFAULTS.fullscreenText,
+      breakMinutes: CHANT_DEFAULTS.breakMinutes,
       sectionBpm: {}
     };
     try {
@@ -44,6 +65,7 @@
         var parsed = JSON.parse(raw);
         if (parsed && typeof parsed === 'object') {
           if (typeof parsed.colophonBpmDrop === 'number') merged.colophonBpmDrop = parsed.colophonBpmDrop;
+          if (typeof parsed.headerBpmDrop === 'number') merged.headerBpmDrop = parsed.headerBpmDrop;
           if (typeof parsed.countdownSeconds === 'number') merged.countdownSeconds = parsed.countdownSeconds;
           if (typeof parsed.chapterGapSeconds === 'number') merged.chapterGapSeconds = parsed.chapterGapSeconds;
           if (typeof parsed.verseZoom === 'number') merged.verseZoom = parsed.verseZoom;
@@ -52,8 +74,24 @@
           if (typeof parsed.tristubhBeats === 'number') merged.tristubhBeats = parsed.tristubhBeats;
           if (typeof parsed.uvacaBeats === 'number') merged.uvacaBeats = parsed.uvacaBeats;
           if (typeof parsed.mahatmyamBeats === 'number') merged.mahatmyamBeats = parsed.mahatmyamBeats;
+          if (typeof parsed.lastSlokaPauseBeats === 'number') merged.lastSlokaPauseBeats = parsed.lastSlokaPauseBeats;
+          if (typeof parsed.saramAratiCountdown === 'boolean') merged.saramAratiCountdown = parsed.saramAratiCountdown;
+          if (parsed.pacingVersion === 'A' || parsed.pacingVersion === 'B' || parsed.pacingVersion === 'C') merged.pacingVersion = parsed.pacingVersion;
+          else if (typeof parsed.perSyllableTiming === 'boolean') merged.pacingVersion = parsed.perSyllableTiming ? 'B' : 'A'; // legacy toggle
+          if (typeof parsed.headerWordGapMs === 'number') merged.headerWordGapMs = parsed.headerWordGapMs;
           if (parsed.theme === 'dark' || parsed.theme === 'light') merged.theme = parsed.theme;
-          if (parsed.sectionBpm && typeof parsed.sectionBpm === 'object') {
+          if (typeof parsed.fullscreenText === 'string') merged.fullscreenText = parsed.fullscreenText;
+          if (typeof parsed.breakMinutes === 'number') merged.breakMinutes = parsed.breakMinutes;
+          var isCurrentRev = parsed.settingsRev === SETTINGS_REV;
+          if (!isCurrentRev) {
+            // Old-revision store: upgrade values still sitting at the old defaults.
+            if (merged.uvacaBeats === 2) merged.uvacaBeats = CHANT_DEFAULTS.uvacaBeats;
+            if (merged.headerBpmDrop === 20) merged.headerBpmDrop = CHANT_DEFAULTS.headerBpmDrop;
+            if (merged.colophonBpmDrop === 0) merged.colophonBpmDrop = CHANT_DEFAULTS.colophonBpmDrop;
+            if (merged.countdownSeconds === 5) merged.countdownSeconds = CHANT_DEFAULTS.countdownSeconds;  // 5 → 3, team 07-24
+            if (merged.headerWordGapMs === 2) merged.headerWordGapMs = CHANT_DEFAULTS.headerWordGapMs;  // 2 → 0, team 09-02
+          }
+          if (isCurrentRev && parsed.sectionBpm && typeof parsed.sectionBpm === 'object') {
             for (var k in parsed.sectionBpm) {
               if (Object.prototype.hasOwnProperty.call(parsed.sectionBpm, k) && typeof parsed.sectionBpm[k] === 'number') {
                 merged.sectionBpm[k] = parsed.sectionBpm[k];
@@ -65,6 +103,7 @@
     } catch (e) {
       console.warn('Bad gitaChantSettings — using defaults:', e);
     }
+    merged.settingsRev = SETTINGS_REV;
     return merged;
   }
 
@@ -94,14 +133,28 @@
       anustubhBeats: chantSettings.anustubhBeats,
       tristubhBeats: chantSettings.tristubhBeats,
       uvacaBeats: chantSettings.uvacaBeats,
-      mahatmyamBeats: chantSettings.mahatmyamBeats
+      mahatmyamBeats: chantSettings.mahatmyamBeats,
+      lastSlokaPauseBeats: chantSettings.lastSlokaPauseBeats,
+      // A/B/C switch: A reproduces the v0.12.21 parayana behavior exactly
+      // (even glide, no word gaps); B = per-syllable dwell; C = mātrā stars.
+      pacingMode: chantSettings.pacingVersion,
+      headerWordGapMs: chantSettings.pacingVersion !== 'A' ? chantSettings.headerWordGapMs : 0
+    });
+    // Version-scoped data: Sāram/Ārati verse ślokas (bcOnly) exist in B/C only.
+    dataLayer.setPacingMode(chantSettings.pacingVersion);
+    // The projector renders its own copy of every page, and versions differ in
+    // STAR COUNTS (C: one per mātrā) — it must always share the operator's
+    // pacing config or pointer indexes would land on the wrong element.
+    sendToProjector('pace-config', {
+      pacingMode: chantSettings.pacingVersion,
+      headerWordGapMs: chantSettings.pacingVersion !== 'A' ? chantSettings.headerWordGapMs : 0
     });
     // Projector theme — dark (black bg) / light (white bg) — #37
     sendToProjector('theme', { theme: chantSettings.theme });
   }
 
   // The tempo the chapter should run at: set on chapter load (defaultBpm or current),
-  // updated on manual SPM change. Colophon pages run at currentChapterBpm - colophonBpmDrop.
+  // updated on manual BPM change. Colophon pages run at currentChapterBpm - colophonBpmDrop.
   var currentChapterBpm = 380;
   var closerSlowApplied = false;
   var currentPageBpmDrop = 0;   // internal-bpm drop currently applied to this page (colophon #5 or Samarpana sloka-4 #12)
@@ -124,11 +177,13 @@
   // --- Instruction data ---
   var INSTRUCTION_DATA = {
     folded_hands:      { image: '../img/instructions/folded-hands.png' },
+    folded_hands_anim: { image: '../img/instructions/folded-hands.png' },
     namaskara_anim:    { image: '../img/instructions/image9.gif' },
-    pranam:            { text: 'Pran\u0101m', image: '../img/instructions/image7.gif' },
+    pranam:            { image: '../img/instructions/image7.gif' },  // GIF only \u2014 no text label per team 07-19
     sit_straight:      { text: 'Sit Straight', image: '../img/instructions/image3.gif' },
     increase_sruti:    { image: '../img/instructions/shruti-increase.png' },
-    listen_sync:       { text: 'Listen and Sync\nwith Pace Helpers' },
+    increase_volume:   { text: 'Increase Volume \uD83D\uDD0A', image: '../img/instructions/increase-volume.gif', autoDismissMs: 10000 },
+    listen_sync:       { text: 'Listen & Sync\nwith Pace' },
     good_job:          { image: '../img/instructions/image6.gif' },
     decrease_sruti:    { image: '../img/instructions/image4.jpeg', image2: '../img/instructions/image5.gif', arrow: 'down' },
     stop:              { text: 'STOP', color: '#ff4444' },
@@ -187,6 +242,10 @@
   // only appears after the countdown. blankProjector=false: for auto-advance — show immediately.
   async function loadChapter(chapterId, blankProjector) {
     try {
+      // Manual navigation aborts any in-flight start flow: a ticking countdown
+      // or a pending Sāram/Ārati title-gap must not fire on the new section.
+      cancelCountdown();
+      manualTitlePending = false;
       renderer.invalidatePrefetch();
       var chData = await dataLayer.fetchChapter(chapterId);
       // Apply BPM for this section: a Settings override (internal bpm) wins over the
@@ -203,6 +262,7 @@
       currentChapterBpm = animator.getState().bpm;
       closerSlowApplied = false;
       currentPageBpmDrop = 0;
+      hardStopDoneFor = null;
       populateShlokaDropdown();
       currentPage = 0;
       showPage(0, blankProjector);
@@ -212,8 +272,26 @@
     }
   }
 
+  // Pages that carry the persistent Pranam mudra card: headers, colophons
+  // (except ch18's long closer), sarvadharmān, Datta Stavam page 1 (the
+  // salutations page — no shlokaNum; team 07-24 — its old timed cue fired at
+  // chapter-load and auto-dismissed behind the countdown, so it was never
+  // seen), and 18.66 / 18.78.
+  function pageNeedsMudra(page, chId) {
+    return !!(page && (page.isHeader ||
+      (page.isCloser && chId !== '18') ||  // ch18's closing text is long — the mudra card overlapped it
+      page.shlokaNum === 'sarvadharmān' ||
+      (chId === 'datta_stavam' && !page.shlokaNum) ||
+      (chId === '18' && (page.shlokaNum === '66' || page.shlokaNum === '78'))));
+  }
+
   // --- Page display ---
   function showPage(index, blankProjector) {
+    if (blankHoldActive) {
+      blankHoldActive = false;
+      projectorBlanked = false;
+      sendToProjector('countdown', { number: 0 }); // release the Sāram/Ārati blank hold
+    }
     animator.reset();
     sendToProjector('animation-reset');
 
@@ -228,19 +306,31 @@
     updatePositionBar();
     shlokaSelect.value = currentPage;
 
-    // Automatic per-page tempo drops (internal bpm; 5 SPM = 20 internal bpm):
+    // Automatic per-page tempo offsets (internal bpm; 5 BPM = 20 internal bpm):
     //   #5:  the closing slide ("om tatsaditi") AND the Sarvadharmān recitation run at the
     //        chapter pace by default (colophonBpmDrop = 0); the operator can dial in a
-    //        slow-down (in SPM) via Settings to ease those endings.
-    //   #12: the two Samarpana "sloka 4" slides always run 5 SPM slower, automatically.
+    //        slow-down (in BPM) via Settings to ease those endings.
+    //   #12: the two Samarpana "sloka 4" slides always run 5 BPM slower, automatically.
+    //   Dhyana sloka 8 (śāntākāraṃ) runs at a fixed 70 BPM (internal 280) — expressed as
+    //   an offset from the section base so the drop-restore bookkeeping stays uniform
+    //   (the offset is NEGATIVE when the base is slower, e.g. Dhyana's default 60).
     // Restore the chapter base tempo when leaving any such page.
     var pageBpmDrop = 0;
     if (page && (page.isCloser || page.shlokaNum === 'sarvadharmān')) {
       pageBpmDrop = chantSettings.colophonBpmDrop;
     } else if (page && chId === 'kshama_prarthana' && page.shlokaNum === '4') {
-      pageBpmDrop = 20; // 5 SPM
+      pageBpmDrop = 40; // 10 BPM
+    } else if (page && chId === '0' && page.shlokaNum === '8') {
+      pageBpmDrop = currentChapterBpm - 280; // fixed 70 BPM
+    } else if (page && page.isHeader && !(page.lines && page.lines[0] && page.lines[0].sty === 'uh')) {
+      // Chapter-opening header slides (fh/sh/th) chant headerBpmDrop slower (5-BPM
+      // steps via Settings). Closing 'uh' headers keep the chapter pace.
+      pageBpmDrop = chantSettings.headerBpmDrop;
+    } else if (page && typeof page.bpmOffset === 'number') {
+      // Per-slide tempo offset from data (e.g. Invocation santi page −20 = −5 BPM).
+      pageBpmDrop = -page.bpmOffset;
     }
-    if (pageBpmDrop > 0) {
+    if (pageBpmDrop !== 0) {
       animator.setBpm(currentChapterBpm - pageBpmDrop);
       closerSlowApplied = true;
       currentPageBpmDrop = pageBpmDrop;
@@ -255,6 +345,7 @@
     if (blankProjector) {
       // Blank the projector now — header will appear after countdown
       sendToProjector('countdown', { number: -1 });
+      projectorBlanked = true;
     } else {
       syncProjectorPage();
     }
@@ -263,18 +354,40 @@
     // ("|| ōṃ tatsaditi ...") page, on each chapter's trailing sarvadharmān recitation,
     // and on 18.66 / 18.78. Auto-dismissed on other pages.
     // Only auto-shown cards are auto-dismissed — manual instructions survive page flips.
-    var needsMudra = page && (page.isHeader || page.isCloser ||
-      page.shlokaNum === 'sarvadharmān' ||
-      (chId === '18' && (page.shlokaNum === '66' || page.shlokaNum === '78')));
+    var needsMudra = pageNeedsMudra(page, chId);
+    // Folded-hands cue at the start of sloka 1 and sloka 2 of EVERY chapter:
+    // auto-shown once per entry into the sloka (repeat passes of the same sloka
+    // don't replay it; re-entering the sloka later does), auto-dismissed after
+    // ~2 GIF loops or on leaving the page.
+    // (No cue for Dhyana, Invocation Prayers, or Samarpana per the team.)
+    // Datta Stavam: EVERY sloka shows the Pranam GIF instead (team 07-19) —
+    // same trigger/timing as the sloka-1/2 cue, only the card differs.
+    var isDattaSloka = chId === 'datta_stavam';
+    var slokaGifKey = (page && !page.isHeader && (isDattaSloka ||
+      ((page.shlokaNum === '1' || page.shlokaNum === '2') &&
+       chId !== '0' && chId !== 'invocation_prayers' && chId !== 'kshama_prarthana')))
+      ? chId + '/' + page.shlokaNum : null;
     if (needsMudra) {
       // Pranam añjali mudra for every mudra overlay site.
       var mudraKey = 'pranam';
       sendToProjector('show-instruction', INSTRUCTION_DATA[mudraKey]);
       instructionShowing = true;
       headerInstructionShowing = true;
+    } else if (slokaGifKey && slokaGifKey !== lastSlokaGifKey) {
+      sendToProjector('show-instruction', INSTRUCTION_DATA[isDattaSloka ? 'pranam' : 'folded_hands_anim']);
+      instructionShowing = true;
+      headerInstructionShowing = true;   // auto card — auto-dismissed on other pages
+      if (slokaGifTimer) clearTimeout(slokaGifTimer);
+      var thisGifKey = slokaGifKey;
+      slokaGifTimer = setTimeout(function() {
+        slokaGifTimer = null;
+        // Only dismiss if OUR card is still the one showing.
+        if (headerInstructionShowing && lastSlokaGifKey === thisGifKey) dismissInstruction();
+      }, 3500);
     } else if (headerInstructionShowing) {
       dismissInstruction();
     }
+    lastSlokaGifKey = slokaGifKey;
 
     // Pre-render next page
     var nextIdx = currentPage + 1;
@@ -302,18 +415,62 @@
 
   // --- Countdown ---
   var countdownActive = false;
+  // True while the projector sits behind the opaque blank overlay (countdown -1)
+  // waiting for a countdown to reveal it. Selecting a specific sloka releases the
+  // blank directly (aunty 07-24: jump-to-sloka after a chapter change must not
+  // require the countdown flow); the Saram/Arati blank-hold is NOT released this
+  // way — Play owns that.
+  var projectorBlanked = false;
+  // A manual Sāram/Ārati start is mid-flow (title showing, countdown/hold coming).
+  var manualTitlePending = false;
 
-  function startCountdown(callback) {
+  // holdBlankAtEnd: finish on the opaque blank (-1) instead of revealing (0) —
+  // the overlay never drops, so no content can flash between countdown end and
+  // whatever the callback sets up (Sāram/Ārati blank-hold, #07-24).
+  // Where recitation begins after a title-before-countdown flow. Sections whose
+  // page 0 is a display-only static title skip ONLY the title card(s) — a
+  // chanted header that follows (Mahātmyam's "atha gītāmāhātmyam", #07-30) is
+  // recited. Sections without a static title keep the old behavior of skipping
+  // all leading header pages (their title already displayed pre-countdown).
+  function firstRecitationPage() {
+    var tot = dataLayer.getPageCount();
+    var titleFlow = renderer.isStaticTitlePage(dataLayer.getPage(0));
+    var fc = 0;
+    while (fc < tot) {
+      var p = dataLayer.getPage(fc);
+      if (!p.isHeader) break;
+      if (titleFlow && !renderer.isStaticTitlePage(p)) break; // chanted header — recite it
+      fc++;
+    }
+    return fc;
+  }
+
+  var countdownInterval = null;
+  // Abandon a running countdown (operator navigated away mid-transition) so its
+  // ticks and completion callback can't fire on whatever loads next.
+  function cancelCountdown() {
+    if (countdownInterval) { clearInterval(countdownInterval); countdownInterval = null; }
+    countdownActive = false;
+  }
+
+  function startCountdown(callback, holdBlankAtEnd) {
     if (countdownActive) return;
     countdownActive = true;
     var count = chantSettings.countdownSeconds;
     sendToProjector('countdown', { number: count });
-    var interval = setInterval(function() {
+    var interval = countdownInterval = setInterval(function() {
       count--;
       if (count <= 0) {
         clearInterval(interval);
+        countdownInterval = null;
         countdownActive = false;
-        sendToProjector('countdown', { number: 0 });
+        if (holdBlankAtEnd) {
+          sendToProjector('countdown', { number: -1, bare: true }); // pure black — no labels
+          projectorBlanked = true;
+        } else {
+          projectorBlanked = false;
+          sendToProjector('countdown', { number: 0 });
+        }
         if (callback) callback();
       } else {
         sendToProjector('countdown', { number: count });
@@ -322,19 +479,95 @@
   }
 
   function playWithCountdown() {
+    if (blankHoldActive) {
+      // Blank-hold after the Sāram/Ārati countdown: reveal and play directly —
+      // the countdown already ran before the blank. Full showPage (not just a
+      // sync) so the revealed page gets its normal cue cards back (the mudra
+      // card was dismissed when the hold began).
+      blankHoldActive = false;
+      projectorBlanked = false;
+      sendToProjector('countdown', { number: 0 });
+      showPage(currentPage);
+      animator.play();
+      return;
+    }
     if (currentPage === 0 && animator.getState().currentIndex < 0) {
+      // Title-before-countdown sections started MANUALLY (chapter dropdown →
+      // Play) mirror the auto-advance flow exactly: reveal the section TITLE
+      // first, let it sit for the chapter gap, then countdown. Sāram/Ārati end
+      // in the bare black hold (nothing plays until the operator presses Play
+      // again, #07-25); the others (Samarpana, Datta Stavam, Invocation
+      // Prayers, Gita Mahātmyam — #07-27) begin recitation directly at the
+      // first content page.
+      var secId = dataLayer.getCurrentChapterId();
+      if (HEADER_BEFORE_COUNTDOWN[secId]) {
+        // One flow at a time: ignore Play during the title gap OR the countdown
+        // (re-entering would schedule a second reveal mid-countdown).
+        if (manualTitlePending || countdownActive) return;
+        manualTitlePending = true;
+        // The black hold is version-A behavior only (team 08-30): in B/C the
+        // sections carry verse content and render like any other section.
+        var isHold = HOLD_BLANK_AFTER_COUNTDOWN[secId] === true && chantSettings.pacingVersion === 'A';
+        syncProjectorPage(); // render the title behind the selection blank...
+        setTimeout(function() {
+          // ...and reveal it once the projector has had time to draw it —
+          // unless the operator navigated away in the meantime.
+          if (!manualTitlePending || dataLayer.getCurrentChapterId() !== secId) return;
+          projectorBlanked = false;
+          sendToProjector('countdown', { number: 0 });
+        }, 300);
+        var finish = function() {
+          var fc = firstRecitationPage();
+          var tot = dataLayer.getPageCount();
+          if (isHold) {
+            if (fc < tot) showPage(fc); // renders behind the still-opaque blank
+            // Nothing may show over the hold — not even the mudra card (it floats
+            // above the blank overlay). Title-only sections keep their header card
+            // otherwise, since the fc loop finds no content page to switch to.
+            if (headerInstructionShowing) dismissInstruction();
+            blankHoldActive = true;
+            projectorBlanked = true;
+          } else {
+            // Begin recitation directly at the first content page — the title
+            // already had its display time before the countdown. Manual
+            // sections (Sāram/Ārati in B/C) only SHOW the page: the presenter
+            // drives with Next/Previous, the pointer stays off.
+            if (fc < tot) showPage(fc);
+            if (!inManualSection(secId)) animator.play();
+          }
+        };
+        setTimeout(function() {
+          manualTitlePending = false;
+          // Operator navigated away during the title display — abandon the flow.
+          if (dataLayer.getCurrentChapterId() !== secId || currentPage !== 0) return;
+          // Same countdown-skip rule as the auto-advance path (Settings toggle,
+          // Sāram/Ārati only).
+          if (isHold && chantSettings.saramAratiCountdown === false) {
+            sendToProjector('countdown', { number: -1, bare: true });
+            projectorBlanked = true;
+            finish();
+          } else {
+            startCountdown(finish, isHold);
+          }
+        }, Math.max(300, chantSettings.chapterGapSeconds * 1000));
+        return;
+      }
       // Blank projector, pre-render behind the blank, then countdown
       sendToProjector('countdown', { number: -1 });
+      projectorBlanked = true;
       syncProjectorPage();
       startCountdown(function() {
         animator.play();
       });
     } else {
+      // Manual sections: Play never starts the pointer — slides are advanced
+      // with Next/Previous only.
+      if (inManualSection(dataLayer.getCurrentChapterId())) return;
       animator.play();
     }
   }
 
-  // --- SPM display ---
+  // --- BPM display ---
   var spmInput = document.getElementById('spm-input');
 
   function updateSpmDisplay() {
@@ -342,7 +575,7 @@
   }
 
   // Record an operator's manual tempo change as the new chapter base tempo so the
-  // per-page offset stays relative to the operator's chosen SPM. If a page slow-down
+  // per-page offset stays relative to the operator's chosen BPM. If a page slow-down
   // is currently applied (colophon #5 or Samarpana sloka-4 #12), the running bpm is
   // already dropped by currentPageBpmDrop, so add it back to recover the base tempo.
   function noteManualTempoChange() {
@@ -372,10 +605,42 @@
     var elems = renderer.getSyllableElements();
     var el = elems[index];
     var beats = el ? (parseInt(el.dataset.beats, 10) || 1) : 1;
-    sendToProjector('syllable-update', { index: index, state: state, beatMs: beatMs, durationMs: beats * beatMs });
+    var extraMs = el ? (parseFloat(el.dataset.extraMs) || 0) : 0;
+    sendToProjector('syllable-update', { index: index, state: state, beatMs: beatMs, durationMs: beats * beatMs + extraMs });
   });
 
   // --- Auto-advance: when animator reaches end of page, go to next and resume ---
+  // Sections whose END is a hard stop: rendering pauses on the last page
+  // (Datta Stavam per feedback #2; Ch 9 and Ch 18 stop after their trailing
+  // sarvadharmān; Gita Sāram / Ārati are title-only sections that must wait
+  // for a manual start). Pressing Play after the stop continues to the next
+  // section (the stop fires once per arrival).
+  // kshama_prarthana (Samarpana): stop on its last sloka-4 slide — Gita Sāram
+  // must not begin without the operator (team 07-25).
+  var HARD_STOP_CHAPTER_ENDS = { datta_stavam: true, '9': true, '18': true, kshama_prarthana: true, gita_saram: true, gita_arati: true };
+  // Sections that pause after their opening header(s): the first verse page is
+  // shown but waits for a manual Start.
+  var STOP_AFTER_HEADER_SECTIONS = { gita_saram: true, gita_arati: true };
+  // Sections whose title header is shown BEFORE the countdown (team flow):
+  // section end -> gap -> title visible -> gap -> countdown -> playback.
+  // 07-27: Datta Stavam, Invocation Prayers and Gita Mahātmyam join the flow
+  // (title established ~3s, countdown, recitation begins at the first content page).
+  var HEADER_BEFORE_COUNTDOWN = { kshama_prarthana: true, gita_saram: true, gita_arati: true,
+    datta_stavam: true, invocation_prayers: true, gita_mahatmyam: true };
+  var hardStopDoneFor = null; // chapter we already hard-stopped at (so Play can continue)
+  var chapterTransitionPending = false; // a chapter-end transition (gap/countdown) is already scheduled
+  // Sāram/Ārati flow: after their countdown the projector holds on a BLANK slide
+  // until the operator acts (Play reveals and starts; any page change reveals).
+  var HOLD_BLANK_AFTER_COUNTDOWN = { gita_saram: true, gita_arati: true };
+  // Team 09-02: in versions B/C, Gita Sāram & Ārati are PRESENTER-DRIVEN —
+  // no automatic pointer movement or auto-advance; the presenter flips slides
+  // with Next/Previous. (Version A keeps its parayana behavior untouched.)
+  var MANUAL_POINTER_OFF = { gita_saram: true, gita_arati: true };
+  function inManualSection(chId) {
+    return MANUAL_POINTER_OFF[chId] === true && chantSettings.pacingVersion !== 'A';
+  }
+  var blankHoldActive = false;
+
   animator.setOnAutoAdvance(async function() {
     var atChapterEnd = currentPage >= dataLayer.getPageCount() - 1;
     var chapterId = dataLayer.getCurrentChapterId();
@@ -387,8 +652,19 @@
       instructionShowing = true;
       headerInstructionShowing = true;
 
-      // Feedback #2: hard stop after Datta Stavam — operator resumes manually.
-      if (chapterId === 'datta_stavam') return; // stay paused on the last page
+      // Hard stop at designated section ends — operator resumes manually.
+      if (HARD_STOP_CHAPTER_ENDS[chapterId] && hardStopDoneFor !== chapterId) {
+        hardStopDoneFor = chapterId;
+        return; // stay paused on the last page; the next Play continues onward
+      }
+
+      // Re-entry guard: pressing Play while the end-of-chapter transition (gap /
+      // header display / countdown) is already underway fired this handler again
+      // and scheduled a DUPLICATE transition — which then computed "next chapter"
+      // from the newly loaded section and skipped it (e.g. Samarpana jumped
+      // straight to Gita Sāram). One transition at a time.
+      if (chapterTransitionPending) return;
+      chapterTransitionPending = true;
 
       // Inter-chapter gap, then countdown, then play (feedback #5).
       // Issue #29: the countdown ("Listen to Śruti") must precede the chapter's
@@ -398,12 +674,51 @@
       // countdown completes and play begins on page 0 (the fh header).
       var gapMs = chantSettings.chapterGapSeconds * 1000;
       setTimeout(async function() {
+        chapterTransitionPending = false;
+        if (dataLayer.getCurrentChapterId() !== chapterId) return; // operator navigated away meanwhile
         dismissInstruction();
         var nextId = dataLayer.getNextChapterId();
         if (!nextId) return; // no next chapter — stay stopped
-        await loadChapter(nextId, true); // crosses into next chapter, blanked
+        var headerFirst = HEADER_BEFORE_COUNTDOWN[nextId] === true;
+        await loadChapter(nextId, !headerFirst); // header-first sections load UNBLANKED
         var newChapter = dataLayer.getCurrentChapterId();
         if (newChapter === chapterId) return; // chapter load failed — stay stopped
+        if (headerFirst) {
+          // Samarpana / Gita Sāram / Gita Ārati: the section title is visible now;
+          // let it sit for the chapter gap, THEN countdown, then recitation.
+          setTimeout(function() {
+            if (dataLayer.getCurrentChapterId() !== nextId) return; // operator navigated away
+            var beginRecitation = function() {
+              // Sāram/Ārati: hold on a BLANK slide after the countdown — no text,
+              // no pointer, nothing plays until the operator acts.
+              if (HOLD_BLANK_AFTER_COUNTDOWN[nextId] && chantSettings.pacingVersion === 'A') {
+                var fc = firstRecitationPage();
+                var tot = dataLayer.getPageCount();
+                if (fc < tot) showPage(fc); // pre-position so Play starts the first content page
+                sendToProjector('countdown', { number: -1, bare: true }); // pure black — no labels
+                if (headerInstructionShowing) dismissInstruction(); // no mudra card over the hold
+                projectorBlanked = true;
+                blankHoldActive = true;
+                return;
+              }
+              // Begin recitation DIRECTLY at the first content page — the title
+              // already had its display time before the countdown (replaying it
+              // here read as "countdown -> header" to the team).
+              var firstContent = firstRecitationPage();
+              var total = dataLayer.getPageCount();
+              if (firstContent < total) showPage(firstContent);
+              syncProjectorPage();
+              if (!inManualSection(nextId)) animator.play();
+            };
+            // Optional countdown skip (Settings) for Gita Sāram / Ārati only:
+            // OFF = header -> recitation directly.
+            var skipCountdown = (nextId === 'gita_saram' || nextId === 'gita_arati') &&
+                                chantSettings.saramAratiCountdown === false;
+            if (skipCountdown) beginRecitation();
+            else startCountdown(beginRecitation);
+          }, gapMs);
+          return;
+        }
         startCountdown(function() {
           // Reveal page 0 (fh header) and animate it as chanting begins.
           syncProjectorPage();
@@ -411,6 +726,16 @@
         });
       }, gapMs);
       return;
+    }
+
+    // After the opening header(s) of designated sections, show the first verse
+    // page but wait for a manual Start instead of auto-playing into it.
+    var finishedPage = dataLayer.getPage(currentPage);
+    var upcomingPage = dataLayer.getPage(currentPage + 1);
+    if (STOP_AFTER_HEADER_SECTIONS[chapterId] && finishedPage && finishedPage.isHeader &&
+        upcomingPage && !upcomingPage.isHeader) {
+      await nextPage();
+      return; // paused — presenter presses Start to begin the verses
     }
 
     // Mid-chapter pages (headers included): advance immediately — old 3s pranam pause removed.
@@ -451,10 +776,19 @@
     var pageIndex = parseInt(shlokaSelect.value, 10);
     if (!isNaN(pageIndex) && pageIndex >= 0 && pageIndex < dataLayer.getPageCount()) {
       showPage(pageIndex);
+      // Jump-to-sloka after a manual chapter change: the projector is still behind
+      // the pre-countdown blank — reveal the selected page directly so Play starts
+      // it without the countdown flow (aunty 07-24). Header selection (index 0)
+      // keeps the blank so a normal Play → countdown → header start is preserved,
+      // as does an actively running countdown.
+      if (pageIndex > 0 && projectorBlanked && !countdownActive && !blankHoldActive) {
+        projectorBlanked = false;
+        sendToProjector('countdown', { number: 0 });
+      }
     }
   });
 
-  // SPM controls
+  // BPM controls
   document.getElementById('bpm-up').addEventListener('click', function() {
     animator.setBpm(animator.getState().bpm + 20);
     noteManualTempoChange();
@@ -472,8 +806,18 @@
       document.querySelectorAll('.mode-btn').forEach(function(b) { b.classList.remove('selected'); });
       btn.classList.add('selected');
       currentDisplayMode = btn.dataset.mode;
+      // #8: element indices differ between display modes (asterisk = per syllable,
+      // english = per line), so carry the pointer across the re-render as a fraction
+      // of its line — index + sub-element progress in, index + residual progress out.
+      // Round trips are exact and playback continues from the same point.
       var state = animator.getState();
+      var linePos = renderer.getLinePosition(state.currentIndex, state.progress);
       renderer.setMode(currentDisplayMode);
+      if (state.currentIndex >= 0 && linePos) {
+        var mapped = renderer.mapLinePosition(linePos);
+        state.currentIndex = mapped.index;
+        state.progress = mapped.progress;
+      }
       animator.restore(state);
       sendToProjector('display-mode', { mode: currentDisplayMode });
       // Re-announce the active syllable so the projector pointer snaps to the right position
@@ -483,7 +827,7 @@
         var reElems = renderer.getSyllableElements();
         var reEl = reElems[restoredState.currentIndex];
         var reBeats = reEl ? (parseInt(reEl.dataset.beats, 10) || 1) : 1;
-        sendToProjector('syllable-update', { index: restoredState.currentIndex, state: 'active', beatMs: reBeatMs, durationMs: reBeats * reBeatMs });
+        sendToProjector('syllable-update', { index: restoredState.currentIndex, state: 'active', beatMs: reBeatMs, durationMs: reBeats * reBeatMs, progress: restoredState.progress });
       }
     });
   });
@@ -501,6 +845,8 @@
 
   // Instruction dropdown
   var instructionShowing = false;
+  var lastSlokaGifKey = null;   // chapter/sloka of the last folded-hands cue (sloka-1/2 gif)
+  var slokaGifTimer = null;
   // True only when the card was auto-shown (header page / chapter end) — gates the
   // auto-dismiss in showPage so manual instructions survive page flips.
   var headerInstructionShowing = false;
@@ -512,6 +858,7 @@
     document.getElementById('instruction-select').value = '';
   }
 
+  var manualCardTimer = null;
   document.getElementById('instruction-select').addEventListener('change', function() {
     var key = this.value;
     if (!key) return;
@@ -520,6 +867,15 @@
       sendToProjector('show-instruction', data);
       instructionShowing = true;
       headerInstructionShowing = false; // manual card — don't auto-dismiss on page change
+      // Cards with autoDismissMs (e.g. Increase Volume) hide themselves after a
+      // few seconds; other manual cards persist until dismissed.
+      if (manualCardTimer) { clearTimeout(manualCardTimer); manualCardTimer = null; }
+      if (data.autoDismissMs) {
+        manualCardTimer = setTimeout(function() {
+          manualCardTimer = null;
+          if (instructionShowing && !headerInstructionShowing) dismissInstruction();
+        }, data.autoDismissMs);
+      }
     }
   });
 
@@ -543,15 +899,26 @@
     if (projectorOpen) {
       // Re-apply blank overlay, then render behind it (maintain pre-play blank state)
       sendToProjector('countdown', { number: -1 });
+      projectorBlanked = true;
       applyChantSettings(); // push current verse-zoom (#34) to the (re)opened projector
       syncProjectorPage();
+      // Instruction cards don't survive a projector (re)open — the show-instruction
+      // was sent before the window existed (e.g. app starts on Datta Stavam, THEN
+      // the operator opens the projector). Re-send the persistent mudra card for
+      // the current page; never over a Sāram/Ārati bare hold.
+      if (!blankHoldActive && pageNeedsMudra(dataLayer.getPage(currentPage), dataLayer.getCurrentChapterId())) {
+        sendToProjector('show-instruction', INSTRUCTION_DATA['pranam']);
+        instructionShowing = true;
+        headerInstructionShowing = true;
+      }
     }
   });
 
   // Keyboard shortcuts
   document.addEventListener('keydown', function(e) {
-    // Don't intercept if user is typing in an input/select
-    if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT') return;
+    // Don't intercept if user is typing in an input/select/textarea (space, R,
+    // +/- and arrows are shortcuts — they must not fire while typing text).
+    if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT' || e.target.tagName === 'TEXTAREA') return;
 
     if (e.code === 'Space') {
       e.preventDefault();
@@ -587,6 +954,7 @@
   var settingsOverlay = document.getElementById('settings-overlay');
   var settingsSectionList = document.getElementById('settings-section-list');
   var fldColophon = document.getElementById('set-colophon');
+  var fldHeaderSlow = document.getElementById('set-header-slow');
   var fldCountdown = document.getElementById('set-countdown');
   var fldChapterGap = document.getElementById('set-chapter-gap');
   var fldVerseZoom = document.getElementById('set-verse-zoom');
@@ -598,8 +966,8 @@
   var fldTheme = document.getElementById('set-theme');
 
   // Build the per-section BPM rows once (label + number input keyed by chapterId).
-  // Displayed value is SPM = internal bpm / 4 (matches the rest of the UI); we store
-  // internal = SPM * 4. Section labels reuse the chapter dropdown's option text.
+  // Displayed value is BPM = internal bpm / 4 (matches the rest of the UI); we store
+  // internal = BPM * 4. Section labels reuse the chapter dropdown's option text.
   var sectionBpmInputs = {}; // chapterId -> input element
   function buildSectionBpmRows() {
     while (settingsSectionList.firstChild) settingsSectionList.removeChild(settingsSectionList.firstChild);
@@ -635,14 +1003,16 @@
 
   // Effective internal BPM for a section: Settings override, else data defaultBpm.
   // Returns null when neither is known (sections without a defaultBpm → "manual").
-  // Internal bpm = display SPM × 4. Defaults per the parayana team's "App SPM" table (#10):
-  // Dhyana 60, Ch1 75, Ch2 85, Ch3–18 90, Datta Stavam 75, Invocation 70, Mahātmyam 85.
+  // Internal bpm = display BPM × 4. Defaults per the parayana team's BPM/pause table
+  // (2026-07-15 revision): Dhyana 60, Ch1 75, Ch2 80, Ch3–18 85, Datta Stavam 80,
+  // Invocation 65, Mahātmyam 80, Kshama Prārthana 75. Keep in sync with each section's
+  // data defaultBpm.
   var DATA_DEFAULT_BPM = {
-    datta_stavam: 300, invocation_prayers: 280, '0': 240, '1': 300,
-    '2': 340, '3': 360, '4': 360, '5': 360, '6': 360, '7': 360, '8': 360,
-    '9': 360, '10': 360, '11': 360, '12': 360, '13': 360, '14': 360,
-    '15': 360, '16': 360, '17': 360, '18': 360, gita_mahatmyam: 340,
-    kshama_prarthana: 320
+    datta_stavam: 320, invocation_prayers: 260, '0': 240, '1': 300,
+    '2': 320, '3': 340, '4': 340, '5': 340, '6': 340, '7': 340, '8': 340,
+    '9': 340, '10': 340, '11': 340, '12': 340, '13': 340, '14': 340,
+    '15': 340, '16': 340, '17': 340, '18': 340, gita_mahatmyam: 320,
+    kshama_prarthana: 300, gita_saram: 320, gita_arati: 320
   };
   function effectiveSectionBpm(id) {
     if (typeof chantSettings.sectionBpm[id] === 'number') return chantSettings.sectionBpm[id];
@@ -652,7 +1022,16 @@
 
   // Populate all settings inputs from the current chantSettings.
   function refreshSettingsInputs() {
-    fldColophon.value = chantSettings.colophonBpmDrop / 4;  // stored internal bpm → shown in SPM
+    fldColophon.value = chantSettings.colophonBpmDrop / 4;  // stored internal bpm → shown in BPM
+    if (fldHeaderSlow) fldHeaderSlow.value = chantSettings.headerBpmDrop / 4;  // stored internal bpm → shown in BPM
+    var fldSaramCd = document.getElementById('set-saram-arati-cd');
+    if (fldSaramCd) fldSaramCd.value = chantSettings.saramAratiCountdown ? 'on' : 'off';
+    var fldPacing = document.getElementById('set-pacing-version');
+    if (fldPacing) fldPacing.value = chantSettings.pacingVersion;
+    var fldWordGap = document.getElementById('set-header-word-gap');
+    if (fldWordGap) fldWordGap.value = chantSettings.headerWordGapMs;
+    if (fldFsText) fldFsText.value = chantSettings.fullscreenText || '';
+    if (fldBreakMinutes) fldBreakMinutes.value = chantSettings.breakMinutes;
     fldCountdown.value = chantSettings.countdownSeconds;
     fldChapterGap.value = chantSettings.chapterGapSeconds;
     if (fldVerseZoom) fldVerseZoom.value = chantSettings.verseZoom;
@@ -661,6 +1040,8 @@
     if (fldTristubh) fldTristubh.value = chantSettings.tristubhBeats;
     if (fldUvaca) fldUvaca.value = chantSettings.uvacaBeats;
     if (fldMahatmyam) fldMahatmyam.value = chantSettings.mahatmyamBeats;
+    var fldLastSloka = document.getElementById('set-last-sloka-pause');
+    if (fldLastSloka) fldLastSloka.value = chantSettings.lastSlokaPauseBeats;
     if (fldTheme) fldTheme.value = chantSettings.theme;
     for (var id in sectionBpmInputs) {
       if (!Object.prototype.hasOwnProperty.call(sectionBpmInputs, id)) continue;
@@ -684,7 +1065,17 @@
   }
 
   function saveSettings() {
-    chantSettings.colophonBpmDrop = Math.round(clampNum(fldColophon.value, 0, 20, 0)) * 4;  // SPM field → internal bpm
+    var prevPacingVersion = chantSettings.pacingVersion;
+    chantSettings.colophonBpmDrop = Math.round(clampNum(fldColophon.value, 0, 20, 0)) * 4;  // BPM field → internal bpm
+    if (fldHeaderSlow) chantSettings.headerBpmDrop = Math.round(clampNum(fldHeaderSlow.value, 0, 20, CHANT_DEFAULTS.headerBpmDrop / 4) / 5) * 5 * 4;  // BPM field (5-BPM steps) → internal bpm
+    var fldSaramCdS = document.getElementById('set-saram-arati-cd');
+    if (fldSaramCdS) chantSettings.saramAratiCountdown = fldSaramCdS.value !== 'off';
+    var fldPacingS = document.getElementById('set-pacing-version');
+    if (fldPacingS) chantSettings.pacingVersion = (fldPacingS.value === 'A' || fldPacingS.value === 'B') ? fldPacingS.value : 'C';
+    var fldWordGapS = document.getElementById('set-header-word-gap');
+    if (fldWordGapS) chantSettings.headerWordGapMs = Math.round(clampNum(fldWordGapS.value, 0, 500, CHANT_DEFAULTS.headerWordGapMs));
+    if (fldFsText) chantSettings.fullscreenText = fldFsText.value;
+    if (fldBreakMinutes) chantSettings.breakMinutes = Math.round(clampNum(fldBreakMinutes.value, 1, 120, CHANT_DEFAULTS.breakMinutes));
     chantSettings.countdownSeconds = Math.round(clampNum(fldCountdown.value, 0, 15, CHANT_DEFAULTS.countdownSeconds));
     chantSettings.chapterGapSeconds = clampNum(fldChapterGap.value, 0, 15, CHANT_DEFAULTS.chapterGapSeconds);
     if (fldVerseZoom) chantSettings.verseZoom = Math.round(clampNum(fldVerseZoom.value, 50, 250, CHANT_DEFAULTS.verseZoom));
@@ -693,16 +1084,24 @@
     if (fldTristubh) chantSettings.tristubhBeats = clampNum(fldTristubh.value, 0, 12, CHANT_DEFAULTS.tristubhBeats);
     if (fldUvaca) chantSettings.uvacaBeats = clampNum(fldUvaca.value, 0, 12, CHANT_DEFAULTS.uvacaBeats);
     if (fldMahatmyam) chantSettings.mahatmyamBeats = clampNum(fldMahatmyam.value, 0, 12, CHANT_DEFAULTS.mahatmyamBeats);
+    var fldLastSlokaS = document.getElementById('set-last-sloka-pause');
+    if (fldLastSlokaS) chantSettings.lastSlokaPauseBeats = clampNum(fldLastSlokaS.value, 3, 7, CHANT_DEFAULTS.lastSlokaPauseBeats);
     if (fldTheme) chantSettings.theme = (fldTheme.value === 'light') ? 'light' : 'dark';
 
-    // Per-section BPM: a value present → store internal = SPM*4; blank → clear override.
+    // Per-section BPM: store an override ONLY when it differs from the data
+    // default. The panel pre-fills every row with the default as a hint, so
+    // storing all filled rows froze the whole table at whatever the defaults
+    // were at first save — future default updates could never show through.
     chantSettings.sectionBpm = {};
     for (var id in sectionBpmInputs) {
       if (!Object.prototype.hasOwnProperty.call(sectionBpmInputs, id)) continue;
       var raw = sectionBpmInputs[id].value;
       if (raw !== '' && raw !== null && !isNaN(parseFloat(raw))) {
         var spm = clampNum(raw, 10, 150, 95);
-        chantSettings.sectionBpm[id] = Math.round(spm) * 4;
+        var internal = Math.round(spm) * 4;
+        if (internal !== DATA_DEFAULT_BPM[id]) {
+          chantSettings.sectionBpm[id] = internal;
+        }
       }
     }
 
@@ -712,7 +1111,7 @@
     // If an EXPLICIT per-section override exists for the current chapter, re-apply it
     // immediately. With no override, leave the running tempo untouched — never pull
     // from DATA_DEFAULT_BPM here (that map is for panel pre-fill hints only), so a
-    // live SPM nudge survives saving an unrelated setting.
+    // live BPM nudge survives saving an unrelated setting.
     var curId = dataLayer.getCurrentChapterId();
     if (curId !== null) {
       var override = chantSettings.sectionBpm[String(curId)];
@@ -734,10 +1133,29 @@
     // tweaks don't change syllable indices, so it stays in sync as the operator drives
     // the ongoing animation); verse-zoom/theme were already pushed live by
     // applyChantSettings() above.
+    // Version change while inside Sāram/Ārati: their PAGE LIST differs between
+    // A (title only) and B/C (verse content) — reload the section fresh instead
+    // of preserving position across incompatible page arrays.
+    var curSecId = dataLayer.getCurrentChapterId();
+    if (prevPacingVersion !== chantSettings.pacingVersion &&
+        (curSecId === 'gita_saram' || curSecId === 'gita_arati')) {
+      loadChapter(curSecId, true);
+      closeSettings();
+      return;
+    }
     if (dataLayer.getCurrentChapterId() !== null && dataLayer.getPage(currentPage)) {
       var savedAnimState = animator.getState();
+      // Pacing versions differ in element COUNTS (C: one star per mātrā), so the
+      // position must be carried across the re-render as (line, fraction) — the
+      // same mapping the display-mode toggle uses — not as a raw index.
+      var savedLinePos = renderer.getLinePosition(savedAnimState.currentIndex, savedAnimState.progress);
       renderer.invalidatePrefetch();
       renderer.renderPage(dataLayer.getPage(currentPage));
+      if (savedAnimState.currentIndex >= 0 && savedLinePos) {
+        var remapped = renderer.mapLinePosition(savedLinePos);
+        savedAnimState.currentIndex = remapped.index;
+        savedAnimState.progress = remapped.progress;
+      }
       animator.restore(savedAnimState);
       var reNextIdx = currentPage + 1;
       if (reNextIdx < dataLayer.getPageCount()) {
@@ -754,6 +1172,68 @@
     applyChantSettings();
     refreshSettingsInputs();
   }
+
+  // --- Full-Screen Text Box + Break Timer (standalone; projector overlays) ---
+  // Both are usable only while nothing is playing; if playback starts while one
+  // is showing, it is hidden automatically so it never covers live recitation.
+  var fldFsText = document.getElementById('set-fstext');
+  var fldBreakMinutes = document.getElementById('set-break-minutes');
+  var btnFsShow = document.getElementById('btn-fstext-show');
+  var btnFsHide = document.getElementById('btn-fstext-hide');
+  var btnFsClear = document.getElementById('btn-fstext-clear');
+  var btnBreakStart = document.getElementById('btn-break-start');
+  var btnBreakReset = document.getElementById('btn-break-reset');
+  var fsTextShowing = false;
+  var breakTimerShowing = false;
+
+  btnFsShow.addEventListener('click', function() {
+    if (animator.getState().isPlaying) return;
+    var text = (fldFsText.value || '').trim();
+    if (!text) return;
+    chantSettings.fullscreenText = fldFsText.value;
+    saveChantSettings();
+    sendToProjector('fullscreen-text', { text: text });
+    fsTextShowing = true;
+  });
+  btnFsHide.addEventListener('click', function() {
+    sendToProjector('fullscreen-text', { text: null });
+    fsTextShowing = false;
+  });
+  btnFsClear.addEventListener('click', function() {
+    fldFsText.value = '';
+    chantSettings.fullscreenText = '';
+    saveChantSettings();
+  });
+
+  btnBreakStart.addEventListener('click', function() {
+    if (animator.getState().isPlaying) return;
+    var mins = Math.round(clampNum(fldBreakMinutes.value, 1, 120, CHANT_DEFAULTS.breakMinutes));
+    fldBreakMinutes.value = mins;
+    chantSettings.breakMinutes = mins;
+    saveChantSettings();
+    sendToProjector('break-timer', { action: 'start', seconds: mins * 60 });
+    breakTimerShowing = true;
+  });
+  btnBreakReset.addEventListener('click', function() {
+    sendToProjector('break-timer', { action: 'hide' });
+    breakTimerShowing = false;
+  });
+
+  // Enablement poll: disable triggers during playback; auto-hide overlays if
+  // playback starts while one is up.
+  setInterval(function() {
+    var playing = animator.getState().isPlaying;
+    btnFsShow.disabled = playing;
+    btnBreakStart.disabled = playing;
+    if (playing && fsTextShowing) {
+      sendToProjector('fullscreen-text', { text: null });
+      fsTextShowing = false;
+    }
+    if (playing && breakTimerShowing) {
+      sendToProjector('break-timer', { action: 'hide' });
+      breakTimerShowing = false;
+    }
+  }, 500);
 
   buildSectionBpmRows();
   document.getElementById('btn-settings').addEventListener('click', openSettings);
