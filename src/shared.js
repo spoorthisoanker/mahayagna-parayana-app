@@ -1000,13 +1000,29 @@ const renderer = (function() {
         } else {
           const tokens = analyzer.analyzeLine(analyzeText);
           const totalBeats = tokens.reduce((sum, t) => sum + t.beats, 0);
+          // Version A: the whole line is ONE swept span. A trailing sloka
+          // NUMBER (||N||) is split into a separate non-animated tail span so
+          // the pointer's sweep ends at the last chanted syllable and never
+          // travels over the digits (team 09-02). Timing is unchanged: the
+          // number's mātrās remain inside totalBeats on the swept span.
+          // Mid-line dandas and non-numeric markers stay in the swept text.
+          let sweepText = displayText;
+          let tailText = null;
+          const mTail = displayText.match(/^(.*?)\s*(\|\|\s*\d+\s*\|\|)\s*$/);
+          if (mTail && mTail[1]) { sweepText = mTail[1]; tailText = mTail[2]; }
           const span = document.createElement('span');
           span.className = 'syllable';
           span.dataset.index = elements.length;
           span.dataset.beats = totalBeats;
-          span.textContent = displayText;
+          span.textContent = sweepText;
           elements.push(span);
           lineDiv.appendChild(span);
+          if (tailText) {
+            const tail = document.createElement('span');
+            tail.className = 'line-number-tail';
+            tail.textContent = tailText;
+            lineDiv.appendChild(tail);
+          }
         }
       } else {
         // Asterisk mode — see the pacing-version comment below. Markers (dandas)
