@@ -867,6 +867,10 @@ const renderer = (function() {
     target.textContent = '';
     // Colophon (closer) pages are center-aligned; all other pages left-aligned.
     target.classList.toggle('centered', !!pageData.isCloser);
+    // Om tatsaditi slide in ENGLISH script: render at 70% so the namaskara
+    // instruction card never overlaps the long transliterated lines (team
+    // 09-02). All pacing versions; asterisk mode unaffected.
+    target.classList.toggle('closer-zoom', !!pageData.isCloser && currentMode === 'english');
     const elements = [];
 
     for (const line of pageData.lines) {

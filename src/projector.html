@@ -120,6 +120,12 @@
     .syllable.word-end {
       margin-right: 0.35em;
     }
+    /* Om tatsaditi (closer) slide in English script: 70% zoom so the namaskara
+       instruction card never overlaps the text (team 09-02). */
+    #verse-container-a.closer-zoom, #verse-container-b.closer-zoom {
+      transform: scale(0.7);
+      transform-origin: center center;
+    }
     .verse-marker {
       display: inline-block;
       margin-left: 0.3em;
